@@ -1,0 +1,297 @@
+<%- include('../includes/header.ejs') %>
+<%- include('../includes/navigation.ejs') %>
+<style>
+    #lightbox .modal-content {
+    display: inline-block;
+    text-align: center;   
+}
+
+#lightbox .close {
+    opacity: 1;
+    color: rgb(255, 255, 255);
+    background-color: rgb(25, 25, 25);
+    padding: 5px 8px;
+    border-radius: 30px;
+    border: 2px solid rgb(255, 255, 255);
+    position: absolute;
+    top: -15px;
+    right: -55px;
+    
+    z-index:1032;
+}
+</style>
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><%- title %></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title form-search_title">Search</h3>
+                        <div class="form-search">
+                            <div class="clear">
+                                <div class="search">
+                                    <form   method="GET">
+                                        <div>
+                                            <label for="displayname" tag="" class="optional">Owner Name</label>
+                                            <input type="text" value="<%- query.displayname %>" class="form-control"
+                                                name="displayname" id="displayname">
+                                        </div>
+                                        <div>
+                                            <label for="email" tag="" class="optional">Owner Email</label>
+                                            <input type="text" value="<%- query.email %>" class="form-control"
+                                                name="email" id="email">
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="type" tag="" class="optional">Type</label>
+                                            <select name="type" class="form-control" id="type">
+                                                <option value=""> </option>
+                                                <option value="video_purchase" <% if(query.type == 'video_purchase'){ %>
+                                                    selected="selected" <% } %>>Video Purchase
+                                                </option>
+                                                <option value="recharge_wallet"
+                                                    <% if((query.type == 'recharge_wallet')){ %>
+                                                    selected="selected" <% } %>>Recharge Wallet</option>
+                                                <option value="user_subscription"
+                                                    <% if((query.type == 'user_subscription')){ %>
+                                                    selected="selected" <% } %>>Members Subscription</option>
+                                                <option value="channel_subscription"
+                                                    <% if((query.type == 'channel_subscription')){ %>
+                                                    selected="selected" <% } %>>Channels Subscription</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label for="status" tag="" class="optional">Status</label>
+                                            <select name="status" class="form-control" id="status">
+                                                <option value=""> </option>
+                                                <option value="1" <% if(query.status == '1'){ %>
+                                                    selected="selected" <% } %>>Completed
+                                                </option>
+                                                <option value="0"
+                                                    <% if(query.status && (query.status == '0')){ %>
+                                                    selected="selected" <% } %>>Pending</option>
+                                                
+                                            </select>
+                                        </div>
+                                    <div>
+                                    <div class="buttons">
+                                        <button id="search" class="btn btn-primary" type="submit">Search</button> or <a  href="javascript:;" onclick="window.location = window.location.pathname">reset</a>
+                                    </div>
+                                </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+<%if(results.length > 0){%>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="callout callout-warning">
+            <p><%- totalCount %> Bank Transfer request(s) Found</p>
+        </div>
+        <div class="box">
+            <!-- /.box-header -->
+            <div class="box-body table-responsive no-padding">
+                    <table class="table table-hover">
+                        <tr>
+                            <th>ID</th>
+                            <th>Owner</th>
+                            <th>Type</th>
+                            <th>Price</th>
+                            <th>Receipt</th>
+                            <%if(query.status == 1){%>
+                                <th>Approved Date</th>
+                            <%}%>
+                            <th>Creation Date</th>
+                            <th>Options</th>
+                        </tr>
+                    <%for(var i=0;i<results.length;i++){%>
+                        <tr>
+                            <td><%- results[i].bank_id %></td>
+                            <td><a href="/<%= results[i].username %>" target="_blank"><%- results[i].displayname %></a></td>
+                            <td>
+                                <%if(results[i].type == "video_purchase"){%>
+                                    <%- "Video Purchase" %>
+                                <%}else if(results[i].type == "recharge_wallet"){%>
+                                    <%- "Recharge Wallet" %>
+                                <%}else if(results[i].type == "user_subscription"){%>
+                                    <%- "Members Subscription" %>
+                                <%}else if(results[i].type == "channel_subscription"){%>
+                                    <%- "Channels Subscription" %>
+                                <%}%>
+                            </td>
+                            <td><%- getSymbolFromCurrency(results[i].currency)+results[i].price %></td>
+                            <td> 
+                                <a href="#" class="thumbnail" data-toggle="modal" data-target="#lightbox" style="width:100px"> 
+                                    <img src="<%- imageSuffix+results[i].image%>" />
+                                </a>
+                            </td>
+                            <%if(query.status == 1){%>
+
+                                <td>
+                                    <%let dateAS = moment(results[i].approve_date).locale("en")%>
+                                <%= 
+                                    dateAS.tz(defaultTimezone).format(formatDate)
+                                %>
+                                </td>
+                            <%}%>
+                            <td>
+                                <%let dateS = moment(results[i].creation_date).locale("en")%>
+                            <%= 
+                                    dateS.tz(defaultTimezone).format(formatDate)
+                            %>
+                            </td>
+                            <td>                                
+                                <%if(results[i].type == "video_purchase"){%>
+                                    <a class="btn btn-primary btn-xs" href="/watch/<%= results[i].resource_id %>" target="_blank">View Item</a>
+                                <%}else if(results[i].type == "recharge_wallet"){%>
+                                    <a class="btn btn-primary btn-xs" href="/<%= results[i].resource_id %>" target="_blank">View Item</a>
+                                <%}else if(results[i].type == "user_subscription"){%>
+                                    <a class="btn btn-primary btn-xs" href="/<%= results[i].resource_id %>" target="_blank">View Item</a>
+                                <%}else if(results[i].type == "channel_subscription"){%>
+                                    <a class="btn btn-primary btn-xs" href="/channel/<%= results[i].resource_id %>" target="_blank">View Item</a>
+                                <%}%>
+
+                                <%if(results[i].status == "0"){%>
+                                    <a class="btn btn-primary btn-xs" onclick="preDeleteFn(this)"
+                                data-id="<%-results[i].bank_id;%>" data-toggle="modal"
+                                data-target="#modal-approve">Approve Request</a>
+                                    <a class="btn btn-danger btn-xs" onclick="preDeleteFn(this)"
+                                data-id="<%-results[i].bank_id;%>" data-toggle="modal"
+                                data-target="#modal-danger">Delete Request</a>
+                                <%}%>
+
+                            </td>
+                        </tr>
+                    <% } %>
+                    </table>
+            </div>
+            <!-- /.box-body -->
+        </div>
+        <div class="modal model-dialog-hide" id="modal-danger">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Delete Request</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure want to delete this? It will not be recoverable after being deleted.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" onclick="deleteFunction()" class="btn btn-outline">Delete</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <div class="modal model-dialog-hide" id="modal-approve">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Approve Request</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure want to approve this request? It will not be recoverable after being approved.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" onclick="approveFunction()" class="btn btn-outline">Approve</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <div id="lightbox" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <button type="button" class="close hidden" data-dismiss="modal" aria-hidden="true">×</button>
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <img src="" alt="" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <%if (paggingData) { %>
+        <div class="box-footer clearfix">
+            <%- paggingData %>
+        </div>
+        <% } %>
+        <!-- /.box -->
+    </div>
+</div>
+<% }else{%>
+    <% if(Object.keys(query).length){%>
+        <div class="callout callout-info">
+            <p>No record found with your matching criteria.</p>
+        </div>
+    <% }else{ %>
+        <div class="callout callout-info">
+            <p>No bank transfer request found on your website.</p>
+        </div>
+    <% } %>
+<% } %>
+<!-- /.error-page -->
+</section>
+<!-- /.content -->
+</div>
+<%- include('../includes/scripts.ejs') %>
+<%- include('../includes/footer.ejs') %>
+
+<script>
+    var deleteObjectId;
+    function preDeleteFn(obj) {
+        deleteObjectId = $(obj).attr('data-id');
+    }
+    function deleteFunction() {
+        window.location.href = "<%= process.env.ADMIN_SLUG %>/payments/delete-bank/%>" + deleteObjectId;
+    }
+    function approveFunction() {
+        window.location.href = "<%= process.env.ADMIN_SLUG %>/payments/approve-bank/%>" + deleteObjectId;
+    }
+    $(document).ready(function() {
+    var $lightbox = $('#lightbox');
+    
+    $('[data-target="#lightbox"]').on('click', function(event) {
+        var $img = $(this).find('img'), 
+            src = $img.attr('src'),
+            alt = $img.attr('alt'),
+            css = {
+                'maxWidth': $(window).width() - 100,
+                'maxHeight': $(window).height() - 100
+            };
+    
+        $lightbox.find('.close').addClass('hidden');
+        $lightbox.find('img').attr('src', src);
+        $lightbox.find('img').attr('alt', alt);
+        $lightbox.find('img').css(css);
+    });
+    
+    $lightbox.on('shown.bs.modal', function (e) {
+        var $img = $lightbox.find('img');
+            
+        $lightbox.find('.modal-dialog').css({'width': $img.width()});
+        $lightbox.find('.close').removeClass('hidden');
+    });
+});
+</script>

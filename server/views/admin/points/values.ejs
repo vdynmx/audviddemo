@@ -1,0 +1,191 @@
+<%- include('../includes/header.ejs') %>
+<%- include('../includes/navigation.ejs') %>
+<style>
+  .checkvalue{
+    width: 60px;
+  }
+</style>
+  <div class="content-wrapper">
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box box-info">
+                  <div class="box-header">
+                      <h3 class="box-title"><%- title %></h3>
+                    </div>
+                </div>
+              </div>
+          </div>
+          <div class="row">
+
+            <div class="col-xs-12">
+              <div class="box">
+                <div class="box-header">
+                  <h3 class="box-title form-search_title">Search</h3>
+                  <div class="form-search">
+                    <div class="clear">
+                      <div class="search">
+                        <form   method="GET">
+                         
+                          <div>
+                              <label for="level_id" tag="" class="optional">Member Role</label>
+                              <select name="level_id" class="form-control" id="level_id">
+                                <option value=""> </option>
+                                <%for (var i=0;i<memberLevels.length;i++){ %>
+                                <option <% if(query.level_id == memberLevels[i].level_id){ %> selected="selected" <% } %>
+                                  value="<%- memberLevels[i].level_id %>"><%- memberLevels[i].title %></option>
+                                <%}%>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label for="type" tag="" class="optional">Type</label>
+                              <select name="type" class="form-control" id="type">
+                                  <option value=""> </option>
+                                  <option value="members"
+                                      <% if(query.type && (query.type == 'members')){ %>
+                                      selected="selected" <% } %>>Members</option>
+                                  <option value="videos" <% if(query.type == "videos"){ %> selected="selected" <% } %>>Videos
+                                  </option>
+                                  <option value="channels"
+                                      <% if(query.type && (query.type == 'channels')){ %>
+                                      selected="selected" <% } %>>Channels</option>
+                                  <option value="blogs"
+                                      <% if(query.type && (query.type == 'blogs')){ %>
+                                      selected="selected" <% } %>>Blogs</option>
+                                  <option value="playlists"
+                                      <% if(query.type && (query.type == 'playlists')){ %>
+                                      selected="selected" <% } %>>Playlists</option> 
+                                  <option value="audio"
+                                      <% if(query.type && (query.type == 'audio')){ %>
+                                      selected="selected" <% } %>>Audio</option>  
+                                  <option value="default"
+                                      <% if(query.type && (query.type == 'default')){ %>
+                                      selected="selected" <% } %>>Default</option>                                
+                              </select>
+                          </div>
+                          <div>
+                            <div class="buttons">
+                              <button id="search" class="btn btn-primary" type="submit">Search</button> or <a  href="javascript:;" onclick="window.location = window.location.pathname">reset</a>
+                            </div>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+
+            <div class="col-xs-12">
+              <div class="box">
+                <div class="box-header">
+                  <form method="POST">
+                  <table class="table">
+                    <thead>
+                    <tr>
+                      <th>
+                        Title
+                      </th>
+                      <th>
+                        Status
+                      </th>
+                      <th>
+                        First Time
+                      </th>
+                      <th>
+                        Next Time
+                      </th>
+                      <th>
+                        Max Points/Day
+                      </th>
+                      <th style="display: none;">
+                        Deduction Point
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <%for (var i=0;i<resultsItem.length;i++){  %>
+                      <tr>
+                        <td>
+                          <input type="hidden" name="type[]" value="<%-resultsItem[i].notification_type%>" />
+                          <%- req.i18n.t(resultsItem[i].notification_type).replace(/your/g, ''); %>
+                        </td>
+                        <td><%if(resultsItem[i].approve == 1){ %>
+                          <a title="Disabled" class="activeuser" href="javascript:;" data-id="<%- resultsItem[i].point_id %>">
+                            <img style="height: 20px;" src="/images/admin/check_image.png" />
+                          </a> <%}else{%> <a title="Enabled" class="activeuser" href="javascript:;"
+                            data-id="<%- resultsItem[i].point_id %>">
+                            <img style="height: 20px;" src="/images/admin/error_image.png" />
+                          </a> <% } %></td>
+
+                          <td>
+                            <input type="text" name="first[]" min="0" class="checkvalue" value="<%- resultsItem[i].first_time ? resultsItem[i].first_time : 0 %>">
+                          </td>
+                          <td>
+                            <input type="text" name="next[]" min="0" class="checkvalue" value="<%- resultsItem[i].next_time ? resultsItem[i].next_time : 0 %>">
+                          </td>
+                          <td>
+                            <input type="text" name="max[]" min="0" class="checkvalue" value="<%- resultsItem[i].max ? resultsItem[i].max : 0 %>">
+                          </td>
+                          <td style="display: none;">
+                            <input type="text" name="deduct[]" min="0" class="checkvalue" value="<%- resultsItem[i].deduct ? resultsItem[i].deduct : 0 %>">
+                          </td>
+                      </tr>
+                    <%}%>
+                  </tbody>
+                  </table>
+                  <div>
+                    <div class="buttons">
+                      <button class="btn btn-primary" type="submit">Save Values</button>
+                    </div>
+                  </div>
+                </form>
+                </div>
+              </div>
+            </div>
+
+    </section>
+  </div>
+  <%- include('../includes/scripts.ejs') %>
+  <%- include('../includes/footer.ejs') %>
+  <script>
+
+    $(".checkvalue").on("keypress",function(evt){
+      var charCode = (evt.which) ? evt.which : evt.keyCode;
+      return !(charCode > 31 && (charCode < 48 || charCode > 57));
+    })
+    $(document).on('click', '.activeuser', function (e) {
+    e.preventDefault()
+    var imageData = $(this).find("img").attr('src')
+    $(this).find("img").attr("src", '/images/admin/loading.gif');
+    var that = this
+    let data = {}
+    data['level_id'] = <%- query.level_id%>;
+    data['type'] = $(this).closest("tr").find("td").eq(0).find("input").val();
+    data['resource_type'] = "<%- query.type%>";
+    data['approve'] = 0;
+
+    let params = ""
+    if($(this).attr("data-id")){
+      params = "/"+$(this).attr("data-id")
+    }
+
+    $.post("<%= process.env.ADMIN_SLUG %>/points/approve"+params, data, function (respose) {
+      if (respose.error) {
+        $(that).find('img').attr('src', imageData)
+      } else {
+        $(that).attr("data-id",respose.id);
+        if (respose.status) {
+          $(that).find('img').attr('src', "/images/admin/check_image.png")
+        } else {
+          $(that).find('img').attr('src', "/images/admin/error_image.png")
+        }
+      }
+    })
+  })
+  </script>
