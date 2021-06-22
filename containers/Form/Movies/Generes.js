@@ -171,7 +171,7 @@ class Generes extends Component {
                                                 <input className="form-input form-control" type="text" onKeyDown={this.inputKeyDown} value={this.state.values} onChange={(e) => this.setState({values:e.target.value,localUpdate:true})} />  
                                                 <button type="button" onClick={this.addTags}>{this.props.t("Add")}</button>  
                                             </div>
-                                            <p>{this.props.t("Separate genres with comma.")}</p>
+                                            <p>{this.props.t("Separate genres with comma (eg: fun,horror,fiction etc).")}</p>
                                             {
                                                 this.state.tags.length ?
                                                     <React.Fragment>
@@ -244,7 +244,7 @@ class Generes extends Component {
                                                                     <td>{generes.slug}</td>
                                                                     <td>
                                                                         <div className="actionBtn">
-                                                                            <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteGenere.bind(this, generes.movie_genre_id)}><span className="material-icons">delete</span></a>                                                                                           
+                                                                            <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteGenere.bind(this, generes.movie_genre_id)}><span className="material-icons" data-icon="delete"></span></a>                                                                                           
                                                                         </div>
                                                                     </td>
                                                                 </tr>

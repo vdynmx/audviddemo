@@ -58,6 +58,8 @@ class  Videos extends React.Component{
                 const changedItem = {...items[itemIndex]}
                 changedItem.rating = rating
                 items[itemIndex] = changedItem
+                if(this.props.updateParentItems)
+                    this.props.updateParentItems("videos",this.props.subTypeVideos,items);
                 this.setState({localUpdate:true, videos: items })
             }
         });
@@ -67,6 +69,8 @@ class  Videos extends React.Component{
             if(itemIndex > -1){
                 const items = [...this.state.videos]
                 items.splice(itemIndex, 1);
+                if(this.props.updateParentItems)
+                    this.props.updateParentItems("videos",this.props.subTypeVideos,items);
                 this.setState({localUpdate:true,videos:items})
             }
         });
@@ -81,6 +85,8 @@ class  Videos extends React.Component{
                     changedItem.watchlater_id = null
                 }
                 items[itemIndex] = changedItem
+                if(this.props.updateParentItems)
+                    this.props.updateParentItems("videos",this.props.subTypeVideos,items);
                 this.setState({localUpdate:true,videos:items})
             }
         });
@@ -95,6 +101,8 @@ class  Videos extends React.Component{
                     changedItem.watchlater_id = 1
                 }
                 items[itemIndex] = changedItem
+                if(this.props.updateParentItems)
+                    this.props.updateParentItems("videos",this.props.subTypeVideos,items);
                 this.setState({localUpdate:true,videos:items})
             }
         });
@@ -114,6 +122,8 @@ class  Videos extends React.Component{
                         changedItem.favourite_id = null
                     }
                     items[itemIndex] = changedItem
+                    if(this.props.updateParentItems)
+                    this.props.updateParentItems("videos",this.props.subTypeVideos,items);
                     this.setState({localUpdate:true,videos:items})
                 }
             }
@@ -132,6 +142,8 @@ class  Videos extends React.Component{
                         changedItem.favourite_id = 1
                     }
                     items[itemIndex] = changedItem
+                    if(this.props.updateParentItems)
+                    this.props.updateParentItems("videos",this.props.subTypeVideos,items);
                     this.setState({localUpdate:true,videos:items})
                 }
             }
@@ -176,6 +188,8 @@ class  Videos extends React.Component{
                         changedItem['dislike_count'] = parseInt(changedItem['dislike_count']) + 1
                     }
                     items[itemIndex] = changedItem
+                    if(this.props.updateParentItems)
+                        this.props.updateParentItems("videos",this.props.subTypeVideos,items);
                     this.setState({localUpdate:true,videos:items})
                 }
             }
@@ -208,6 +222,12 @@ class  Videos extends React.Component{
             
         }else if(this.props.user_id){
             formData.append('owner_id',this.props.user_id)
+            if(this.props.paidVideos){
+                formData.append("paidVideos",1);
+            }
+            if(this.props.liveVideos){
+                formData.append("liveVideos",1);
+            }
              url = `/members/videos`;
         }
         axios.post(url, formData ,config)
@@ -231,18 +251,18 @@ class  Videos extends React.Component{
                         hasMore={this.state.pagging}
                         loader={<LoadMore {...this.props} loading={true} page={this.state.page} itemCount={this.state.videos.length} />}
                         endMessage={
-                            <EndContent {...this.props} text={this.props.contentType == "my" ? Translate(this.props,'No video created yet.') : (this.props.contentType ? Translate(this.props,'No video found with your matching criteria.') : Translate(this.props,'No video created by this user yet.'))} itemCount={this.state.videos.length} />
+                            <EndContent {...this.props} text={this.props.contentType == "my" ? Translate(this.props,'No video created yet.') : (this.props.contentType ? Translate(this.props,'No video found with your matching criteria.') : ( this.props.from_user_profile ? Translate(this.props,'No monthly subscription video created by this user yet.')  : Translate(this.props,'No video created by this user yet.') ) )} itemCount={this.state.videos.length} />
                         }
                         pullDownToRefresh={false}
                         pullDownToRefreshContent={<Release release={false} {...this.props} />}
                         releaseToRefreshContent={<Release release={true} {...this.props} />}
                         refreshFunction={this.refreshContent}
                     >
-                        <div className="row mob2col">
+                        <div className="row mob2 col gx-2">
                         {
                             this.state.videos.map(video => {
                                 return (
-                                    <div key={video.video_id} className="col-xl-3 col-lg-4 col-md-4 col-sm-6">
+                                    <div key={video.video_id} className={this.props.from_user_profile ? `col-xl-4 col-lg-4 col-md-4 col-sm-6` : `col-xl-3 col-lg-4 col-md-4 col-sm-6`}>
                                         <VideoItem  contentType={this.props.contentType} channel_id={this.props.channel_id} canDelete={this.state.canDelete} canEdit={this.state.canEdit} {...this.props} video={video} {...video}  />
                                     </div>
                                 )

@@ -38,7 +38,7 @@ class Notifications extends Component {
             <React.Fragment>
                 <li className={!this.props.mobileMenu ?  `nav-item dropdown main notclosenotification${this.state.style == "block" ? " active" : ""}` : `main dropdown MobDropdownNav notclosenotification${this.state.style == "block" ? " active" : ""}`} id="navbarDropdownList" onClick={(e)=>this.props.openToggle('notifications',e)}>
                     <a className={!this.props.mobileMenu ? "nav-link markReadAll parent notclosenotification bg-cnt" : "parent notclosenotification"}  href="#">
-                        <span className="material-icons parent">notifications</span>
+                        <span className="material-icons parent" data-icon="notifications"></span>
                         {
                             this.state.unread > 0 ?
                                 <span className="notifNmbr parent">{this.state.unread > 10 ? "10+" : this.state.unread}</span>

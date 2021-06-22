@@ -108,7 +108,10 @@ const member = {
     MONETIZATIONREQUESTSEND:"Monetization Request send successfully.",
     MONETIZATIONREQUESTALREADYSEND:"Monetization Request already send, please wait for the request to complete.",
     NEWSLETTERSUCCESS:"Thanks for subscribing our newsletter.",
-    INVALIDPAYPALEMAIL:"Please enter valid Paypal Email ID."
+    INVALIDPAYPALEMAIL:"Please enter valid Paypal Email ID.",
+    PLANEDIT:"Plan created successfully.",
+    PLANEDIT:"Plan edited successfully.",
+    PLANDELETE:"Plan deleted successfully."
 }
 const playlist = {
     DELETED:"Playlist deleted successfully",

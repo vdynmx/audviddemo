@@ -1,20 +1,16 @@
 import React, { Component } from "react"
-
 import Form from '../../components/DynamicForm/Index'
-
 import { connect } from 'react-redux';
-
 import Validator from '../../validators';
-
 import axios from "../../axios-orders"
-
-
 import LoadMore from "../LoadMore/Index"
 import general from '../../store/actions/general';
 import Breadcrum from "../../components/Breadcrumb/Form"
 import Router from "next/router"
 import Translate from "../../components/Translate/Index" 
 import imageCompression from 'browser-image-compression';
+import Currency from "../Upgrade/Currency"
+import ReactDOMServer from "react-dom/server"
 
 class Playlist extends Component {
     constructor(props) {
@@ -27,7 +23,8 @@ class Playlist extends Component {
             loading: props.pageInfoData.editItem ? false : true,
             playlists: [],
             playlist_id: "",
-            submitting: false
+            submitting: false,
+            plans:props.pageInfoData.plans ? props.pageInfoData.plans : [],
         }
         this.myRef = React.createRef();
         this.onPlaylistChange = this.onPlaylistChange.bind(this)
@@ -49,7 +46,7 @@ class Playlist extends Component {
                 if (response.data.error) {
                     this.setState({ loading: false, error: response.data.error });
                 } else {
-                    this.setState({ loading: false, playlists: response.data.playlists })
+                    this.setState({ loading: false, playlists: response.data.playlists,plans: response.data.plans ? response.data.plans : []})
                 }
             }).catch(err => {
                 this.setState({ loading: false, error: err });
@@ -93,7 +90,6 @@ class Playlist extends Component {
         };
         let url = '/playlists/create';
         if (this.state.editItem) {
-            url = "/playlists/create";
             formData.append("playlist_id", this.state.editItem.playlist_id)
         } else {
             formData.append("video_id", this.props.video_id)
@@ -207,6 +203,26 @@ class Playlist extends Component {
                     }
                 ]
             })
+
+            let privacyOptions = [{
+                value:"",label:"",key:"default value"
+            }]
+            if(this.state.plans.length > 0){
+                this.state.plans.forEach(item => {
+                    let perprice = {}
+                    perprice['package'] = { price: item.price }
+                    privacyOptions.push({
+                        value:"package_"+item.member_plan_id,label:this.props.t("Limited to {{plan_title}} ({{plan_price}}) and above",{plan_title:item.title,plan_price:ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...perprice} />)}),key:"package_"+item.member_plan_id
+                    })
+                })
+                formFields.push({
+                    key: "privacy",
+                    label: "Privacy",
+                    type: "select",
+                    value:this.state.editItem ? this.state.editItem.view_privacy : "everyone",
+                    options: privacyOptions
+                })
+            }
         }
         let defaultValues = {}
         if (!this.firstLoaded) {
@@ -227,7 +243,7 @@ class Playlist extends Component {
                         <div className="mainContentWrap">
                             <div className="container">
                             <div className="row">
-                                <div className="col-md-12">
+                                <div className="col-md-12 position-relative">
                                 <div className="formBoxtop loginp content-form" ref={this.myRef}>
                                     <Form
                                         className="form"

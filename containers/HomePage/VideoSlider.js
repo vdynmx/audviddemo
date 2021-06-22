@@ -1,6 +1,8 @@
 import React from "react"
 import { connect } from "react-redux";
 import Carousel from "react-slick"
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import Translate from "../../components/Translate/Index"
 import Link from "../../components/Link"
 import CensorWord from "../CensoredWords/Index"
@@ -14,8 +16,6 @@ import WatchLater from "../WatchLater/Index"
 
 import ShortNumber from "short-number"
 // import { renderToString } from 'react-dom/server'
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 
 class VideoSlider extends React.Component {
     constructor(props) {
@@ -160,12 +160,12 @@ class VideoSlider extends React.Component {
         
         const Right = props => (
             <button className="control-arrow control-next" onClick={props.onClick}>
-              <span className='material-icons'>keyboard_arrow_right</span>
+              <span className="material-icons" data-icon="keyboard_arrow_right"></span>
             </button>
           )
         const Left = props => (
             <button className="control-arrow control-prev" onClick={props.onClick}>
-              <span className='material-icons'>keyboard_arrow_left</span>
+              <span className="material-icons" data-icon="keyboard_arrow_left"></span>
             </button>
           )
         var settings = {
@@ -305,7 +305,7 @@ class VideoSlider extends React.Component {
                                                                         <div className="publisher-name">
                                                                             <Link className="username" href="/member" customParam={`memberId=${item.username}`} as={`/${item.username}`}>
                                                                                 <a className="UserName">                                                                                   
-                                                                                    <span className="username">{item.displayname} <span className="verifiedUser"><span className="material-icons">check</span></span></span>
+                                                                                    <span className="username">{item.displayname} <span className="verifiedUser"><span className="material-icons" data-icon="check"></span></span></span>
                                                                                 </a>
                                                                             </Link>
                                                                         </div>

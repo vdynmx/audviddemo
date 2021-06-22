@@ -22,7 +22,10 @@ var self = module.exports = {
             })
         })
     },
-    findById: function(id,req,res,reset = false,setData = true){
+    findById: function(id,req,res,reset,setData = true){
+        if(!reset){
+            reset = reset;
+        }
         return new Promise(function(resolve, reject) {
             let cache = flatCache.load("levelPermissions"+id, path.resolve(req.cacheDir));
             let key = "__express__levelPermissions"

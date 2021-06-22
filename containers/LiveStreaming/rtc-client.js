@@ -205,7 +205,7 @@ export default class RTCClient {
     }
     let localStream = AgoraRTC.createStream(dataStream)
    
-    localStream.setVideoProfile('720p_6');
+    localStream.setVideoProfile('1440p');
     
     // init local stream
     localStream.init(() => {

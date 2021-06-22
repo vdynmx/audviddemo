@@ -204,9 +204,9 @@ class Videos extends React.Component {
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M16,18H18V6H16M6,18L14.5,12L6,6V18Z"></path></svg>
                      {Translate(this.props,'Up next')}</div>
                     <div className="autpplayBtnwrap">
-                        <div className="custom-control custom-switch autoplayBtn">              
-                            <input type="checkbox" className="custom-control-input" onChange={this.autoPlay} checked={this.state.autoPlay} id="Autoplay" />
-                            <label className="custom-control-label" htmlFor="Autoplay">{Translate(this.props,'Autoplay')}</label>
+                        <div className="form-check form-switch autoplayBtn">              
+                            <input type="checkbox" className="form-check-input" onChange={this.autoPlay} checked={this.state.autoPlay} id="Autoplay" />
+                            <label className="form-check-label" htmlFor="Autoplay">{Translate(this.props,'Autoplay')}</label>
                         </div>
                     </div>
                 </div>
@@ -263,7 +263,7 @@ class Videos extends React.Component {
                                     {
                                         this.props.pageInfoData.appSettings["videos_playlist"] == 1 && this.props.pageInfoData.appSettings["enable_playlist"] == 1 && (!this.props.pageInfoData.levelPermissions || this.props.pageInfoData.levelPermissions['playlist.create'] == 1) ?
                                             <a className="playlist" title={Translate(this.props, "Save to playlist")} onClick={(e) => this.playlistOpen(video.video_id,e)} href="#">
-                                                <span className="material-icons">playlist_add</span>
+                                                <span className="material-icons" data-icon="playlist_add"></span>
                                             </a>
                                             : null
                                     }

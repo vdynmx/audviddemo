@@ -16,11 +16,12 @@ module.exports = {
                     column = "playlist_id"
                 }
                 let type = "view_count"
-                            
-                connection.query("UPDATE "+ (data.type == "members" ? "userdetails" : data.type) + " SET "+type+" = "+type+" + 1 WHERE "+column+" = "+data.id,function(err,results,fields)
-                {
-                    
-                });
+                if(!req.query.needSubscription){
+                    connection.query("UPDATE "+ (data.type == "members" ? "userdetails" : data.type) + " SET "+type+" = "+type+" + 1 WHERE "+column+" = "+data.id,function(err,results,fields)
+                    {
+                        
+                    });
+                }
 
                 if(req.user && req.user.user_id){
                     owner_id = req.user.user_id

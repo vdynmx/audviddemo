@@ -1,21 +1,15 @@
 import React,{Component} from "react"
-
 import Breadcrum from "../../components/Breadcrumb/Form"
-
-
 import Form from '../../components/DynamicForm/Index'
 import AddVideos from '../../containers/Video/Popup'
-
-
 import { connect } from 'react-redux';
-
 import Validator from '../../validators';
-
 import axios from "../../axios-orders"
-
 import Router from "next/router"
 import  Translate  from "../../components/Translate/Index";
 import imageCompression from 'browser-image-compression';
+import Currency from "../Upgrade/Currency"
+import ReactDOMServer from "react-dom/server"
 
 class Channel extends Component {
     constructor(props){
@@ -30,7 +24,8 @@ class Channel extends Component {
             privacy:props.pageInfoData.editItem ? props.pageInfoData.editItem.view_privacy : "everyone",
             success:false,
             error:null,
-            channelImage:""
+            channelImage:"",
+            plans:props.pageInfoData.plans ? props.pageInfoData.plans : [],
         }
         this.myRef = React.createRef();
         this.chooseVideos = this.chooseVideos.bind(this)
@@ -53,7 +48,8 @@ class Channel extends Component {
                 privacy:nextProps.pageInfoData.editItem ? nextProps.pageInfoData.editItem.view_privacy : "everyone",
                 success:false,
                 error:null,
-                channelImage:""
+                channelImage:"",
+                plans:nextProps.pageInfoData.plans ? nextProps.pageInfoData.plans : [],
             }
         }
     }
@@ -70,6 +66,18 @@ class Channel extends Component {
         }
         if(this.state.submitting){
             return
+        }
+        if(this.props.pageInfoData.appSettings['channel_support_commission_type']  == 1 && this.props.pageInfoData.appSettings['channel_support_commission_value'] > 0){
+            if(model['channel_subscription_amount'] && parseFloat(model['channel_subscription_amount']) > 0){
+                if(model['channel_subscription_amount'] <=  this.props.pageInfoData.appSettings['channel_support_commission_value']){
+                    let perprice = {}
+                    perprice['package'] = { price: this.props.pageInfoData.appSettings['channel_support_commission_value'] }
+                    this.setState({localUpdate:true,error:[{message:this.props.t("Price enter must be greater than {{price}}.",{price:ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...perprice} />)})}]})
+                    return;
+                }
+            }else{
+                model['channel_subscription_amount'] = 0
+            }
         }
         this.setState({localUpdate:true,submitting:true,error:null});
         let formData = new FormData();
@@ -202,6 +210,15 @@ class Channel extends Component {
             formFields.push(
                 { key: "channel_subscription_amount", label: "Support Price(per month)", type: "text", value: this.state.editItem && this.state.editItem.channel_subscription_amount ? this.state.editItem.channel_subscription_amount : "0", placeholder:"00.00",isRequired:true }
             )
+            if(this.props.pageInfoData.appSettings['channel_support_commission_type']  == 1 && this.props.pageInfoData.appSettings['channel_support_commission_value'] > 0){
+                let perprice = {}
+                perprice['package'] = { price: this.props.pageInfoData.appSettings['channel_support_commission_value'] }
+                formFields.push({
+                    key: "price_desc_1",
+                    type: "content",
+                    content: '<span>' + this.props.t("Price enter must be greater than {{price}}.",{price:ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...perprice} />)}) + '</span>'
+                })
+            }
         }
 
         formFields.push(
@@ -368,7 +385,15 @@ class Channel extends Component {
                 value:"follow",label:"Only people I follow",key:"follow"
             })
         }
-
+        if(this.state.plans.length > 0){
+            this.state.plans.forEach(item => {
+                let perprice = {}
+                perprice['package'] = { price: item.price }
+                privacyOptions.push({
+                    value:"package_"+item.member_plan_id,label:this.props.t("Limited to {{plan_title}} ({{plan_price}}) and above",{plan_title:item.title,plan_price:ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...perprice} />)}),key:"package_"+item.member_plan_id
+                })
+            })
+        }
         formFields.push({
             key: "privacy",
             label: "Privacy",
@@ -424,7 +449,7 @@ class Channel extends Component {
                     <div className="mainContentWrap">
                         <div className="container">
                         <div className="row">
-                            <div className="col-md-12">
+                            <div className="col-md-12 position-relative">
                             <div className="formBoxtop loginp content-form" ref={this.myRef}>
                                 <Form
                                     //key={this.state.current.id}

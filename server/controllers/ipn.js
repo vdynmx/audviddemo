@@ -4,6 +4,7 @@ const subscriptionModel = require("../models/subscriptions")
 const globalModel = require("../models/globalModel")
 const nodeDate = require("node-datetime")
 const paypal = require("paypal-rest-sdk")
+const levelPermissions = require("../models/levelPermissions")
 
 exports.verifyIPN = async (headers,body) => {
   return new Promise((resolve, reject) => {
@@ -110,7 +111,7 @@ exports.index = async (req, res, next) => {
       })
       break
     //One-time donation
-    case 'charge.succeeded':
+    //case 'charge.succeeded':
     //Successful recurring payment
     case 'invoice.payment_succeeded':
       resource.state = "completed"
@@ -164,17 +165,22 @@ exports.index = async (req, res, next) => {
             creation_date:nodeDate.create().format("Y-m-d H:M:S"),
             modified_date:nodeDate.create().format("Y-m-d H:M:S")
           }
+          let totalAmount = 0
+          let commission_amount = 0
+          let commissionType = "4"
+          let commissionTypeValue = 0
+          let userIDForBalance = 0
           if(subscription.type == "channel_subscription"){
-            let commission_amount = 0
-            let commissionType = parseFloat(req.appSettings['channel_support_commission_type'])
-            let commissionTypeValue = parseFloat(req.appSettings['channel_support_commission_value'])
+             commission_amount = 0
+             commissionType = parseFloat(req.appSettings['channel_support_commission_type'])
+             commissionTypeValue = parseFloat(req.appSettings['channel_support_commission_value'])
             //calculate admin commission
             if(commissionType == 2 && commissionTypeValue > 0){
                 commission_amount = ((amount).toFixed(2) * (commissionTypeValue/100)).toFixed(2);
             }else if(commissionType == 1 && commissionTypeValue > 0){
                 commission_amount = commissionTypeValue;
             }
-            let totalAmount = amount
+            totalAmount = amount
             if(commission_amount > parseFloat(amount).toFixed(2)){
                 commission_amount = 0
             }else{
@@ -182,9 +188,50 @@ exports.index = async (req, res, next) => {
             }
             insertData['admin_commission'] = commission_amount
             insertData['price'] = totalAmount
+            await globalModel.custom(req,"SELECT owner_id FROM channels WHERE channel_id = ?",[subscription.id]).then(result => {
+              if (result) {
+                const res = JSON.parse(JSON.stringify(result));
+                userIDForBalance = res[0].owner_id
+              }
+            })
+          }else if(subscription.type == "user_subscribe"){
+            //get subscription user
+            let user = null
+            await globalModel.custom(req, "SELECT * FROM users LEFT JOIN userdetails ON userdetails.user_id = users.user_id WHERE users.user_id = ?", [subscription.id]).then(result => {
+              if (result) {
+                const res = JSON.parse(JSON.stringify(result));
+                user = res[0]
+              }
+            })
+            //get user permission array
+            await levelPermissions.findById(user.level_id,req,res,false,false).then(result => {
+              if(result){
+                 commissionType = parseFloat(result['member.user_subscription_commission_type'])
+                 commissionTypeValue = parseFloat(result['member.user_subscription_commission_value'])
+              }
+            })
+             commission_amount = 0
+            //calculate admin commission
+            if(commissionType == 2 && commissionTypeValue > 0){
+                commission_amount = ((amount).toFixed(2) * (commissionTypeValue/100)).toFixed(2);
+            }else if(commissionType == 1 && commissionTypeValue > 0){
+                commission_amount = commissionTypeValue;
+            }
+            totalAmount = amount
+            if(commission_amount > parseFloat(amount).toFixed(2)){
+                commission_amount = 0
+            }else{
+              totalAmount = (totalAmount - commission_amount).toFixed(2);
+            }
+            insertData['admin_commission'] = commission_amount
+            insertData['price'] = totalAmount
+            userIDForBalance = subscription.id
           }
-          globalModel.custom(req,'INSERT INTO transactions SET ? ON DUPLICATE KEY UPDATE state = ?',[insertData,state]).then(result => {
-
+          globalModel.custom(req,'INSERT INTO transactions SET ? ON DUPLICATE KEY UPDATE state = ?',[insertData,state]).then(async result => {
+            if(subscription.type == "channel_subscription" || subscription.type == "user_subscribe"){
+              //update balance in user balance
+              await globalModel.custom(req,"UPDATE users SET `balance` = balance + ?  WHERE user_id = ?",[totalAmount,userIDForBalance]).then(result => {})
+            }
           })
         }
       }
@@ -403,6 +450,15 @@ exports.index = async (req, res, next) => {
           console.log("=========== Channel Support IPN Processed successfully. =========== ")
         }else{
           console.log(" ====== ERROR EXECUTING Channel Support IPN. ======")
+        }
+      });
+    }else if(order && order.source_type == "user_subscribe" && subscription && subscription.type == "user_subscribe"){
+      const channelSupportSubscription = require("../functions/ipnsFunctions/channelSupportSubscriptions")
+      await channelSupportSubscription.onSubscriptionTransactionIpn(req, params,order,subscription,transaction).then(res => {
+        if (res) {
+          console.log("=========== Member Subscription IPN Processed successfully. =========== ")
+        }else{
+          console.log(" ====== ERROR EXECUTING Member Subscription IPN. ======")
         }
       });
     }else if(order && order.source_type == "video_purchase" && subscription && subscription.type == "video_purchase"){

@@ -296,7 +296,7 @@ module.exports = {
 
                             connection.query("UPDATE "+ (data.type == "members" ? "userdetails" : data.type) + " SET "+type+" = "+type+" + 1  WHERE "+column+" = "+data.id,function(err,results,fields)
                             {
-console.log(err)
+
                             });
 
                             resolve(true);

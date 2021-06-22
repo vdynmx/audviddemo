@@ -63,7 +63,6 @@ module.exports = {
                         if(!pageData['banner'])
                         delete pageData["banner"]
                         if(pageData.type != "terms" && pageData.type != "privacy"){
-                            delete pageData["type"]
                             delete pageData["content"]
                         }
                         delete pageData["url"]

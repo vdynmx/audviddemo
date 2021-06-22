@@ -264,7 +264,7 @@ class Browse extends React.Component {
                             refreshFunction={this.refreshContent}
                         >
                             <div className="container">
-                                <div className="row mob2col">
+                                <div className="row mob2 col gx-2">
                                     {
                                         this.state.videos.map(item => {
                                             return <div key={item.video_id} className="col-xl-3 col-lg-4 col-md-4 col-sm-6 ">
@@ -292,7 +292,7 @@ class Browse extends React.Component {
                             refreshFunction={this.refreshContent}
                         >
                             <div className="container">
-                                <div className="row mob2col">
+                                <div className="row mob2 col gx-2">
                                     {
                                         this.state.videos.map(item => {
                                             return <div key={item.video_id} className={this.props.fromSearch ? "col-lg-4 col-md-4 col-sm-6" : "col-lg-3 col-md-4 col-sm-6"}>

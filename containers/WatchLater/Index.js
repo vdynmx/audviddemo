@@ -44,16 +44,16 @@ class Index extends React.Component {
         return (
             this.props.pageInfoData.loggedInUserDetails && this.state.item.watchlater_id ?
                 this.props.icon ?
-                    <a onClick={this.onChange} title={Translate(this.props, "Watch Later")} href="#" className={`active${this.props.className ? " " + this.props.className : ""}`}><span className="material-icons-outlined">watch_later</span></a>
+                    <a onClick={this.onChange} title={Translate(this.props, "Watch Later")} href="#" className={`active${this.props.className ? " " + this.props.className : ""}`}><span className="material-icons-outlined" data-icon="watch_later"></span></a>
                     :
-                    <button onClick={this.onChange} type="button" title={Translate(this.props, "Watch Later")} className="btn btn-outline-secondary btn-sm watchlater active"><span className="material-icons-outlined">watch_later</span>
+                    <button onClick={this.onChange} type="button" title={Translate(this.props, "Watch Later")} className="btn btn-outline-secondary btn-sm watchlater active"><span className="material-icons-outlined" data-icon="watch_later"></span>
                         {this.props.t("Watch Later")}
                     </button>
                 :
                 this.props.icon ?
-                    <a href="#" className={`${this.props.className ? this.props.className : ""}`} title={Translate(this.props, "Watch Later")} onClick={this.onChange}><span className="material-icons-outlined">watch_later</span></a>
+                    <a href="#" className={`${this.props.className ? this.props.className : ""}`} title={Translate(this.props, "Watch Later")} onClick={this.onChange}><span className="material-icons-outlined" data-icon="watch_later"></span></a>
                     :
-                    <button onClick={this.onChange} type="button" title={Translate(this.props, "Watch Later")} className="btn btn-outline-secondary btn-sm watchlater"><span className="material-icons-outlined">watch_later</span>
+                    <button onClick={this.onChange} type="button" title={Translate(this.props, "Watch Later")} className="btn btn-outline-secondary btn-sm watchlater"><span className="material-icons-outlined" data-icon="watch_later"></span>
                         {this.props.t("Watch Later")}
                     </button>
         )

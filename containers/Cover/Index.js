@@ -309,7 +309,7 @@ class Cover extends Component {
                                                 <a className="link" href={void(0)} title={Translate(this.props, "Edit cover photo")} onClick={e => {
                                                     coverref.current.click();
                                                 }}>
-                                                    <span className="material-icons">camera_alt</span>
+                                                    <span className="material-icons" data-icon="camera_alt"></span>
                                                     <input className="fileNone" accept="image/*" onChange={this.uploadCover.bind()} ref={coverref} type="file" />
                                                 </a>
                                             </div>
@@ -341,7 +341,7 @@ class Cover extends Component {
                                                         {
                                                             this.state.processing ? 
                                                         <div className="imageprocess">
-                                                            <svg width="60px" viewBox="0 0 100 100" height="60px" dangerouslySetInnerHTML={{__html:'<circle cx="84" cy="50" r="2.56936" fill="#e91d2a"><animate attributeName="r" repeatCount="indefinite" dur="0.5434782608695652s" calcMode="spline" keyTimes="0;1" values="8;0" keySplines="0 0.5 0.5 1" begin="0s"></animate><animate attributeName="fill" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="discrete" keyTimes="0;0.25;0.5;0.75;1" values="#e91d2a;#e91d2a;#e91d2a;#e91d2a;#e91d2a" begin="0s"></animate></circle><circle cx="73.0786" cy="50" r="8" fill="#e91d2a"><animate attributeName="r" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="0;0;8;8;8" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="0s"></animate><animate attributeName="cx" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="16;16;16;50;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="0s"></animate></circle><circle cx="16" cy="50" r="0" fill="#e91d2a"><animate attributeName="r" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="0;0;8;8;8" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-0.5434782608695652s"></animate><animate attributeName="cx" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="16;16;16;50;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-0.5434782608695652s"></animate></circle><circle cx="16" cy="50" r="5.43026" fill="#e91d2a"><animate attributeName="r" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="0;0;8;8;8" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-1.0869565217391304s"></animate><animate attributeName="cx" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="16;16;16;50;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-1.0869565217391304s"></animate></circle><circle cx="39.0786" cy="50" r="8" fill="#e91d2a"><animate attributeName="r" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="0;0;8;8;8" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-1.6304347826086956s"></animate><animate attributeName="cx" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="16;16;16;50;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-1.6304347826086956s"></animate></circle>'}}></svg>
+                                                            <svg width="60px" viewBox="0 0 100 100" height="60px" dangerouslySetInnerHTML={{__html:'<circle cx="84" cy="50" r="2.56936" fill="#e91d2a"><animate attributeName="r" repeatCount="indefinite" dur="0.5434782608695652s" calcMode="spline" keyTimes="0;1" values="8;0" keySplines="0 0.5 0.5 1" begin="0s"></animate><animate attributeName="fill" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="discrete" keyTimes="0;0.25;0.5;0.75;1" begin="0s"></animate></circle><circle cx="73.0786" cy="50" r="8" fill="#e91d2a"><animate attributeName="r" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="0;0;8;8;8" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="0s"></animate><animate attributeName="cx" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="16;16;16;50;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="0s"></animate></circle><circle cx="16" cy="50" r="0" fill="#e91d2a"><animate attributeName="r" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="0;0;8;8;8" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-0.5434782608695652s"></animate><animate attributeName="cx" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="16;16;16;50;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-0.5434782608695652s"></animate></circle><circle cx="16" cy="50" r="5.43026" fill="#e91d2a"><animate attributeName="r" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="0;0;8;8;8" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-1.0869565217391304s"></animate><animate attributeName="cx" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="16;16;16;50;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-1.0869565217391304s"></animate></circle><circle cx="39.0786" cy="50" r="8" fill="#e91d2a"><animate attributeName="r" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="0;0;8;8;8" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-1.6304347826086956s"></animate><animate attributeName="cx" repeatCount="indefinite" dur="2.1739130434782608s" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" values="16;16;16;50;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" begin="-1.6304347826086956s"></animate></circle>'}}></svg>
                                                             {
                                                                 this.props.t("Image is processing, this may take few minutes.")
                                                             }
@@ -360,12 +360,12 @@ class Cover extends Component {
                                         </div>
                                         <div className="editCoverImg">
                                             <a href="#" title={Translate(this.props, "Cancel reposition")} onClick={this.repositionCancel}>
-                                            <span className="material-icons">clear</span>
+                                            <span className="material-icons" data-icon="clear"></span>
                                             </a>
                                         </div>
                                         <div className="editCoverImg resizeCoverImg">
                                             <a href="#" title={Translate(this.props, "Save reposition")} onClick={this.repositionSave}>
-                                            <span className="material-icons">check</span>
+                                            <span className="material-icons" data-icon="check"></span>
                                            
                                             </a>
                                         </div>
@@ -379,7 +379,7 @@ class Cover extends Component {
                 </div>
                 <div className="container">
                     <div className="row">
-                        <div className="col-md-12">
+                        <div className="col-md-12 position-relative">
                             <div className="channelInfo-wrap">
                                 <div className="channel-profile-img">
                                     <img src={mainPhoto} alt={this.state.item.title} />
@@ -393,7 +393,7 @@ class Cover extends Component {
                                             <a className="editProfImg link" href={void(0)} title={Translate(this.props, "Edit profile photo")} onClick={e => {
                                                 imageref.current.click();
                                             }}>
-                                                <span className="material-icons">edit</span>
+                                                <span className="material-icons" data-icon="edit"></span>
                                                 <input className="fileNone" accept="image/*" onChange={this.uploadImage.bind()} ref={imageref} type="file" />
                                             </a>
                                             : null
@@ -403,7 +403,7 @@ class Cover extends Component {
                                 <div className="channel-profile-title">
                                     <h4><CensorWord {...this.props} text={this.state.item.title} />{ " "} {
                                         this.state.item.verified ?
-                                            <span className="verifiedUser" title={Translate(this.props, "verified")}><span className="material-icons">check</span>
+                                            <span className="verifiedUser" title={Translate(this.props, "verified")}><span className="material-icons" data-icon="check"></span>
                                             </span>
                                             : null
                                     }</h4>
@@ -478,14 +478,14 @@ class Cover extends Component {
                                         }
                                         <li>
                                             <div className="dropdown TitleRightDropdown">
-                                                <a href="#" data-toggle="dropdown"><span className="material-icons">more_horiz</span></a>
+                                                <a href="#" data-bs-toggle="dropdown"><span className="material-icons" data-icon="more_horiz"></span></a>
                                                 <ul className="dropdown-menu dropdown-menu-right edit-options">
                                                     
                                                 {
                                                     this.state.item.canEdit ?
                                                     <li>
                                                         <Link href="/create-channel" customParam={`channelId=${this.state.item.custom_url}`} as={`/create-channel/${this.state.item.custom_url}`}>
-                                                            <a href={`/create-channel/${this.state.item.custom_url}`}><span className="material-icons">edit</span>{Translate(this.props, "Edit")}</a>
+                                                            <a href={`/create-channel/${this.state.item.custom_url}`}><span className="material-icons" data-icon="edit"></span>{Translate(this.props, "Edit")}</a>
                                                         </Link>
                                                         </li>
                                                         : null
@@ -493,7 +493,7 @@ class Cover extends Component {
                                                 {
                                                     this.state.item.canDelete ?
                                                     <li>
-                                                        <a onClick={this.props.deleteChannel} href="#"><span className="material-icons">delete</span>{Translate(this.props, "Delete")}</a>
+                                                        <a onClick={this.props.deleteChannel} href="#"><span className="material-icons" data-icon="delete"></span>{Translate(this.props, "Delete")}</a>
                                                         </li>
                                                         : null
                                                 }
@@ -501,7 +501,7 @@ class Cover extends Component {
                                                     this.state.item.approve == 1 ? 
                                                 <li>
                                                     <a href="#" onClick={this.openReport.bind(this)}>
-                                                    <span className="material-icons">flag</span>
+                                                    <span className="material-icons" data-icon="flag"></span>
                                                         {Translate(this.props, "Report")}
                                                     </a>
                                                 </li>

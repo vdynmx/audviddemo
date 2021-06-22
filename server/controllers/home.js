@@ -76,7 +76,7 @@ exports.index = async (req, res, next) => {
             return
         }
     }
-
+    
     await commonFunction.getGeneralInfo(req, res, 'landing_page')
     if (data) {
         next()

@@ -279,7 +279,7 @@ class Form extends Component {
                     <div className="mainContentWrap">
                         <div className="container">
                             <div className="row">
-                                <div className="col-md-8 offset-md-2">
+                                <div className="col-md-8 offset-md-2 position-relative">
                                     <div className="formBoxtop loginp">
                                     <div className="loginformwd">
                                         {

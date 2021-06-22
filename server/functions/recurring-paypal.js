@@ -269,7 +269,6 @@ exports.init = async (req, res, data,packageObj) => {
                 "payment_method": "paypal"
             }
         };
-
         // Create the billing plan
         paypal.billingPlan.create(billingPlanAttributes, function (error, billingPlan) {
             if (error) {
@@ -387,9 +386,16 @@ exports.cancelStripe = (req,billingAgreementId,note) => {
     return new Promise(async function (resolve) {
         const stripe = require('stripe')(req.appSettings['payment_stripe_client_secret']);
         await stripe.subscriptions.del(
-            billingAgreementId
+            billingAgreementId,
+            function(err,_response){
+                if(err){
+                    //console.log(err)
+                    resolve(false)
+                }else{
+                    resolve(true)
+                }
+            }
         );
-        resolve(true)
     })
 }
 exports.cancel = (req,billingAgreementId,note) => {

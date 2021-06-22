@@ -8,7 +8,7 @@ const index = (props) => {
            <li>
                 <Link href="/member" customParam={`memberId=${props.pageInfoData.loggedInUserDetails.username}`} as={`/${props.pageInfoData.loggedInUserDetails.username}`}>
                     <a className="dropdown-item iconmenu"   style={{cursor:"pointer"}}>
-                    <span className="material-icons">person</span>
+                    <span className="material-icons" data-icon="person"></span>
                         {props.t("View Profile")}
                     </a>
                 </Link>
@@ -18,7 +18,7 @@ const index = (props) => {
             <li>
                 <Link href="/dashboard" customParam={`type=points`} as={`/dashboard/points`}>
                     <a className="dropdown-item iconmenu" style={{cursor:"pointer"}}>
-                    <span className="material-icons">credit_score</span>
+                    <span className="material-icons" data-icon="credit_score"></span>
                        {props.pageInfoData.loggedInUserDetails.points} {" "} {props.t("Points")}
                     </a>
                 </Link>
@@ -28,8 +28,16 @@ const index = (props) => {
             <li>
                 <Link href="/dashboard">
                     <a className="dropdown-item iconmenu"  style={{cursor:"pointer"}} href="/dashboard">
-                        <span className="material-icons">edit</span>
+                        <span className="material-icons" data-icon="edit"></span>
                         {props.t("Dashboard")}
+                </a>
+                </Link>
+            </li>
+            <li>
+                <Link href="/dashboard" customParam={`type=videos&filter=watchlater`} as={`/dashboard/videos/watchlater`}>
+                    <a className="dropdown-item iconmenu"  style={{cursor:"pointer"}}>
+                        <span className="material-icons" data-icon="videocam"></span>
+                        {props.t("Watch Later Videos")}
                 </a>
                 </Link>
             </li>
@@ -38,7 +46,7 @@ const index = (props) => {
                     <li>
                         <Link href="/upgrade" >
                             <a className="dropdown-item iconmenu"  style={{cursor:"pointer"}} href="/upgrade">
-                            <span className="material-icons">subscriptions</span>
+                            <span className="material-icons" data-icon="subscriptions"></span>
                                 {props.t("Upgrade pro")}
                             </a>
                         </Link>
@@ -49,7 +57,7 @@ const index = (props) => {
                 props.pageInfoData && (props.pageInfoData.admin_url || props.pageInfoData.ALLOWALLUSERINADMIN) ?
                     <li>
                             <a className="dropdown-item iconmenu"  style={{cursor:"pointer"}} rel="nofollow" href={props.pageInfoData.admin_url}>
-                            <span className="material-icons">account_circle</span> {props.t("Admin Panel")}
+                            <span className="material-icons" data-icon="account_circle"></span> {props.t("Admin Panel")}
                             </a>
                     </li>
                     : null
@@ -57,7 +65,7 @@ const index = (props) => {
             <li>
                 <Link href="/logout" >
                     <a className="dropdown-item iconmenu"  style={{cursor:"pointer"}} href="/logout">
-                    <span className="material-icons">exit_to_app</span>
+                    <span className="material-icons" data-icon="exit_to_app"></span>
                         {props.t("Logout")}
                 </a>
                 </Link>

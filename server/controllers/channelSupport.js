@@ -46,7 +46,7 @@ exports.browse = async (req, res) => {
     const data = {}
     data["amount"] = parseFloat(itemObject.channel_subscription_amount).toFixed(2)
     data['id'] = resource_id
-    data["description"] = itemObject.description
+    data["description"] = itemObject.description ? itemObject.description : "Channel Subscription"
     data["headingTitle"] = itemObject.title
     data["returnUrl"] = `${process.env.PUBLIC_URL}/support/successulPayment`
     data["cancelUrl"] = `${process.env.PUBLIC_URL}/support/cancelPayment`
@@ -153,7 +153,7 @@ exports.successul = async (req, res, next) => {
                 let existingPlan = null;
                 await new Promise(async function(resolve, reject){
                     stripe.plans.retrieve(
-                        "channel_"+orders.source_id+"_"+(itemObject.channel_subscription_amount.replace(".",'_'))
+                        "channel_"+orders.source_id+"_"+(String(itemObject.channel_subscription_amount).replace(".",'_'))
                     ,function(err,response){
                         if(err){
                             resolve()
@@ -166,7 +166,7 @@ exports.successul = async (req, res, next) => {
                 if(!existingPlan || !existingPlan.id){
                     
                     existingPlan = await stripe.plans.create({
-                        "id":"channel_"+orders.source_id+"_"+(itemObject.channel_subscription_amount.replace(".",'_')),
+                        "id":"channel_"+orders.source_id+"_"+(String(itemObject.channel_subscription_amount).replace(".",'_')),
                         "amount_decimal": parseFloat(itemObject.channel_subscription_amount)*100,
                         "interval": orders.type,
                         "interval_count": orders.interval,
@@ -245,7 +245,7 @@ exports.successul = async (req, res, next) => {
         if(isValidResult){
             let changed_expiration_date = await recurringPaypal.getExpirationDate(orders)
             await globalModel.create(req, {gateway_id:gateway ? gateway : 1, type:"channel_subscription",id:req.user.user_id, expiration_date: changed_expiration_date, owner_id: req.user.user_id, id: resource_id, status: responseGateway.state.toLowerCase(),creation_date: currentDate, modified_date: currentDate, gateway_profile_id: responseGateway.id,order_id:req.session.orderId }, "subscriptions").then(async result => {
-                globalModel.update(req,{gateway_id:gateway ? gateway : 1,gateway_transaction_id:responseGateway.id,state:responseGateway.state.toLowerCase(),'source_id':result.insertId},"orders","order_id",req.session.orderId)
+                globalModel.update(req,{gateway_id:gateway ? gateway : 1,gateway_transaction_id:responseGateway.id,state:responseGateway.state.toLowerCase()},"orders","order_id",req.session.orderId)
                 req.query.type = responseGateway.state.toLowerCase()
                 if(!gateway){
                     req.session.channelPaymentStatus = "success"
@@ -275,30 +275,21 @@ exports.finishPayment = async(req,res) => {
     }).catch(err => {
         
     })
-    if (!resource_id) {
+    if (!resource_id || Object.keys(packageObj) == 0) {
        res.send({error: "error" })
        return;
     }
-    
+    packageObj.type = "month"
+    packageObj.duration_type = "year"
+    packageObj.duration = 100
+    packageObj.interval = 1
     let changed_expiration_date = await recurringPaypal.getExpirationDate(packageObj)
     await globalModel.create(req, {gateway_id:2,type:"channel_subscription",id:req.user.user_id, expiration_date: changed_expiration_date, owner_id: req.user.user_id, package_id: resource_id, status: responseGateway.state.toLowerCase(),creation_date: currentDate, modified_date: currentDate, gateway_profile_id: responseGateway.id,order_id:req.session.orderId }, "subscriptions").then(async result => {
-        globalModel.update(req,{gateway_id:2,gateway_transaction_id:responseGateway.id,state:responseGateway.state.toLowerCase(),'source_id':result.insertId},"orders","order_id",req.session.orderId)
+        globalModel.update(req,{gateway_id:2,gateway_transaction_id:responseGateway.id,state:responseGateway.state.toLowerCase()},"orders","order_id",req.session.orderId)
         res.send({status:true});
     })
 }
 exports.cancel = async (req, res, next) => {
-    if (!req.session.tokenUserPayment) {
-        res.redirect("/upgrade")
-        if (req.session.paypalData) {
-            req.session.paypalData = null
-        }
-        res.end()
-    }
-    req.session.tokenUserPayment = null
-    if (req.session.paypalData) {
-        req.session.paypalData = null
-    }
-
     let resource_id = req.session.resource_id
     let orderID = req.session.orderId
     let itemObject = {}
@@ -315,6 +306,19 @@ exports.cancel = async (req, res, next) => {
     if (!resource_id) {
         res.send("/")
         res.end()
+        return
+    }
+    if (!req.session.tokenUserPayment) {
+        res.redirect("/channel/"+itemObject.custom_url)
+        if (req.session.paypalData) {
+            req.session.paypalData = null
+        }
+        res.end()
+        return
+    }
+    req.session.tokenUserPayment = null
+    if (req.session.paypalData) {
+        req.session.paypalData = null
     }
     req.session.channelPaymentStatus = "cancel"
     res.redirect("/channel/"+itemObject.custom_url)

@@ -236,17 +236,17 @@ class Index extends React.Component{
                 <div className="row">
                     <div className="col-sm-12">
                         <a className={`filter-search ${this.state.filterForm ? "active" : ""}`} href="#" title={Translate(this.props,'Search Filters')} onClick={this.searchButton}>
-                        <span className="material-icons">
-                            tune
+                        <span className="material-icons" data-icon="tune">
+                            
                         </span>{Translate(this.props,'Filter')}
                         </a>
                     </div>
                 </div>
                 {
                     this.state.filterForm ? 
-                <div className="row">
+                <React.Fragment>
                         <div className="grid-menu justify-content-between search-form">
-                            <form onSubmit={this.submitForm.bind(this)}>
+                            <form className="row gy-3" onSubmit={this.submitForm.bind(this)}>
                                 <div className="form-group col-sm-4">
                                     <label htmlFor="q" className="control-label">{Translate(this.props,this.state.fields.tag ? "Tags" : "Title")}</label>
                                     <input type="text" onChange={this.changeTitle} value={Translate(this.props,this.state.fields.tag ? this.state.fields.tag : this.state.fields.q)} id="q" className="form-control" placeholder={Translate(this.props,"Title")} />
@@ -256,7 +256,7 @@ class Index extends React.Component{
                                         <React.Fragment>
                                             <div className="form-group col-sm-4">
                                                 <label htmlFor="name" className="control-label">{Translate(this.props,"Categories")}</label>
-                                                <select className="form-control" value={this.state.fields.categories} onChange={this.onCategoryChange}>
+                                                <select className="form-control form-select" value={this.state.fields.categories} onChange={this.onCategoryChange}>
                                                 {
                                                     categories.map(res => {
                                                         return (
@@ -270,7 +270,7 @@ class Index extends React.Component{
                                                 subcategories.length > 0 ? 
                                                 <div className="form-group col-sm-4">
                                                     <label htmlFor="name" className="control-label">{Translate(this.props,"Sub Categories")}</label>
-                                                    <select className="form-control"  value={this.state.fields.subCategory} onChange={this.onSubCategoryChange}>
+                                                    <select className="form-control form-select"  value={this.state.fields.subCategory} onChange={this.onSubCategoryChange}>
                                                     {
                                                         subcategories.map(res => {
                                                             return (
@@ -286,7 +286,7 @@ class Index extends React.Component{
                                                 subsubcategories.length > 0 ? 
                                                     <div className="form-group col-sm-4">
                                                         <label htmlFor="name" className="control-label">{Translate(this.props,"Sub Sub Categories")}</label>
-                                                        <select  value={this.state.fields.subSubCatgeory} className="form-control" onChange={this.onSubSubCategoryChange}>
+                                                        <select  value={this.state.fields.subSubCatgeory} className="form-control form-select" onChange={this.onSubSubCategoryChange}>
                                                         {
                                                             subsubcategories.map(res => {
                                                                 return (
@@ -305,7 +305,7 @@ class Index extends React.Component{
                                     sortArray.length > 0 && !this.props.liveStreamingPage ? 
                                         <div className="form-group col-sm-4">
                                             <label htmlFor="name" className="control-label">{Translate(this.props,"Sort")}</label>
-                                            <select onChange={this.changeSort} className="form-control" value={this.state.fields.sort}>
+                                            <select onChange={this.changeSort} className="form-control form-select" value={this.state.fields.sort}>
                                                 <option value="">{Translate(this.props,"Sort By")}</option>
                                                 {
                                                     sortArray.map(res => {
@@ -322,7 +322,7 @@ class Index extends React.Component{
                                     typeArray.length > 0 && !this.props.liveStreamingPage ? 
                                         <div className="form-group col-sm-4">
                                             <label htmlFor="name" className="control-label">{Translate(this.props,"Type")}</label>
-                                            <select onChange={this.changeType} className="form-control" value={this.state.fields.type}>
+                                            <select onChange={this.changeType} className="form-control form-select" value={this.state.fields.type}>
                                                 <option value="">{Translate(this.props,"Type")}</option>
                                                 {
                                                     typeArray.map(res => {
@@ -355,7 +355,7 @@ class Index extends React.Component{
                             <AdsIndex paddingTop="20px" className="below_searchform" ads={this.props.pageInfoData.appSettings['below_searchform']} />
                         : null
                         }
-                </div>
+                </React.Fragment>
                 : null
             }
             </React.Fragment>

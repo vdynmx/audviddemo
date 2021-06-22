@@ -124,7 +124,7 @@ class Menu extends Component {
     }
     handleClickOutside(e) {
         let style = "block"
-        if (this.state.type && e.target && !$(e.target).hasClass("parent") && (!$(e.target).data("toggle") || ($(e.target).data("toggle") && $(e.target).data("toggle") != "dropdown"))) {
+        if (this.state.type && e.target && !$(e.target).hasClass("parent") && (!$(e.target).data("bs-toggle") || ($(e.target).data("bs-toggle") && $(e.target).data("bs-toggle") != "dropdown"))) {
             if (this.state.type == "notifications") {
                 if (this.dropNotificationRef && !this.dropNotificationRef.contains(e.target)) {
                     if (!$(e.target).hasClass("notclosenotification") && !$(e.target).hasClass("parent"))
@@ -160,7 +160,7 @@ class Menu extends Component {
                 this.setState({localUpdate:true, type: "", style: "none" })
                 $("body").removeClass("menu_open")
             }
-        } else if (e.target && !$(e.target).hasClass("menu-bar") && !$(e.target).hasClass("dropdown-toggle") && (!$(e.target).data("toggle") || ($(e.target).data("toggle") && $(e.target).data("toggle") != "dropdown")) && (!this.dropMenuButtons || !this.dropMenuButtons.contains(e.target))) {
+        } else if (e.target && !$(e.target).hasClass("menu-bar") && !$(e.target).hasClass("dropdown-toggle") && (!$(e.target).data("bs-toggle") || ($(e.target).data("bs-toggle") && $(e.target).data("bs-toggle") != "dropdown")) && (!this.dropMenuButtons || !this.dropMenuButtons.contains(e.target))) {
             if (this.state.menuStyle == " show") {
                 this.setState({localUpdate:true, menuStyle: "" })
                 $("body").removeClass("menu_open")
@@ -451,7 +451,7 @@ class Menu extends Component {
             menus = this.props.pageInfoData.menus.menus.map(elem => {
                 let attribute = {}
                 if (elem.submenus) {
-                    attribute['data-toggle'] = "collapse"
+                    attribute['data-bs-toggle'] = "collapse"
                     attribute['aria-expanded'] = "false"
                 }
                 return (
@@ -477,7 +477,7 @@ class Menu extends Component {
                                         elem.submenus.map(subMenu => {
                                             let attribute = {}
                                             if (subMenu.subsubmenus) {
-                                                attribute['data-toggle'] = "collapse"
+                                                attribute['data-bs-toggle'] = "collapse"
                                                 attribute['aria-expanded'] = "false"
                                             }
                                             return (
@@ -549,7 +549,7 @@ class Menu extends Component {
                                             <form action="#" onSubmit={this.search.bind(this)}>
                                                 <input type="text" value={this.state.search} onChange={(e) => { this.setState({localUpdate:true, search: e.target.value }) }} />
                                                 <button type="submit">
-                                                    <span className="material-icons">search</span>
+                                                    <span className="material-icons" data-icon="search"></span>
                                                 </button>
                                             </form>
                                         </div>
@@ -562,8 +562,8 @@ class Menu extends Component {
                                                         <li className={!this.props.mobileMenu ? `nav-item dropdown${this.state.style == "block" ? " active" : ""}` : `dropdown MobDropdownNav${this.state.style == "block" ? " active" : ""}`}  style={{cursor:"pointer"}}  >
                                                             <a className={!this.props.mobileMenu ? "parent nav-link notclose usepicHead logged-in-cnt" : "parent loggedUer notclose usepicHead logged-in-cnt"} onClick={(e) => this.openToggle("settings",e)}  style={{cursor:"pointer"}} href="#" 
                                                                 role="button">
-                                                                    <span className="material-icons notclose parent">account_circle</span>
-                                                                    <span className="material-icons notclose parent">arrow_drop_down</span>
+                                                                    <span className="material-icons notclose parent" data-icon="account_circle"></span>
+                                                                    <span className="material-icons notclose parent" data-icon="arrow_drop_down"></span>
                                                             </a>
                                                             <ul className="dropdown-menu dropdown-menu-right iconMenuList" ref={this.props.setSettingsWrapperRef}  style={{display:this.state.style}} >
                                                                 <span className="dropdown-menu-arrow"></span>
@@ -578,7 +578,7 @@ class Menu extends Component {
                                                                         </li>
                                                                         :
                                                                         <li>
-                                                                            <a className="dropdown-item iconmenu" id="loginFormPopup" data-toggle="modal" data-target="#loginpop" href="/login">{Translate(this.props, "Login")}</a>
+                                                                            <a className="dropdown-item iconmenu" id="loginFormPopup" data-bs-toggle="modal" data-bs-target="#loginpop" href="/login">{Translate(this.props, "Login")}</a>
                                                                         </li>
                                                                     : null
                                                             }
@@ -592,7 +592,7 @@ class Menu extends Component {
                                                                         </li>
                                                                         :
                                                                         <li>
-                                                                            <a className="dropdown-item iconmenu" data-toggle="modal" data-target="#registerpop" href="/signup">{Translate(this.props, "Sign Up")}</a>
+                                                                            <a className="dropdown-item iconmenu" data-bs-toggle="modal" data-bs-target="#registerpop" href="/signup">{Translate(this.props, "Sign Up")}</a>
                                                                         </li>
                                                                     : null
                                                             }
@@ -624,10 +624,10 @@ class Menu extends Component {
                                 </div>
                                 <nav className="navbar navbar-expand-lg" id="main_navbar">
                                     
-                                    <button className="navbar-toggler" type="button" data-toggle="collapse"
+                                    <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
                                         data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                                         aria-expanded="false" aria-label="Toggle navigation">
-                                        <span className="navbartogglericon"><span className="material-icons">menu</span></span>
+                                        <span className="navbartogglericon"><span className="material-icons" data-icon="menu"></span></span>
                                     </button>
                                     <div className="collapse navbar-collapse" id="navbarSupportedContent">
                                         <ul className="navbar-nav mr-auto mainMenu justify-content-center d-flex flex-fill">
@@ -650,7 +650,7 @@ class Menu extends Component {
                                 <div className="MobmenuWrap">
                                     <nav className="navbar navbar-toggleable-lg">
                                         <button className="navbar-toggler navbar-toggler-right menu-bar" onClick={this.openMobileMenu}>
-                                            <span className="material-icons parent menu-bar">menu</span>
+                                            <span className="material-icons parent menu-bar" data-icon="menu"></span>
                                         </button>
                                         <div className="MobLogo">
                                             <Link href="/">
@@ -672,7 +672,7 @@ class Menu extends Component {
                                                                         </li>
                                                                         :
                                                                         <li>
-                                                                            <a className="btncomm" id="loginFormPopup" data-toggle="modal" data-target="#loginpop" href="/login">{Translate(this.props, "Login")}</a>
+                                                                            <a className="btncomm" id="loginFormPopup" data-bs-toggle="modal" data-bs-target="#loginpop" href="/login">{Translate(this.props, "Login")}</a>
                                                                         </li>
                                                                     : null
                                                             }
@@ -686,7 +686,7 @@ class Menu extends Component {
                                                                         </li>
                                                                         :
                                                                         <li>
-                                                                            <a className="btncomm" data-toggle="modal" data-target="#registerpop" href="/signup">{Translate(this.props, "Sign Up")}</a>
+                                                                            <a className="btncomm" data-bs-toggle="modal" data-bs-target="#registerpop" href="/signup">{Translate(this.props, "Sign Up")}</a>
                                                                         </li>
                                                                     : null
                                                             }
@@ -710,14 +710,14 @@ class Menu extends Component {
                                 {
                                     !this.props.pageInfoData.loggedInUserDetails ?
                                         <React.Fragment>
-                                            <div className="MobSearchicon MobileSearchBtn" data-toggle="collapse" data-target="#MobSearchbox" aria-expanded="false" aria-controls="collapseExample">
-                                            <span className="material-icons">search</span>
+                                            <div className="MobSearchicon MobileSearchBtn" data-bs-toggle="collapse" data-target="#MobSearchbox" aria-expanded="false" aria-controls="collapseExample">
+                                            <span className="material-icons" data-icon="search"></span>
                                             </div>
                                             <div className={`Mobsearch-bar collapse MobSearchbox-loggedout`} id="MobSearchbox">
                                                 <form action="#" className="MobsearchForm">
                                                     <input className="form-control" id="search-text" type="text" value={this.state.search} onChange={(e) => { this.setState({localUpdate:true, search: e.target.value }) }} />
                                                     <button onClick={this.search.bind(this)} className="btn btn-default search-btn">
-                                                    <span className="material-icons">search</span>
+                                                    <span className="material-icons" data-icon="search"></span>
                                                     </button>
                                                 </form>
                                             </div>
@@ -772,7 +772,7 @@ class Menu extends Component {
                                             <form action="#" className="MobsearchForm">
                                                 <input className="form-control" id="search-text" type="text" value={this.state.search} onChange={(e) => { this.setState({localUpdate:true, search: e.target.value }) }} />
                                                 <button onClick={this.search.bind(this)} className="btn btn-default search-btn">
-                                                <span className="material-icons">search</span>
+                                                <span className="material-icons" data-icon="search"></span>
                                                 </button>
                                             </form>
                                         </div>

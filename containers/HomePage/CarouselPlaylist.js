@@ -178,7 +178,7 @@ class CarouselPlaylist extends React.Component {
                         </div>
                     </div>
 
-                    <div className="row mob2col">
+                    <div className="row mob2 col gx-2">
                         {
                             // <this.props.OwlCarousel {...options} className="btn-slide" >
                             this.state.playlists.map(result => {

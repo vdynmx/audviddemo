@@ -5,7 +5,7 @@ const subscriptionModel = require("../models/subscriptions")
 const languages = require("../models/languages")
 const designModel = require("../models/designs")
 const videoCategoryModel = require("../models/categories")
-const userModel = require("../models/users")
+
 const channelModel = require("../models/channels")
 const settingModel = require("../models/settings")
 const aws = require("aws-sdk")
@@ -15,8 +15,8 @@ const sizeOf = require('image-size');
 const url = require('url');
 const http = require('http');
 const https = require('https');
-const Filter = require('bad-words');
 const request = require("request");
+const axios = require("axios")
 
 exports.checkCaptcha = async(req,recaptchaResponse) => {
     const secretKey = req.appSettings["recaptcha_secret_key"]
@@ -91,10 +91,13 @@ exports.censorWords = (req,text) => {
         return text
     }
     if(req.appSettings['censored_words']){
-        var customFilter = new Filter(); 
-        var newBadWords = req.appSettings['censored_words'].split(",");
-        customFilter.addWords(...newBadWords);
-        return customFilter.clean(text)
+        let newBadWords1 = req.appSettings['censored_words'].split(",")
+        var re = new RegExp(newBadWords1.join("|"),"gi");
+        var str = text
+        str = str.replace(re, function(matched){
+            return "*";
+        });
+        return str;
     }
         return text
 }
@@ -316,6 +319,7 @@ exports.getGeneralInfo = async (req, res, type, fromNode = false) => {
                 //silence
             })
         }
+        const userModel = require("../models/users")
         await userModel.getMembers(req,{ limit:16,orderby: "random",is_popular:true }).then(results => {
             if (results && results.length > 0) { 
                 req.query.popularMembers = results
@@ -339,7 +343,7 @@ exports.getGeneralInfo = async (req, res, type, fromNode = false) => {
     })
 
     //check enabled gateways
-    if(req.appSettings['payment_paypal_method'] == 1 && req.appSettings['payment_client_id'] && req.appSettings['payment_client_secret']){
+    if((!req.appSettings['payment_paypal_method'] || req.appSettings['payment_paypal_method'] == 1) && req.appSettings['payment_client_id'] && req.appSettings['payment_client_secret']){
         req.appSettings['paypalEnabled'] = 1;
     }
     if(req.appSettings['payment_bank_method'] == 1){
@@ -390,7 +394,6 @@ exports.getGeneralInfo = async (req, res, type, fromNode = false) => {
 
         delete req.appSettings.email_type
         delete req.appSettings.iframely_api_key
-        delete req.appSettings.enable_iframely
         delete req.appSettings.enable_twitch_import
         delete req.appSettings.enable_youtube_import
         delete req.appSettings.facebook_client_id
@@ -636,6 +639,37 @@ exports.deleteUploadedContent = async (req, res, image,type) => {
     });
     
 }
+exports.deleteAgoraHLSVideos = (path,req) => {
+    if ( req.appSettings['agora_s3_bucket'] && req.appSettings['agora_s3_access_key'] && req.appSettings['agora_s3_secret_access_key']  ) {
+        aws.config.update({
+            secretAccessKey: req.appSettings.agora_s3_secret_access_key,
+            accessKeyId: req.appSettings.agora_s3_access_key,
+            region: req.appSettings.agora_s3_region
+        });
+        const s3 = new aws.S3()
+        var params = {
+            Bucket: req.appSettings['agora_s3_bucket'],
+            Prefix: 'upload/livestreamings/'+path+"/"
+        };
+        s3.listObjects(params, function(err, data) {
+            if (err) 
+                return ""
+            if (!data.Contents || data.Contents.length == 0) 
+                return ""
+            params = {Bucket: req.appSettings['agora_s3_bucket']};
+            params.Delete = {Objects:[]};
+            data.Contents.forEach(function(content) {
+                params.Delete.Objects.push({Key: content.Key});
+            });        
+            s3.deleteObjects(params, function(err, data) {
+                if (err || !data.Contents) 
+                    return ""
+                if(data.Contents.length == 1000) 
+                    exports.deleteAgoraHLSVideos(path,req);
+            });
+        });
+    }
+  }
 exports.deleteImage = async (req, res, image, type, obj) => {
     if (obj) {
         if (obj.video_id) {
@@ -674,6 +708,41 @@ exports.deleteImage = async (req, res, image, type, obj) => {
                     }
                 }
             }
+            if(obj.mediaserver_stream_id){
+                let videos = []
+                if(obj.agora_resource_id){
+                    videos = obj.agora_resource_id.split(',')
+                }else{
+                    videos = [obj.mediaserver_stream_id]
+                }
+                if(req.appSettings["agora_s3_bucket"] && req.appSettings["agora_s3_access_key"] && req.appSettings['agora_s3_secret_access_key'] && req.appSettings['agora_s3_region']){
+                    let imagepaths = obj.code
+                    if(imagepaths){
+                        imagepaths.split(',').forEach(item => {
+                            commonFunction.deleteAntmediaContent(req,res,"streams/"+item);
+                        })
+                    }
+                    if(obj.image && obj.image.indexOf('/LiveApp/') > -1)
+                        commonFunction.deleteAntmediaContent(req,res,obj.image.replace("/LiveApp/",''));
+                }
+                videos.forEach(item => {
+                    if(item){
+                        var config = { 
+                            method: 'delete',
+                            url: req.appSettings["antserver_media_url"].replace("https://","http://")+":5080/LiveApp/rest/v2/vods/"+item,
+                            headers: { 
+                                'Content-Type': 'application/json;charset=utf-8'
+                            },
+                            //httpsAgent: agent
+                        };
+                        axios(config)
+                        .then(function (response) {
+                        }).catch(function (error) {});
+                    }
+                })
+            }else if(obj.agora_resource_id){
+                exports.deleteAgoraHLSVideos(obj.custom_url,req)
+            }
         } else if (obj.post_id) {
             if (obj.image ) {
                 exports.deleteUploadedContent(req, res, obj.image)
@@ -699,6 +768,19 @@ exports.deleteImage = async (req, res, image, type, obj) => {
         }else if (obj.audio_id) {
             if (obj.image ) {
                 exports.deleteUploadedContent(req, res, obj.image)
+            }
+            if (obj.audio_file ) {
+                exports.deleteUploadedContent(req, res, obj.audio_file)
+            }
+        }else if(obj.user_id){
+            if (obj.avtar ) {
+                exports.deleteUploadedContent(req, res, obj.avtar)
+            }
+            if (obj.cover ) {
+                exports.deleteUploadedContent(req, res, obj.cover)
+            }
+            if (obj.cover_crop ) {
+                exports.deleteUploadedContent(req, res, obj.cover_crop)
             }
         }
     } else {

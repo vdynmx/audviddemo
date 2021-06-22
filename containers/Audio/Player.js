@@ -275,7 +275,7 @@ class Player extends React.Component {
                 password
             }
             <div className="playbar">
-                <a href="#" className="close-mini-player" onClick={this.closePlayer}><span className="material-icons">clear</span></a>
+                <a href="#" className="close-mini-player" onClick={this.closePlayer}><span className="material-icons" data-icon="clear"></span></a>
                 <ul className="controller">
                     {
                         this.props.audios.length > 1 ? 

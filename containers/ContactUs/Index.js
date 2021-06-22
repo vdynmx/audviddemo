@@ -144,7 +144,7 @@ class Index extends React.Component {
                     <div className="mainContentWrap">
                         <div className="container">
                             <div className="row">
-                                <div className="col-md-12">
+                                <div className="col-md-12 position-relative">
                                     <div className="ContentBoxTxt">
                                         <div className="contact-area">
                                             {

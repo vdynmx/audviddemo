@@ -242,7 +242,7 @@ class Browse extends React.Component{
                             refreshFunction={this.refreshContent}
                         >
                             <div className="container">
-                                <div className="row mob2col">
+                                <div className="row mob2 col gx-2">
                                     {channels}
                                 </div>
                             </div>

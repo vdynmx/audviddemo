@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require("../controllers/user")
 const upgrade = require("../controllers/upgrade")
+const subscription = require("../controllers/memberSubscription")
 const passport = require("passport")
 const enablePublicLogin = require("../middleware/enable_public")
 
@@ -124,6 +125,13 @@ router.use("/:lng?/upgrade/success",enablePublicLogin, upgrade.paymentSuccessul)
 router.use("/:lng?/upgrade/finishPayment",enablePublicLogin, upgrade.finishPayment)
 router.use("/:lng?/upgrade/fail",enablePublicLogin, upgrade.paymentFail)
     
+
+router.use("/:lng?/subscription/cancelPayment/:id?", subscription.cancel)
+router.use("/:lng?/subscription/successulPayment/:id?",multer().none(), subscription.successul)
+router.use("/:lng?/subscription/finishPayment", subscription.finishPayment)
+router.use("/:lng?/subscription/cancelPlan/:id", subscription.cancelPlan)
+router.use("/:lng?/subscription/:id",subscription.browse) 
+
 router.use("/:lng?/upgrade/:package_id?",enablePublicLogin, upgrade.browse)
 router.use('/:lng?/members',enablePublicLogin, controller.browse);
 router.use('/:lng?/:id',enablePublicLogin, controller.view);

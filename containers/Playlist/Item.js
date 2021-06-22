@@ -115,7 +115,7 @@ class Item extends React.Component {
                         <div className="overlayVideoNo">
                             <div className="verticalCenter videoNo">
                                 <span className="videoNo">{ShortNumber(this.state.playlist.total_videos ? this.state.playlist.total_videos : 0)} {this.props.t("video_count", { count: this.state.playlist.total_videos ? this.state.playlist.total_videos : 0 })}</span>
-                                <span className="videoNoIcon"><span className="material-icons">play_arrow</span></span>
+                                <span className="videoNoIcon"><span className="material-icons" data-icon="play_arrow"></span></span>
                             </div>
                         </div>
                         <div className="overlayPlayBtn">
@@ -123,13 +123,13 @@ class Item extends React.Component {
                                 this.state.playlist.vcustom_url ? 
                                 <Link href="/watch" customParam={`videoId=${this.state.playlist.vcustom_url}&list=${this.state.playlist.custom_url}`} as={`/watch/${this.state.playlist.vcustom_url}?list=${this.state.playlist.custom_url}`}>
                                     <a className="verticalCenter btnText"  onClick={this.props.closePopUp}>
-                                        <span className="playListPlayBtn"><span className="material-icons">play_arrow</span> {Translate(this.props, "Play All")}</span>
+                                        <span className="playListPlayBtn"><span className="material-icons" data-icon="play_arrow"></span> {Translate(this.props, "Play All")}</span>
                                     </a>
                                     </Link>
                                     :
                                     <Link href="/playlist" customParam={`playlistId=${this.state.playlist.custom_url}`} as={`/playlist/${this.state.playlist.custom_url}`}>
                                         <a className="verticalCenter btnText"  onClick={this.props.closePopUp}>
-                                            <span className="playListPlayBtn"><span className="material-icons">play_arrow</span> {Translate(this.props, "Play All")}</span>
+                                            <span className="playListPlayBtn"><span className="material-icons" data-icon="play_arrow"></span> {Translate(this.props, "Play All")}</span>
                                         </a>
                                     </Link>
                             }
@@ -168,14 +168,14 @@ class Item extends React.Component {
                             {
                                 this.props.canDelete || this.props.canEdit || this.props.pageInfoData.appSettings["playlists_browse_share"] == 1 ? 
                             <div className="dropdown TitleRightDropdown">
-                                <a href="#" data-toggle="dropdown"><span className="material-icons">more_vert</span></a>
+                                <a href="#" data-bs-toggle="dropdown"><span className="material-icons" data-icon="more_vert"></span></a>
                                 <ul className="dropdown-menu dropdown-menu-right edit-options">
                                     {
                                         this.props.canEdit ?
                                         <li>
                                             <Link href="/create-playlist" customParam={`playlistId=${this.state.playlist.custom_url}`} as={`/create-playlist/${this.state.playlist.custom_url}`}>
                                                 <a className="addEdit" title={Translate(this.props, "Edit")} href={`/create-playlist/${this.state.playlist.custom_url}`}>
-                                                <span className="material-icons">edit</span>{Translate(this.props, "Edit")}
+                                                <span className="material-icons" data-icon="edit"></span>{Translate(this.props, "Edit")}
                                                 </a>
                                             </Link>
                                         </li>
@@ -185,7 +185,7 @@ class Item extends React.Component {
                                         this.props.canDelete ?
                                         <li>
                                             <a className="addDelete" title={Translate(this.props, "Delete")} href="#" onClick={this.deletePlaylist}>
-                                                <span className="material-icons">delete</span>
+                                                <span className="material-icons" data-icon="delete"></span>
                                                 {Translate(this.props, "Delete")}
                                             </a>
                                         </li>
@@ -196,7 +196,7 @@ class Item extends React.Component {
                                         this.props.canEdit ?
                                         <li>
                                                 <a className="addEdit" href="#" title={Translate(this.props, "Analytics")}  onClick={this.analytics}>
-                                                    <span className="material-icons">show_chart</span>
+                                                    <span className="material-icons" data-icon="show_chart"></span>
                                                     {Translate(this.props, "Analytics")}
                                                 </a>
                                         </li>

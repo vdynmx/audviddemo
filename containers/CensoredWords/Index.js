@@ -1,5 +1,3 @@
-import React from "react"
-const Filter = require('bad-words');
 const Index = (props) => {
     if(!props.text){
         return null
@@ -11,11 +9,15 @@ const Index = (props) => {
     }else if(props.pageInfoData && props.pageInfoData.appSettings['censored_words']){
         newBadWords = props.pageInfoData.appSettings['censored_words']
     }
-
+    
     if(newBadWords){
-        var customFilter = new Filter(); 
-        customFilter.addWords(...newBadWords);
-        return customFilter.clean(props.text)
+        let newBadWords1 = newBadWords.split(",")
+        var re = new RegExp(newBadWords1.join("|"),"gi");
+        var str = props.text
+        str = str.replace(re, function(matched){
+            return "*";
+        });
+        return str
     }
     return props.text
 }

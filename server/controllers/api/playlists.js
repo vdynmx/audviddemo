@@ -10,8 +10,10 @@ const playlistVideoModel = require("../../models/playlistvideos"),
     { validationResult } = require('express-validator'),
     commonFunction = require("../../functions/commonFunctions"),
     videoModel = require("../../models/videos"),
+    userModel = require("../../models/users"),
     privacyModel = require("../../models/privacy"),
-    notificationModel = require("../../models/notifications")
+    notificationModel = require("../../models/notifications"),
+    privacyLevelModel = require("../../models/levelPermissions")
 
 
 exports.delete = async (req, res) => {
@@ -121,14 +123,28 @@ exports.browse = async (req, res) => {
 exports.getPlaylist = async (req, res, next) => {
     const video_id = req.body.video_id
     let send = false
+
+     //owner plans
+     await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',req.user.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        //get user plans
+        await userModel.getPlans(req, { owner_id: req.user.user_id }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
+    }
+
     await playlistModel.getPlaylist(video_id, req, res).then(result => {
         if (result) {
             send = true
-            return res.send({ playlists: result })
+            return res.send({ playlists: result,plans:req.query.plans ? req.query.plans : [] })
         }
     })
     if (!send)
-        res.send({ playlists: [] })
+        res.send({ playlists: [],plans:req.query.plans ? req.query.plans : [] })
 
 }
 
@@ -170,6 +186,8 @@ exports.create = async (req, res) => {
         insertObject["custom_url"] = uniqid.process('b')
     } 
     insertObject["title"] = req.body.title
+    if(req.body.privacy)
+        insertObject["view_privacy"] = req.body.privacy ? req.body.privacy : ""
     insertObject["description"] = req.body.description ? req.body.description : ""
     insertObject["adult"] = req.body.adult ? req.body.adult : 0
     insertObject["search"] = req.body.search ? req.body.search : 1
@@ -181,7 +199,7 @@ exports.create = async (req, res) => {
         insertObject['image'] = "/upload/images/playlists/" + req.fileName;
         if(Object.keys(playlistObject).length && playlistObject.image)
             commonFunction.deleteImage(req, res, playlistObject.image, 'playlist/image');
-    }else if(!req.body.image){
+    }else if(!req.body.playlistImage){
         insertObject['image'] = "";
         if(Object.keys(playlistObject).length && playlistObject.image)
             commonFunction.deleteImage(req, res, playlistObject.image, 'playlist/image');

@@ -22,7 +22,8 @@ class Index extends React.Component{
             streamKeyCreated:props.pageInfoData.tokenStream ? true : false,
             tips: [{amount:0}],
             previousTips: [{amount:0}],
-            openAddTip:false
+            openAddTip:false,
+            plans:props.pageInfoData.plans ? props.pageInfoData.plans : [],
         }
         this.webRTCAdaptor = null
         this.onUnloadComponent = this.onUnloadComponent.bind(this)
@@ -636,7 +637,16 @@ class Index extends React.Component{
                 value: "follow", label: "Only people I follow", key: "follow"
             })
         }
-
+        if(this.state.plans.length > 0){
+            this.state.plans.forEach(item => {
+                let perprice = {}
+                perprice['package'] = { price: item.price }
+                privacyOptions.push({
+                    value:"package_"+item.member_plan_id,label:this.props.t("Limited to {{plan_title}} ({{plan_price}}) and above",{plan_title:item.title,plan_price:ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...perprice} />)}),key:"package_"+item.member_plan_id
+                })
+            })
+        }
+        
         formFields.push({
             key: "privacy",
             label: "Privacy",

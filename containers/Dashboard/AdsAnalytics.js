@@ -78,7 +78,7 @@ class Analytics extends React.Component {
                 name: this.state.statsData ? this.props.t("Advertisement Earning") :  (this.props.item.type == 1 ? this.props.t("Clicks") : this.props.t("Views")),
                 data: this.state.statsData ? this.state.statsData.adsEarning : this.state.stats.result
             })
-        }
+        } 
 
         if(this.state.statsData && this.state.statsData.channelSupportEarning){
             series.push({
@@ -90,6 +90,12 @@ class Analytics extends React.Component {
             series.push({
                 name: this.props.t("Video Tips Earning"),
                 data: this.state.statsData.videosTipEarning 
+            })
+        }
+        if(this.state.statsData && this.state.statsData.userSubscriptionEarning){
+            series.push({
+                name: this.props.t("Subscriptions Earning"),
+                data: this.state.statsData.userSubscriptionEarning 
             })
         }
 

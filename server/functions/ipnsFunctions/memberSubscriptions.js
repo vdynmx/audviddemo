@@ -382,7 +382,8 @@ exports.onSubscriptionTransactionIpn = async (req,params, order,subscription,tra
   exports.cancelAll = async (user, note = null, subscription = null,req) => {
     return new Promise(async function (resolve, reject) {
       let condition= []
-      let sql = "SELECT subscription_id,gateway_profile_id,gateway_id FROM subscriptions WHERE owner_id = ? AND (status = 'active' || status = 'completed') ";
+      let sql = "";
+      sql = "SELECT subscription_id,gateway_profile_id,gateway_id FROM subscriptions WHERE owner_id = ? AND (status = 'active' || status = 'completed') "
       condition.push(user['user_id']);
       if (subscription) {
         condition.push(subscription.subscription_id)
@@ -390,6 +391,11 @@ exports.onSubscriptionTransactionIpn = async (req,params, order,subscription,tra
       }
       condition.push("member_subscription")
       sql += " AND subscriptions.type = ?"
+      if(req.memberUSERID){
+        condition.push(req.memberUSERID)
+        sql += " AND subscriptions.id = ?"
+      }
+      console.log(sql,condition)
       globalModel.custom(req, sql, condition).then(results => {
         const res = JSON.parse(JSON.stringify(results));
         if (res && res.length) {
@@ -437,7 +443,7 @@ exports.onSubscriptionTransactionIpn = async (req,params, order,subscription,tra
         let expiration = null
         if (packageObj.is_recurring) {
            expiration = await recurringFunctions.getExpirationDate(packageObj)
-           if(subscription && subscription.gateway_id == 1){
+           if(subscription && subscription.gateway_id == 2){
             let planExpirationDate = await recurringFunctions.planExpirationDate(packageObj,subscription.creation_date)
             //check plan exires
             if(planExpirationDate){

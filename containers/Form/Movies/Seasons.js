@@ -435,7 +435,7 @@ class Seasons extends Component {
                                         !this.state.fromCastnCrew ? 
                                     <div className="card-header" id={`heading${season.season_id}`}>
                                         <h5 className="mb-0">
-                                            <button className="btn btn-link" onClick={() => {this.selectedtab("episode")}} type="button" data-toggle="collapse" data-target={`#collapse${season.season_id}`} aria-expanded="true" aria-controls={`collapse${season.season_id}`}>
+                                            <button className="btn btn-link" onClick={() => {this.selectedtab("episode")}} type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${season.season_id}`} aria-expanded="true" aria-controls={`collapse${season.season_id}`}>
                                                 {
                                                     this.props.t("season")+" "+(index+1)
                                                 }
@@ -508,8 +508,8 @@ class Seasons extends Component {
                                                                                                     <td>{episode.release_date}</td>
                                                                                                     <td>
                                                                                                         <div className="actionBtn">
-                                                                                                            <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteEpisode.bind(this, episode.episode_id)}><span className="material-icons">delete</span></a>                                                                                           
-                                                                                                            <a href="#"  className="text-success" title={Translate(this.props, "Edit")} onClick={this.editEpisode.bind(this, episode.episode_id,season.season_id)}><span className="material-icons">edit</span></a>
+                                                                                                            <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteEpisode.bind(this, episode.episode_id)}><span className="material-icons" data-icon="delete"></span></a>                                                                                           
+                                                                                                            <a href="#"  className="text-success" title={Translate(this.props, "Edit")} onClick={this.editEpisode.bind(this, episode.episode_id,season.season_id)}><span className="material-icons" data-icon="edit"></span></a>
                                                                                                         </div>
                                                                                                     </td>
                                                                                                 </tr>
@@ -561,8 +561,8 @@ class Seasons extends Component {
                                                                                                 <td>{castncrew.character}</td>
                                                                                                 <td>
                                                                                                     <div className="actionBtn">
-                                                                                                        <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteCast.bind(this, castncrew.cast_crew_id)}><span className="material-icons">delete</span></a>                                                                                           
-                                                                                                        <a href="#"  className="text-success" title={Translate(this.props, "Edit")} onClick={this.editCast.bind(this, castncrew.cast_crew_id,season.season_id)}><span className="material-icons">edit</span></a>
+                                                                                                        <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteCast.bind(this, castncrew.cast_crew_id)}><span className="material-icons" data-icon="delete"></span></a>                                                                                           
+                                                                                                        <a href="#"  className="text-success" title={Translate(this.props, "Edit")} onClick={this.editCast.bind(this, castncrew.cast_crew_id,season.season_id)}><span className="material-icons" data-icon="edit"></span></a>
                                                                                                     </div>
                                                                                                 </td>
                                                                                             </tr>
@@ -615,8 +615,8 @@ class Seasons extends Component {
                                                                                                 <td>{castncrew.job}</td>
                                                                                                 <td>
                                                                                                     <div className="actionBtn">
-                                                                                                        <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteCrew.bind(this, castncrew.cast_crew_id)}><span className="material-icons">delete</span></a>                                                                                           
-                                                                                                        <a href="#"  className="text-success" title={Translate(this.props, "Edit")} onClick={this.editCrew.bind(this, castncrew.cast_crew_id,season.season_id)}><span className="material-icons">edit</span></a>
+                                                                                                        <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteCrew.bind(this, castncrew.cast_crew_id)}><span className="material-icons" data-icon="delete"></span></a>                                                                                           
+                                                                                                        <a href="#"  className="text-success" title={Translate(this.props, "Edit")} onClick={this.editCrew.bind(this, castncrew.cast_crew_id,season.season_id)}><span className="material-icons" data-icon="edit"></span></a>
                                                                                                     </div>
                                                                                                 </td>
                                                                                             </tr>

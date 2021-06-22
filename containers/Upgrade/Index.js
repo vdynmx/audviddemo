@@ -93,7 +93,7 @@ class Index extends React.Component {
                     <div className="mainContentWrap">
                         <div className="container">
                             <div className="row">
-                                <div className="col-md-12">
+                                <div className="col-md-12 position-relative">
                                 <div className="ContentBoxTxt">
                                     <div className="comparison tableResponsive upgradetableResponsive">
 
@@ -143,9 +143,9 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                     {
                                                                         result.is_featured == 1 ? 
-                                                                        <span className="tick"><span className="material-icons">check</span></span>
+                                                                        <span className="tick"><span className="material-icons" data-icon="check"></span></span>
                                                                     :
-                                                                        <span className="notick"><span className="material-icons">close</span></span>
+                                                                        <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                     }
                                                                 </td>
                                                             })
@@ -166,9 +166,9 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                     {
                                                                         result.is_sponsored == 1 ? 
-                                                                        <span className="tick"><span className="material-icons">check</span></span>
+                                                                        <span className="tick"><span className="material-icons" data-icon="check"></span></span>
                                                                     :
-                                                                        <span className="notick"><span className="material-icons">close</span></span>
+                                                                        <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                     }
                                                                 </td>
                                                             })
@@ -189,9 +189,9 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                     {
                                                                         result.is_hot == 1 ? 
-                                                                        <span className="tick"><span className="material-icons">check</span></span>
+                                                                        <span className="tick"><span className="material-icons" data-icon="check"></span></span>
                                                                     :
-                                                                        <span className="notick"><span className="material-icons">close</span></span>
+                                                                        <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                     }
                                                                 </td>
                                                             })
@@ -232,7 +232,7 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                        {
                                                                            result.create_livestreaming != 1 ? 
-                                                                            <span className="notick"><span className="material-icons">close</span></span>
+                                                                            <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                            :
                                                                         result.livestreaming_create_limit != 0 ? `${this.props.t("Create {{limit}} livestream(s)",{limit:result.livestreaming_create_limit})}` : this.props.t("Unlimited")
                                                                        }
@@ -256,7 +256,7 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                         {
                                                                            result.video_upload != 1 ? 
-                                                                            <span className="notick"><span className="material-icons">close</span></span>
+                                                                            <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                            :
                                                                            result.video_create_limit != 0 ? `${this.props.t("Upload upto {{video}} video(s)",{video:result.video_create_limit})}` : this.props.t("Unlimited")
                                                                         }
@@ -297,9 +297,9 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                     {
                                                                         result.sell_videos == 1 ? 
-                                                                        <span className="tick"><span className="material-icons">check</span></span>
+                                                                        <span className="tick"><span className="material-icons" data-icon="check"></span></span>
                                                                     :
-                                                                        <span className="notick"><span className="material-icons">close</span></span>
+                                                                        <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                     }
                                                                 </td>
                                                             })
@@ -320,9 +320,9 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                     {
                                                                         result.get_donation == 1 ? 
-                                                                        <span className="tick"><span className="material-icons">check</span></span>
+                                                                        <span className="tick"><span className="material-icons" data-icon="check"></span></span>
                                                                     :
-                                                                        <span className="notick"><span className="material-icons">close</span></span>
+                                                                        <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                     }
                                                                 </td>
                                                             })
@@ -342,9 +342,9 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                     {
                                                                         result.monetization == 1 ? 
-                                                                        <span className="tick"><span className="material-icons">check</span></span>
+                                                                        <span className="tick"><span className="material-icons" data-icon="check"></span></span>
                                                                     :
-                                                                        <span className="notick"><span className="material-icons">close</span></span>
+                                                                        <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                     }
                                                                 </td>
                                                             })
@@ -365,7 +365,7 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                        {
                                                                            result.create_channel != 1 ? 
-                                                                            <span className="notick"><span className="material-icons">close</span></span>
+                                                                            <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                            :
                                                                         result.channel_create_limit != 0 ? `${this.props.t("Create {{limit}} channel(s)",{limit:result.channel_create_limit})}` : this.props.t("Unlimited")
                                                                        }
@@ -389,7 +389,7 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                        {
                                                                            result.create_blogs != 1 ? 
-                                                                            <span className="notick"><span className="material-icons">close</span></span>
+                                                                            <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                            :
                                                                         result.blog_create_limit != 0 ? `${this.props.t("Create {{limit}} blog(s)",{limit:result.blog_create_limit})}` : this.props.t("Unlimited")
                                                                        }
@@ -413,7 +413,7 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                       {
                                                                            result.create_playlist != 1 ? 
-                                                                            <span className="notick"><span className="material-icons">close</span></span>
+                                                                            <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                            :
                                                                         result.playlist_create_limit != 0 ? `${this.props.t("Create {{limit}} playlist(s)",{limit:result.playlist_create_limit})}` : this.props.t("Unlimited")
                                                                        }
@@ -435,7 +435,7 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                       {
                                                                            result.create_audio != 1 ? 
-                                                                            <span className="notick"><span className="material-icons">close</span></span>
+                                                                            <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                            :
                                                                         result.audio_create_limit != 0 ? `${this.props.t("Create {{limit}} audio(s)",{limit:result.audio_create_limit})}` : this.props.t("Unlimited")
                                                                        }
@@ -459,7 +459,7 @@ class Index extends React.Component {
                                                                 return <td key={result.package_id}>
                                                                        {
                                                                            result.create_advertisement != 1 ? 
-                                                                            <span className="notick"><span className="material-icons">close</span></span>
+                                                                            <span className="notick"><span className="material-icons" data-icon="close"></span></span>
                                                                            :
                                                                         result.ad_create_limit != 0 ? `${this.props.t("Create {{limit}} advertisement(s)",{limit:result.ad_create_limit})}` : this.props.t("Unlimited")
                                                                        }

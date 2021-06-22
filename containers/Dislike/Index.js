@@ -53,9 +53,9 @@ class Index extends React.Component {
         }
         return (
             this.props.pageInfoData.loggedInUserDetails && this.state.item.like_dislike == "dislike" ?
-                    <span onClick={this.onChange} className="active" title={Translate(this.props,'Dislike')}><span className="material-icons-outlined md-18">thumb_down</span>{" " + `${ShortNumber(this.props.dislike_count ? this.props.dislike_count : 0)}`}</span>                    
+                    <span onClick={this.onChange} className="active" title={Translate(this.props,'Dislike')}><span className="material-icons-outlined md-18" data-icon="thumb_down"></span>{" " + `${ShortNumber(this.props.dislike_count ? this.props.dislike_count : 0)}`}</span>                    
                 :
-                    <span onClick={this.onChange} title={Translate(this.props,'Dislike')}><span className="material-icons-outlined md-18">thumb_down</span>{" " + `${ShortNumber(this.props.dislike_count ? this.props.dislike_count : 0)}`}</span>
+                    <span onClick={this.onChange} title={Translate(this.props,'Dislike')}><span className="material-icons-outlined md-18" data-icon="thumb_down"></span>{" " + `${ShortNumber(this.props.dislike_count ? this.props.dislike_count : 0)}`}</span>
                     
         )
     }

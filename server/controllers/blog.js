@@ -8,6 +8,8 @@ const favouriteModel = require("../models/favourites")
 const readingTime = require("reading-time")
 const recentlyViewed = require("../models/recentlyViewed")
 const dateTime = require("node-datetime")
+const privacyLevelModel = require("../models/levelPermissions")
+const globalModel = require("../models/globalModel")
 
 exports.browse = async(req,res) => {
     const queryString = req.query
@@ -286,6 +288,57 @@ exports.view = async (req,res) => {
     }
     await commonFunction.updateMetaData(req,{title:blog.title,description:blog.description,image:blog.image,keywords:blog.tags})
 
+    //blog user details
+    await userModel.findById(blog.owner_id,req,res).then(result => {
+        blog.owner = result
+    }).catch(error => {
+
+    })
+ 
+    //owner plans
+    await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',blog.owner.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        let isPermissionAllowed = false
+        if(req.user && (req.user.user_id == blog.owner_id || (req.levelPermissions["blogs.view"] && req.levelPermissions["blogs.view"].toString() == "2"))){
+            isPermissionAllowed = true;
+        }
+        if(blog.view_privacy.indexOf("package_") > -1 && !isPermissionAllowed){
+            let owner_id = req.user ? req.user.user_id : 0
+            let checkPlanSql = ""
+            let conditionPlanSql = [owner_id,blog.blog_id]
+            checkPlanSql += 'SELECT `member_plans`.price as `package_price`,`subscriptions`.package_id as loggedin_package_id,mp.price as loggedin_price,'
+            checkPlanSql+=  ' CASE WHEN member_plans.price IS NULL THEN 1 WHEN mp.price IS NULL THEN 0 WHEN  `member_plans`.price <= mp.price THEN 1'
+            checkPlanSql+=  ' WHEN  `member_plans`.price > mp.price THEN 2'
+            checkPlanSql += ' ELSE 0 END as is_active_package'
+            checkPlanSql += ' FROM `blogs` LEFT JOIN `member_plans` ON `member_plans`.member_plan_id = REPLACE(`blogs`.view_privacy,"package_","") LEFT JOIN'
+            checkPlanSql += ' `subscriptions` ON subscriptions.id = blogs.owner_id AND subscriptions.owner_id = ? AND subscriptions.type = "user_subscribe" AND subscriptions.status IN ("active","completed") LEFT JOIN `member_plans` as mp ON mp.member_plan_id = `subscriptions`.package_id WHERE '
+            checkPlanSql += ' blogs.blog_id = ? LIMIT 1'
+            await globalModel.custom(req,checkPlanSql,conditionPlanSql).then(result => {
+                if(result && result.length > 0){
+                    const res = JSON.parse(JSON.stringify(result))[0];
+                    if(res.is_active_package == 0){
+                        res.type = "new"
+                        req.query.needSubscription = res; 
+                    }else if(res.is_active_package == 2){
+                        res.type = "upgrade"
+                        req.query.needSubscription = res;
+                    }
+                }
+            })
+        }
+    }
+
+    if(req.query.needSubscription){
+        //get user plans
+        await userModel.getPlans(req, { owner_id: blog.owner.user_id, item:req.query.needSubscription }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
+    }
+
     //like
     await likeModel.isLiked(blog.blog_id,'blogs',req,res).then(result => {
         if(result){
@@ -303,12 +356,7 @@ exports.view = async (req,res) => {
     }
     
     blog.readingTime = readingTime(blog.description)
-    //blog user details
-    await userModel.findById(blog.owner_id,req,res).then(result => {
-        blog.owner = result
-    }).catch(error => {
-
-    })
+    
     //category details
     if(blog.category_id){
         await categoryModel.findById(blog.category_id,req,res).then(result => {
@@ -348,8 +396,10 @@ exports.view = async (req,res) => {
     }).catch(err => {
 
     })
-
-    blog['description'] = commonFunction.censorWords(req,blog.description)
+    if(!req.query.needSubscription)
+        blog['description'] = commonFunction.censorWords(req,blog.description)
+    else
+        delete blog['description'];
     if (req.appSettings['blog_adult'] != 1 || (blog.adult == 0 || (blog.adult == 1 && req.query.adultAllowed))) {
         req.query.blog = blog        
         if(blog.approve == 1)
@@ -426,6 +476,19 @@ exports.create = async (req,res) => {
     if(categories.length > 0)
         req.query.blogCategories = categories
 
+     //owner plans
+     await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',req.user.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        //get user plans
+        await userModel.getPlans(req, { owner_id: req.user.user_id }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
+    }
+    
     if(req.query.data){
         res.send({data:req.query})
         return

@@ -14,6 +14,7 @@ import Dislike from "../Dislike/Index"
 import SocialShare from "../SocialShare/Index"
 import Canvas from "../Audio/Canvas"
 import dynamic from 'next/dynamic'
+import Router  from "next/router";
 const Carousel = dynamic(() => import("../Slider/Index"), {
     ssr: false,
 });
@@ -161,30 +162,60 @@ class Audio extends React.Component {
         const itemIndex = items.findIndex(p => p["audio_id"] == item_id);
         return itemIndex;
     }
-    playSong = (song_id,e) =>{
+    playSong = (song_id,audio,e) =>{
+        if(!audio.audio_file){
+            Router.push(`/audio?audioId=${audio.custom_url}`, `/audio/${audio.custom_url}`)
+            return;
+        }
+        let audios = [...this.state.audios]
+        audios.forEach( (audio, itemIndex) => {
+            if(!audio.audio_file){
+                audios.splice(itemIndex, 1);
+            }
+        });
         this.setState({
             song_id:song_id,
             playsong_id:0,
             localUpdate:true
         },() => {
-            this.props.updateAudioData(this.state.audios, song_id,0,this.props.t("Submit"),this.props.t("Enter Password"))
+            this.props.updateAudioData(audios, song_id,0,this.props.t("Submit"),this.props.t("Enter Password"))
         })
         
     }
-    pauseSong = (song_id,e) => {
+    pauseSong = (song_id,audio,e) => {
+        if(!audio.audio_file){
+            Router.push(`/audio?audioId=${audio.custom_url}`, `/audio/${audio.custom_url}`)
+            return;
+        }
+        let audios = [...this.state.audios]
+        audios.forEach( (audio, itemIndex) => {
+            if(!audio.audio_file){
+                audios.splice(itemIndex, 1);
+            }
+        });
         this.setState({
             song_id:song_id,
             playsong_id:song_id,
             localUpdate:true
         },() => {
-            this.props.updateAudioData(this.state.audios, song_id,song_id,this.props.t("Submit"),this.props.t("Enter Password"))
+            this.props.updateAudioData(audios, song_id,song_id,this.props.t("Submit"),this.props.t("Enter Password"))
         })
     }
-    playPauseSong = (song_id,e) => {
+    playPauseSong = (song_id,audio,e) => {
+        if(!audio.audio_file){
+            Router.push(`/audio?audioId=${audio.custom_url}`, `/audio/${audio.custom_url}`)
+            return;
+        }
+        let audios = [...this.state.audios]
+        audios.forEach( (audio, itemIndex) => {
+            if(!audio.audio_file){
+                audios.splice(itemIndex, 1);
+            }
+        });
         if(this.props.song_id == 0 || song_id == this.props.pausesong_id || song_id != this.props.song_id){
-            this.props.updateAudioData(this.state.audios, song_id,0,this.props.t("Submit"),this.props.t("Enter Password"))
+            this.props.updateAudioData(audios, song_id,0,this.props.t("Submit"),this.props.t("Enter Password"))
         }else{
-            this.props.updateAudioData(this.state.audios,song_id, song_id,this.props.t("Submit"),this.props.t("Enter Password"))
+            this.props.updateAudioData(audios,song_id, song_id,this.props.t("Submit"),this.props.t("Enter Password"))
         }
     }
     

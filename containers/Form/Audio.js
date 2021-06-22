@@ -6,6 +6,8 @@ import Validator from '../../validators';
 import axios from "../../axios-orders"
 import Router from "next/router"
 import { AudioContext,decodeAudioData } from 'standardized-audio-context';
+import Currency from "../Upgrade/Currency"
+import ReactDOMServer from "react-dom/server"
 
 class Audio extends Component {
     constructor(props) {
@@ -18,6 +20,7 @@ class Audio extends Component {
             chooseType:props.pageInfoData.editItem ? "audio" : null,
             success: false,
             error: null,
+            plans:props.pageInfoData.plans ? props.pageInfoData.plans : []
         }
         this.myRef = React.createRef();
     }
@@ -36,6 +39,7 @@ class Audio extends Component {
                 privacy: nextProps.pageInfoData.editItem ? nextProps.pageInfoData.editItem.view_privacy : "everyone",
                 success: false,
                 error: null,
+                plans:nextProps.pageInfoData.plans ? nextProps.pageInfoData.plans : []
             }
         }
     }
@@ -93,9 +97,7 @@ class Audio extends Component {
         }
 
         let url = '/audio/upload';
-        if (this.state.isEdit) {
-            url = "/audio/create/" + this.state.isEdit;
-        }
+        
         this.setState({localUpdate:true, validating: true, error: null });
         axios.post(url, formData, config)
             .then(response => {
@@ -300,6 +302,16 @@ class Audio extends Component {
             })
         }
 
+        if(this.state.plans.length > 0){
+            this.state.plans.forEach(item => {
+                let perprice = {}
+                perprice['package'] = { price: item.price }
+                privacyOptions.push({
+                    value:"package_"+item.member_plan_id,label:this.props.t("Limited to {{plan_title}} ({{plan_price}}) and above",{plan_title:item.title,plan_price:ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...perprice} />)}),key:"package_"+item.member_plan_id
+                })
+            })
+        }
+
         formFields.push({
             key: "privacy",
             label: "Privacy",
@@ -354,7 +366,7 @@ class Audio extends Component {
                             <div className="mainContentWrap">
                                 <div className="container">
                                 <div className="row">
-                                    <div className="col-md-12">
+                                    <div className="col-md-12 position-relative">
                                     <div className="formBoxtop loginp content-form" ref={this.myRef}>
                                         <Form
                                             empty={empty}

@@ -475,6 +475,9 @@
     .postCard-box {
         width: calc((100% / 2) - 10px);
     }
+    .subscription-plans-btn{
+        display: none;
+    }
     .ptv_playlistGrid .playlistGrid_thumb:hover .overlayPlayBtn{
         display: none;
     }
@@ -519,7 +522,7 @@
     }
     .formBoxtop {
         margin-top: -70px;
-        padding: 70px 15px;
+        padding: 20px 0px;
     }
     .custom-control.image-checkbox label img {
         height: 200px;
@@ -766,9 +769,9 @@
     .vLDetailLikeShare .LikeDislikeWrap .LikeDislikeList {
         margin-bottom: 15px;
     }
-    .titleWrap {
+    /* .titleWrap {
         margin-bottom: 15px;
-    }
+    } */
     .titleWrap .title {
         font-size: 18px;
         font-weight: 500;
@@ -805,7 +808,7 @@
         padding-left: 0;
     }
     .userInfo-block-content .user_followed {
-        margin-top: 60px;
+        margin-top: 10px;
         margin-bottom: 15px;
     }
 }
@@ -813,6 +816,9 @@
 
     .purchase_video_content h5, .purchase_video_content p{
         top: 30%;
+    }
+    .userInfo-block-content .user_followed {
+        margin-top: 60px;
     }
     .slideshow-enable .snglFullWdth .tns-nav{
         display: block;

@@ -36,7 +36,7 @@ class Item extends React.Component {
                                 {<CensorWord {...this.props} text={Translate(this.props,this.state.artist.title)} />}
                                  {
                                     this.state.artist.verified ? 
-                                        <span className="verifiedUser" title={Translate(this.props,"verified")}><span className="material-icons">check</span></span>
+                                        <span className="verifiedUser" title={Translate(this.props,"verified")}><span className="material-icons" data-icon="check"></span></span>
                                     : null
                                 }
                                 </React.Fragment>     

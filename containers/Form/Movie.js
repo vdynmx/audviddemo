@@ -617,7 +617,7 @@ class Movie extends Component {
                                     : 
                                     <div className="formFields">
                                         <div className="form-group">
-                                            <select className="form-control" value={this.state.chooseType} onChange={this.changeFilter}>
+                                            <select className="form-control form-select" value={this.state.chooseType} onChange={this.changeFilter}>
                                                 {
                                                     Object.keys(options).map(function(key) {
                                                         return (

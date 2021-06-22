@@ -1,13 +1,10 @@
 import React from "react"
-
 import axios from "../../axios-orders"
 import { connect } from "react-redux";
-
 import playlist from '../../store/actions/general';
 import CensorWord from "../CensoredWords/Index"
 import ShortNumber from "short-number"
 import Image from "../Image/Index"
-import UserTitle from "../User/Title"
 import Like from "../Like/Index"
 import Favourite from "../Favourite/Index"
 import Dislike from "../Dislike/Index"
@@ -24,12 +21,7 @@ import Form from '../../components/DynamicForm/Index'
 import Timeago from "../Common/Timeago"
 import MemberFollow from "../User/Follow"
 import { renderToString } from 'react-dom/server'
-
-
-// import asyncComponent from '../../hoc/asyncComponent/asyncComponent';
-// const CarouselPlaylists = asyncComponent(() => {
-//     return import('./CarouselPlaylist');
-// });
+import Plans from "../User/Plans"
 
  
 class Index extends React.Component {
@@ -48,12 +40,16 @@ class Index extends React.Component {
             fullWidth: false,
             height:"-550px",
             width:props.isMobile ? props.isMobile : 993,
+            needSubscription:props.pageInfoData.needSubscription,
+            plans:props.pageInfoData.plans,
+            tabType:props.pageInfoData.tabType ? props.pageInfoData.tabType : "about"
         }
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
         this.deleteAudio = this.deleteAudio.bind(this)
         this.pauseSong = this.pauseSong.bind(this)
         this.playSong = this.playSong.bind(this)
         this.playPauseSong = this.playPauseSong.bind(this)
+        this.plansSubscription = React.createRef();
     }
     updateWindowDimensions() {
         this.setState({localUpdate:true, width: window.innerWidth },() => {
@@ -77,7 +73,10 @@ class Index extends React.Component {
                 audio: nextProps.pageInfoData.audio, 
                 pagging: nextProps.pageInfoData.pagging ? nextProps.pageInfoData.pagging : null,
                 relatedAudios:nextProps.pageInfoData.relatedAudios ? nextProps.pageInfoData.relatedAudios : [],
-                password:nextProps.pageInfoData.password
+                password:nextProps.pageInfoData.password,
+                needSubscription:nextProps.pageInfoData.needSubscription,
+                plans:nextProps.pageInfoData.plans,
+                tabType:nextProps.pageInfoData.tabType ? nextProps.pageInfoData.tabType : "about"
             }
         }else if (nextProps.pageInfoData.song_id != prevState.song_id || nextProps.pageInfoData.pausesong_id != prevState.playsong_id) {
             return {
@@ -100,6 +99,13 @@ class Index extends React.Component {
         return itemIndex;
     }
     componentDidMount() {
+        if($(".nav-tabs > li > a.active").length == 0){
+            if(this.state.needSubscription){
+              this.pushTab("plans")
+            }else{
+              this.pushTab("about")
+            }
+        }
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
         this.getHeight();
@@ -364,13 +370,22 @@ class Index extends React.Component {
     
         return replacedText;
     }
-    playSong = (song_id,e) =>{
+    playSong = (song_id,audio,e) => {
+        if(!audio.audio_file){
+            Router.push(`/audio?audioId=${audio.custom_url}`, `/audio/${audio.custom_url}`)
+            return;
+        }
         let audios = this.props.audios
         let relatedAudios = this.state.relatedAudios
         if(relatedAudios && relatedAudios.length){
             let audio = this.state.relatedAudios
             audios = [...audios,...audio]
         }
+        audios.forEach( (audio, itemIndex) => {
+            if(!audio.audio_file){
+                audios.splice(itemIndex, 1);
+            }
+        });
         if(audios && audios.length){
             let audio = this.state.audio
             audio.passwords = 1;
@@ -391,7 +406,11 @@ class Index extends React.Component {
         })
         
     }
-    pauseSong = (song_id,e) => {
+    pauseSong = (song_id,audio,e) => {
+        if(!audio.audio_file){
+            Router.push(`/audio?audioId=${audio.custom_url}`, `/audio/${audio.custom_url}`)
+            return;
+        }
         let audios = this.props.audios
         //add related videos
         let relatedAudios = this.state.relatedAudios
@@ -408,7 +427,11 @@ class Index extends React.Component {
             audio.passwords = 1;
             audios.push(audio)
         }
-        
+        audios.forEach( (audio, itemIndex) => {
+            if(!audio.audio_file){
+                audios.splice(itemIndex, 1);
+            }
+        });
         this.setState({
             song_id:song_id,
             playsong_id:song_id,
@@ -417,7 +440,11 @@ class Index extends React.Component {
             this.props.updateAudioData(audios, song_id,song_id,this.props.t("Submit"),this.props.t("Enter Password"))
         })
     }
-    playPauseSong = (song_id,e) => {
+    playPauseSong = (song_id,audio,e) => {
+        if(!audio.audio_file){
+            Router.push(`/audio?audioId=${audio.custom_url}`, `/audio/${audio.custom_url}`)
+            return;
+        }
         let audios = this.props.audios
         //add related videos
         let relatedAudios = this.state.relatedAudios
@@ -434,6 +461,11 @@ class Index extends React.Component {
             audio.passwords = 1;
             audios.push(audio)
         }
+        audios.forEach( (audio, itemIndex) => {
+            if(!audio.audio_file){
+                audios.splice(itemIndex, 1);
+            }
+        });
         if(this.props.song_id == 0 || song_id == this.props.pausesong_id || song_id != this.props.song_id){
             this.props.updateAudioData(audios, song_id,0,this.props.t("Submit"),this.props.t("Enter Password"))
         }else{
@@ -490,6 +522,22 @@ class Index extends React.Component {
         var sDisplay = s.length > 0 ? ":" + (s.length < 2 ? "0" + s : s) : ":00"
         return (hDisplay != "00" ? hDisplay+mDisplay : mDisplay.replace(":",'')) + sDisplay
     }
+    pushTab = (type) => {
+        if(this.state.tabType == type || !this.state.audio){
+            return
+        }
+        this.setState({tabType:type,localUpdate:true})
+        Router.push(`/audio?audioId=${this.state.audio.custom_url}`, `/audio/${this.state.audio.custom_url}?type=${type}`,{ shallow: true })
+    }
+    scrollToSubscriptionPlans = () => {
+        if(this.state.tabType != "plans"){
+            this.setState({localUpdate:true,tabType:"plans"},() => {
+                this.plansSubscription.scrollIntoView()
+            })
+            return
+        }
+        this.plansSubscription.scrollIntoView()
+    }
     render() {
         let validatorUploadImport = []
         let fieldUploadImport = []
@@ -534,7 +582,7 @@ class Index extends React.Component {
                 { 
                     this.state.audio.approve == 1 ? 
                     <div className="details-video-wrap audioDetails-wrap">
-                        <div className="container">
+                        <div className="container"> 
                             <div className="row">
                                 <div className="col-xl-9 col-lg-8">
                                     <div className="audioBnr">
@@ -545,18 +593,38 @@ class Index extends React.Component {
                                                         <Image image={this.state.audio.image} title={this.state.audio.title} imageSuffix={this.props.pageInfoData.imageSuffix} />
                                                     </div>
                                                     {
+                                                        !this.state.needSubscription ? 
                                                         this.props.song_id != this.state.audio.audio_id || this.props.pausesong_id == this.state.audio.audio_id ?
-                                                            <div className="playbtn" onClick={this.playSong.bind(this,this.state.audio.audio_id)}>
-                                                                    <i className="fas fa-play"></i>
+                                                                <div className="playbtn" onClick={this.playSong.bind(this,this.state.audio.audio_id,this.state.audio)}>
+                                                                        <i className="fas fa-play"></i>
+                                                                </div>
+                                                            :
+                                                            <div className="playbtn"  onClick={this.pauseSong.bind(this,this.state.audio.audio_id,this.state.audio)}>
+                                                                <i className="fas fa-pause"></i>
+                                                            </div> 
+                                                        : <div className="subscription-update-plan-cnt">
+                                                            <div className="subscription-update-plan-title">
+                                                            {
+                                                                    this.state.needSubscription.type == "upgrade" ? 
+                                                                        this.props.t("To watch more content, kindly upgrade your Subcription Plan.")
+                                                                    :
+                                                                        this.props.t("To watch more content, kindly Subscribe.")
+                                                            }
+                                                            {
+                                                                <button onClick={this.scrollToSubscriptionPlans}>
+                                                                    {this.props.t("Subscription Plans")}
+                                                                </button>
+                                                            }
                                                             </div>
-                                                        :
-                                                        <div className="playbtn"  onClick={this.pauseSong.bind(this,this.state.audio.audio_id)}>
-                                                            <i className="fas fa-pause"></i>
                                                         </div>
                                                     }
-                                                    <div className="trackCanvas" onClick={this.playPauseSong.bind(this,this.state.audio.audio_id)}>
-                                                        <Canvas {...this.props} classV={"details"} peaks={this.state.audio.peaks} />
-                                                    </div>
+                                                    {
+                                                        this.state.audio.peaks ? 
+                                                            <div className="trackCanvas" onClick={this.playPauseSong.bind(this,this.state.audio.audio_id,this.state.audio)}>
+                                                                <Canvas {...this.props} classV={"details"} peaks={this.state.audio.peaks} />
+                                                            </div>
+                                                    : null
+                                                    }
                                                 </div>
 
                                                 
@@ -597,13 +665,13 @@ class Index extends React.Component {
                                                 }
                                                 <li>
                                                     <div className="dropdown TitleRightDropdown">
-                                                        <a href="#" data-toggle="dropdown"><span className="material-icons">more_horiz</span></a>
+                                                        <a href="#" data-bs-toggle="dropdown"><span className="material-icons" data-icon="more_horiz"></span></a>
                                                             <ul className="dropdown-menu dropdown-menu-right edit-options">
                                                             {
                                                                 this.state.audio.canEdit ?
                                                                     <li>
                                                                         <Link href="/create-audio" customParam={`audioId=${this.state.audio.custom_url}`} as={`/create-audio/${this.state.audio.custom_url}`}>
-                                                                            <a href={`/create-audio/${this.state.audio.custom_url}`}><span className="material-icons">edit</span>{Translate(this.props, "Edit")}</a>
+                                                                            <a href={`/create-audio/${this.state.audio.custom_url}`}><span className="material-icons" data-icon="edit"></span>{Translate(this.props, "Edit")}</a>
                                                                         </Link>
                                                                     </li>
                                                                     : null
@@ -611,7 +679,7 @@ class Index extends React.Component {
                                                             {
                                                                 this.state.audio.canDelete ?
                                                                     <li>
-                                                                        <a onClick={this.deleteAudio.bind(this)} href="#"><span className="material-icons">delete</span>{Translate(this.props, "Delete")}</a>
+                                                                        <a onClick={this.deleteAudio.bind(this)} href="#"><span className="material-icons" data-icon="delete"></span>{Translate(this.props, "Delete")}</a>
                                                                     </li>
                                                                     : null
                                                             }
@@ -619,7 +687,7 @@ class Index extends React.Component {
                                                             this.state.audio.approve == 1 ? 
                                                             <li>
                                                                 <a href="#" onClick={this.openReport.bind(this)}>
-                                                                <span className="material-icons">flag</span>
+                                                                <span className="material-icons" data-icon="flag"></span>
                                                                     {Translate(this.props, "Report")}
                                                                 </a>
                                                             </li>
@@ -651,7 +719,7 @@ class Index extends React.Component {
                                                                 {this.state.audio.owner.displayname}
                                                                 {
                                                                     this.props.pageInfoData.appSettings['member_verification'] == 1 && this.state.audio.owner.verified ?
-                                                                        <span className="verifiedUser" title="verified"><span className="material-icons">check</span></span>
+                                                                        <span className="verifiedUser" title="verified"><span className="material-icons" data-icon="check"></span></span>
                                                                         : null
                                                                 }
                                                             </React.Fragment>
@@ -668,20 +736,49 @@ class Index extends React.Component {
 
                                     <div className="details-tab">
                                         <ul className="nav nav-tabs" id="myTab" role="tablist">
-                                            <li className="nav-item">
-                                                <a className="nav-link active" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">{Translate(this.props, "About")}</a>
+                                        {
+                                            this.state.needSubscription ? 
+                                            <li className="nav-item" ref={(ref) => this.plansSubscription = ref}>
+                                                <a className={`nav-link${this.state.tabType == "plans" ? " active" : ""}`} onClick={
+                                                    () => this.pushTab("plans")
+                                                } data-bs-toggle="tab" href="#plans" role="tab" aria-controls="discription" aria-selected="false">{Translate(this.props,"Choose Plan")}</a>
                                             </li>
-                                            
+                                            : null
+                                        }
+                                        
+                                            <li className="nav-item">
+                                                <a  className={`nav-link${this.state.tabType == "about" ? " active" : ""}`} onClick={
+                                                    () => this.pushTab("about")} data-bs-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">{Translate(this.props, "About")}</a>
+                                            </li>
+                                           
                                             {
                                                 this.props.pageInfoData.appSettings[`${"audio_comment"}`] == 1 && this.state.audio.approve == 1?
                                                     <li className="nav-item">
-                                                        <a className="nav-link" data-toggle="tab" href="#comments" role="tab" aria-controls="comments" aria-selected="true">{`${ShortNumber(this.state.audio.comment_count ? this.state.audio.comment_count : 0)}`}{" "}{Translate(this.props, "Comments")}</a>
+                                                        <a className={`nav-link${this.state.tabType == "comments" ? " active" : ""}`} onClick={
+                                                    () => this.pushTab("comments")} data-bs-toggle="tab" href="#comments" role="tab" aria-controls="comments" aria-selected="true">{`${ShortNumber(this.state.audio.comment_count ? this.state.audio.comment_count : 0)}`}{" "}{Translate(this.props, "Comments")}</a>
                                                     </li>
                                                     : null
                                             }
                                         </ul>
                                         <div className="tab-content" id="myTabContent">
-                                            <div className="tab-pane fade active show" id="about" role="tabpanel">
+                                        {
+                                            this.state.needSubscription ? 
+                                                <div className={`tab-pane fade${this.state.tabType == "plans" ? " active show" : ""}`} id="plans" role="tabpanel">
+                                                <div className="details-tab-box">
+                                                    <p className="plan-upgrade-subscribe">
+                                                        {
+                                                        this.state.needSubscription.type == "upgrade" ? 
+                                                            this.props.t("To watch more content, kindly upgrade your Subcription Plan.")
+                                                            :
+                                                            this.props.t("To watch more content, kindly Subscribe.")
+                                                        }
+                                                    </p>
+                                                    <Plans {...this.props} userSubscription={this.state.needSubscription.loggedin_package_id ? true : false} userSubscriptionID={this.state.needSubscription.loggedin_package_id} itemObj={this.state.audio} member={this.state.audio.owner} user_id={this.state.audio.owner_id} plans={this.state.plans} />
+                                                </div>
+                                                </div>
+                                            : null
+                                        }
+                                            <div className={`tab-pane fade${this.state.tabType == "about" ? " active show" : ""}`} id="about" role="tabpanel">
                                                 <div className="details-tab-box">
                                                     {
                                                         this.state.audio.release_date ? 
@@ -719,7 +816,7 @@ class Index extends React.Component {
                                             </div>
                                             {
                                                 this.props.pageInfoData.appSettings[`${"audio_comment"}`] == 1 && this.state.audio.approve == 1 ?
-                                                    <div className="tab-pane fade" id="comments" role="tabpanel">
+                                                    <div className={`tab-pane fade${this.state.tabType == "comments" ? " active show" : ""}`} id="comments" role="tabpanel">
                                                         <div className="details-tab-box">
                                                             <Comment  {...this.props}  owner_id={this.state.audio.owner_id} hideTitle={true} appSettings={this.props.pageInfoData.appSettings} commentType="audio" type="audio" id={this.state.audio.audio_id} />
                                                         </div>
@@ -754,11 +851,11 @@ class Index extends React.Component {
                                                 }
                                                 {
                                                     this.props.song_id != audio.audio_id || this.props.pausesong_id == audio.audio_id ?
-                                                        <div className="playbtn" onClick={this.playSong.bind(this,audio.audio_id)}>
-                                                                <i className="fas fa-play"></i>
+                                                        <div className="playbtn" onClick={this.playSong.bind(this,audio.audio_id,audio)}>
+                                                            <i className="fas fa-play"></i>
                                                         </div>
                                                     :
-                                                    <div className="playbtn"  onClick={this.pauseSong.bind(this,audio.audio_id)}>
+                                                    <div className="playbtn"  onClick={this.pauseSong.bind(this,audio.audio_id,audio)}>
                                                         <i className="fas fa-pause"></i>
                                                     </div>
                                                 }

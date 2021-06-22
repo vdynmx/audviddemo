@@ -187,10 +187,10 @@ class MiniPlayer extends React.Component {
             }
             <div className="minimizeBox" style={{display:this.state.minimizePlayer ? "none" : "block"}}>
                     <span className="close-mini-player" title="Close Player" onClick={this.closePlayer}>
-                    <span className="material-icons">clear</span>
+                    <span className="material-icons" data-icon="clear"></span>
                     </span>
                     <span className="minimizePlayer" title="Minimize Player" onClick={this.minimizePlayer}>
-                    <span className="material-icons">remove</span>
+                    <span className="material-icons" data-icon="remove"></span>
                     </span>
                     <div className="content">
                     {
@@ -250,7 +250,7 @@ class MiniPlayer extends React.Component {
                                                             <span className="watchPlayBtn">
                                                                 <WatchLater className="watchLater" icon={true} {...this.props}  {...video} item={video} id={video.video_id} />
                                                                     <a href={`/watch/${video.custom_url}`} onClick={this.videoChange.bind(this,video.video_id)}>
-                                                                    <span className="material-icons">play_arrow</span>
+                                                                    <span className="material-icons" data-icon="play_arrow"></span>
                                                                     </a>
                                                             </span>
                                                         </div>

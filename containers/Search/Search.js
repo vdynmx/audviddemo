@@ -122,26 +122,26 @@ class Index extends React.Component {
     changeTitle = (e) => {
         const fields = { ...this.state.fields }
         fields['h'] = e.target.value
-        this.setState({localUpdate:true, fields: fields }, () => {
+        this.setState({localUpdate:true, fields: fields, items: [] }, () => {
             this.submitForm()
         })
     }
     changeSort = (e) => {
         const fields = { ...this.state.fields }
         fields['sort'] = e.target.value
-        this.setState({localUpdate:true, fields: fields }, () => {
+        this.setState({localUpdate:true, fields: fields, items: [] }, () => {
             this.submitForm()
         })
     }
     changeType = (e) => {
-        this.setState({localUpdate:true, type: e.target.value }, () => {
+        this.setState({localUpdate:true, type: e.target.value, items: [] }, () => {
             this.submitForm(null, true)
         })
     }
     changeFilter = (e) => {
         const fields = { ...this.state.fields }
         fields['filter'] = e.target.value
-        this.setState({localUpdate:true, fields: fields }, () => {
+        this.setState({localUpdate:true, fields: fields, items: [] }, () => {
             this.submitForm()
         })
     }
@@ -176,7 +176,7 @@ class Index extends React.Component {
     sortChange(e) {
         const fields = { ...this.state.fields }
         fields['sort'] = e.target.value
-        this.setState({localUpdate:true, fields: fields }, () => {
+        this.setState({localUpdate:true, fields: fields, items: [] }, () => {
             this.submitForm()
         })
 
@@ -284,39 +284,39 @@ class Index extends React.Component {
                                     <div className="title">{Translate(this.props,"Show results for")}</div>
                                     <div className="formFields">
                                         <div className="form-group twoColumns">
-                                            <div className="custom-control custom-radio">
-                                                <input type="radio" onChange={this.changeType.bind(this)} checked={this.state.type == "video"} className="custom-control-input" id="video" name="type" value="video" />
-                                                <label className="custom-control-label" htmlFor="video">{Translate(this.props,"Videos")}</label>
+                                            <div className="form-check custom-radio">
+                                                <input type="radio" onChange={this.changeType.bind(this)} checked={this.state.type == "video"} className="form-check-input" id="video" name="type" value="video" />
+                                                <label className="form-check-label" htmlFor="video">{Translate(this.props,"Videos")}</label>
                                                 <span className="error"></span>
                                             </div>
-                                            <div className="custom-control custom-radio">
-                                                <input type="radio" className="custom-control-input" checked={this.state.type == "member"} onChange={this.changeType.bind(this)} name="type" value="member" id="member" />
-                                                <label className="custom-control-label" htmlFor="member">{Translate(this.props,"Members")} </label>
+                                            <div className="form-check custom-radio">
+                                                <input type="radio" className="form-check-input" checked={this.state.type == "member"} onChange={this.changeType.bind(this)} name="type" value="member" id="member" />
+                                                <label className="form-check-label" htmlFor="member">{Translate(this.props,"Members")} </label>
                                                 <span className="error"></span>
                                             </div>
                                             {
                                                 this.props.pageData.appSettings["enable_channel"] == 1 ? 
-                                                    <div className="custom-control custom-radio">
-                                                        <input type="radio" className="custom-control-input" checked={this.state.type == "channel"} onChange={this.changeType.bind(this)} id="channel" name="type" value="channel" />
-                                                        <label className="custom-control-label" htmlFor="channel">{Translate(this.props,"Channels")}</label>
+                                                    <div className="form-check custom-radio">
+                                                        <input type="radio" className="form-check-input" checked={this.state.type == "channel"} onChange={this.changeType.bind(this)} id="channel" name="type" value="channel" />
+                                                        <label className="form-check-label" htmlFor="channel">{Translate(this.props,"Channels")}</label>
                                                         <span className="error"></span>
                                                     </div>
                                                 : null
                                             }
                                             {
                                                 this.props.pageData.appSettings["enable_blog"] == 1 ? 
-                                            <div className="custom-control custom-radio">
-                                                <input type="radio" className="custom-control-input" checked={this.state.type == "blog"} onChange={this.changeType.bind(this)} id="blog" name="type" value="blog" />
-                                                <label className="custom-control-label" htmlFor="blog">{Translate(this.props,"Blogs")}</label>
+                                            <div className="form-check custom-radio">
+                                                <input type="radio" className="form-check-input" checked={this.state.type == "blog"} onChange={this.changeType.bind(this)} id="blog" name="type" value="blog" />
+                                                <label className="form-check-label" htmlFor="blog">{Translate(this.props,"Blogs")}</label>
                                                 <span className="error"></span>
                                             </div>
                                             : null
                                             }
                                              {
                                                 this.props.pageData.appSettings["enable_playlist"] == 1 ? 
-                                                <div className="custom-control custom-radio">
-                                                    <input type="radio" className="custom-control-input" checked={this.state.type == "playlist"} onChange={this.changeType.bind(this)} id="playlist" name="type" value="playlist" />
-                                                    <label className="custom-control-label" htmlFor="playlist">{Translate(this.props,"Playlists")}</label>
+                                                <div className="form-check custom-radio">
+                                                    <input type="radio" className="form-check-input" checked={this.state.type == "playlist"} onChange={this.changeType.bind(this)} id="playlist" name="type" value="playlist" />
+                                                    <label className="form-check-label" htmlFor="playlist">{Translate(this.props,"Playlists")}</label>
                                                     <span className="error"></span>
                                                 </div>
                                                 : null
@@ -330,7 +330,7 @@ class Index extends React.Component {
                                     <div className="title">{Translate(this.props,"Sort By")}:</div>
                                     <div className="formFields">
                                         <div className="form-group twoColumns">
-                                                <select onChange={this.sortChange.bind(this)} value={this.state.fields.sort} className="form-control" id="sortbys">
+                                                <select onChange={this.sortChange.bind(this)} value={this.state.fields.sort} className="form-control form-select" id="sortbys">
                                                     {
                                                         sortArray.map(sort => {
                                                             return <option key={sort.key} value={sort.key}>{Translate(this.props,sort.value)}</option>
@@ -342,8 +342,8 @@ class Index extends React.Component {
                                                         null
                                                     :
                                                         <a className="filter-search global-search-filter" href="#" onClick={this.showFilterOption} title={Translate(this.props,"Search Filters")}>
-                                                            <span className="material-icons">
-                                                                tune
+                                                            <span className="material-icons" data-icon="tune">
+                                                                
                                                             </span>{Translate(this.props,'Filter')}
                                                         </a>
                                                 }
@@ -361,16 +361,16 @@ class Index extends React.Component {
                                                     <div className="formFields">
                                                         <span className="subtitle">{Translate(this.props,"Category")}</span>
                                                         <div className="form-group twoColumns">
-                                                            <div className="custom-control custom-radio">
-                                                                <input type="radio" checked={this.state.fields.category == ""} onChange={this.onCategoryChange.bind(this)} className="custom-control-input" id="Any" name="catgeory" value="" />
-                                                                <label className="custom-control-label" htmlFor="Any">{Translate(this.props,"Any")}</label>
+                                                            <div className="form-check custom-radio">
+                                                                <input type="radio" checked={this.state.fields.category == ""} onChange={this.onCategoryChange.bind(this)} className="form-check-input" id="Any" name="catgeory" value="" />
+                                                                <label className="form-check-label" htmlFor="Any">{Translate(this.props,"Any")}</label>
                                                             </div>
                                                             {
                                                                 categories.map(cat => {
                                                                     return (
-                                                                        <div key={cat.category_id} className="custom-control custom-radio">
-                                                                            <input type="radio" className="custom-control-input" checked={this.state.fields.category == cat.category_id} onChange={this.onCategoryChange.bind(this)} id={"category_" + cat.category_id} name="catgeory" value={cat.category_id} />
-                                                                            <label className="custom-control-label" htmlFor={"category_" + cat.category_id}>{Translate(this.props,cat.title)}</label>
+                                                                        <div key={cat.category_id} className="form-check custom-radio">
+                                                                            <input type="radio" className="form-check-input" checked={this.state.fields.category == cat.category_id} onChange={this.onCategoryChange.bind(this)} id={"category_" + cat.category_id} name="catgeory" value={cat.category_id} />
+                                                                            <label className="form-check-label" htmlFor={"category_" + cat.category_id}>{Translate(this.props,cat.title)}</label>
                                                                         </div>
                                                                     )
                                                                 })
@@ -384,17 +384,17 @@ class Index extends React.Component {
                                                     <div className="formFields">
                                                         <span className="subtitle">{Translate(this.props,"Type")}</span>
                                                         <div className="form-group twoColumns">
-                                                            <div className="custom-control custom-radio">
-                                                                <input type="radio" className="custom-control-input" id="Anyd" checked={this.state.fields.filter == ""} onChange={this.changeFilter.bind(this)} name="filter" value="" />
-                                                                <label className="custom-control-label" htmlFor="Anyd">{Translate(this.props,"Any")}</label>
+                                                            <div className="form-check custom-radio">
+                                                                <input type="radio" className="form-check-input" id="Anyd" checked={this.state.fields.filter == ""} onChange={this.changeFilter.bind(this)} name="filter" value="" />
+                                                                <label className="form-check-label" htmlFor="Anyd">{Translate(this.props,"Any")}</label>
                                                                 <span className="error"></span>
                                                             </div>
                                                             {
                                                                 typeArray.map(types => {
                                                                     return (
-                                                                        <div key={types.value} className="custom-control custom-radio">
-                                                                            <input type="radio" className="custom-control-input" checked={this.state.fields.filter == types.key} onChange={this.changeFilter.bind(this)} id={"type_" + types.key} name="filter" value={types.key} />
-                                                                            <label className="custom-control-label" htmlFor={"type_" + types.key}>{Translate(this.props,types.value)}</label>
+                                                                        <div key={types.value} className="form-check custom-radio">
+                                                                            <input type="radio" className="form-check-input" checked={this.state.fields.filter == types.key} onChange={this.changeFilter.bind(this)} id={"type_" + types.key} name="filter" value={types.key} />
+                                                                            <label className="form-check-label" htmlFor={"type_" + types.key}>{Translate(this.props,types.value)}</label>
                                                                         </div>
                                                                     )
                                                                 })

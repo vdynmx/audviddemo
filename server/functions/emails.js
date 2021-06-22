@@ -1,5 +1,4 @@
 const nodemailer = require("nodemailer")
-const commonFunction = require("../functions/commonFunctions")
 
 exports.transport = (req) => {
     if (req.appSettings['email_type'] == "sendmail") {
@@ -60,17 +59,27 @@ exports.transport = (req) => {
         return false
     }
 }
+exports.truncate = (text = "", maxLength = 200) => {
+    //trim the string to the maximum length
+    if (text.indexOf(" ") < 0) {
+        return text;
+    }
+    var trimmedString = text.substr(0, maxLength);
+    //re-trim if we are in the middle of a word
+    trimmedString = trimmedString.substr(0, Math.min(trimmedString.length, trimmedString.lastIndexOf(" ")))
+    return trimmedString
+}
 exports.links = (req, data) => {
     if (!data.commentType && (data.type == "users" || data.type == "members")) {
         if (data.subjectEmail) {
-            return commonFunction.truncate(data.title)
+            return exports.truncate(data.title)
         }
-        return '<a href="' + process.env.PUBLIC_URL + '/member/' + data.custom_url + '">' + commonFunction.truncate(data.title) + '</a>'
+        return '<a href="' + process.env.PUBLIC_URL + '/member/' + data.custom_url + '">' + exports.truncate(data.title) + '</a>'
     } else if (!data.commentType && data.type == "channels") {
         if (data.subjectEmail) {
-            return commonFunction.truncate(data.title)
+            return exports.truncate(data.title)
         }
-        return '<a href="' + process.env.PUBLIC_URL + '/channel/' + data.custom_url + '">' + commonFunction.truncate(data.title) + '</a>'
+        return '<a href="' + process.env.PUBLIC_URL + '/channel/' + data.custom_url + '">' + exports.truncate(data.title) + '</a>'
     }else if (!data.commentType && data.type == "channel_posts") {
         if (data.subjectEmail) {
             return req.i18n.t("channel post")
@@ -78,44 +87,44 @@ exports.links = (req, data) => {
         return '<a href="' + process.env.PUBLIC_URL + '/post/' + data.custom_url + '">' + req.i18n.t("channel post") + '</a>'
     } else if (!data.commentType && data.type == "blogs") {
         if (data.subjectEmail) {
-            return commonFunction.truncate(data.title)
+            return exports.truncate(data.title)
         }
-        return '<a href="' + process.env.PUBLIC_URL + '/blog/' + data.custom_url + '">' + commonFunction.truncate(data.title) + '</a>'
+        return '<a href="' + process.env.PUBLIC_URL + '/blog/' + data.custom_url + '">' + exports.truncate(data.title) + '</a>'
     } else if (!data.commentType && data.type == "artists") {
         if (data.subjectEmail) {
-            return commonFunction.truncate(data.title)
+            return exports.truncate(data.title)
         }
-        return '<a href="' + process.env.PUBLIC_URL + '/artist/' + data.custom_url + '">' + commonFunction.truncate(data.title) + '</a>'
+        return '<a href="' + process.env.PUBLIC_URL + '/artist/' + data.custom_url + '">' + exports.truncate(data.title) + '</a>'
     } else if (!data.commentType && data.type == "playlists") {
         if (data.subjectEmail) {
-            return commonFunction.truncate(data.title)
+            return exports.truncate(data.title)
         }
-        return '<a href="' + process.env.PUBLIC_URL + '/playlist/' + data.custom_url + '">' + commonFunction.truncate(data.title) + '</a>'
+        return '<a href="' + process.env.PUBLIC_URL + '/playlist/' + data.custom_url + '">' + exports.truncate(data.title) + '</a>'
     }else if (!data.commentType && data.type == "audio") {
         if (data.subjectEmail) {
-            return commonFunction.truncate(data.title)
+            return exports.truncate(data.title)
         }
-        return '<a href="' + process.env.PUBLIC_URL + '/audio/' + data.custom_url + '">' + commonFunction.truncate(data.title) + '</a>'
+        return '<a href="' + process.env.PUBLIC_URL + '/audio/' + data.custom_url + '">' + exports.truncate(data.title) + '</a>'
     } else if (!data.commentType && data.type == "videos") {
         if (data.subjectEmail) {
-            return commonFunction.truncate(data.title)
+            return exports.truncate(data.title)
         }
-        return '<a href="' + process.env.PUBLIC_URL + '/watch/' + data.custom_url + '">' + commonFunction.truncate(data.title) + '</a>'
+        return '<a href="' + process.env.PUBLIC_URL + '/watch/' + data.custom_url + '">' + exports.truncate(data.title) + '</a>'
     } else if (data.commentType == "comments" || data.type == "comment") {
         if (data.subjectEmail) {
-            return commonFunction.truncate(data.title)
+            return exports.truncate(data.title)
         }
-        return '<a href="' + process.env.PUBLIC_URL + '/comment/' + data.id + '">' + commonFunction.truncate(data.title) + '</a>'
+        return '<a href="' + process.env.PUBLIC_URL + '/comment/' + data.id + '">' + exports.truncate(data.title) + '</a>'
     } else if (data.commentType == "reply" || data.type == "reply") {
         if (data.subjectEmail) {
-            return commonFunction.truncate(data.title)
+            return exports.truncate(data.title)
         }
-        return '<a href="' + process.env.PUBLIC_URL + '/reply/' + data.id + '">' + commonFunction.truncate(data.title) + '</a>'
+        return '<a href="' + process.env.PUBLIC_URL + '/reply/' + data.id + '">' + exports.truncate(data.title) + '</a>'
     } else if (data.type == "reply_title" || data.type == "comment_title") {
         if (data.subjectEmail) {
-            return commonFunction.truncate(data.title)
+            return exports.truncate(data.title)
         }
-        return '<span>' + commonFunction.truncate(data.title) + '</span>'
+        return '<span>' + exports.truncate(data.title) + '</span>'
     }else if(data.type == "text"){
         return data.title
     }else if(data.changeText){

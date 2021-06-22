@@ -136,7 +136,7 @@ class TopView extends React.Component {
         return (
             <div className="container">
                 <div className="row">
-                    <div className="col-md-12">
+                    <div className="col-md-12 position-relative">
                         <div className="channelInfo-wrap">
                             <div className="playlist-profile-img">
                                 <Image title={renderToString(<CensorWord {...this.props} text={this.state.playlist.title} />)} image={mainPhoto} imageSuffix="" />
@@ -144,7 +144,7 @@ class TopView extends React.Component {
                             <div className="playlist-profile-title">
                                 <h4><CensorWord {...this.props} text={this.state.playlist.title} />{" "} {
                                     this.state.playlist.verified ?
-                                        <span className="verifiedUser" title={Translate(this.props, "verified")}><span className="material-icons">check</span>
+                                        <span className="verifiedUser" title={Translate(this.props, "verified")}><span className="material-icons" data-icon="check"></span>
                                         </span>
                                         : null
                                 }</h4>
@@ -208,13 +208,13 @@ class TopView extends React.Component {
                                     
                                     <li>
                                         <div className="dropdown TitleRightDropdown">
-                                            <a href="#" data-toggle="dropdown"><span className="material-icons">more_horiz</span></a>
+                                            <a href="#" data-bs-toggle="dropdown"><span className="material-icons" data-icon="more_horiz"></span></a>
                                             <ul className="dropdown-menu dropdown-menu-right edit-options">
                                                  {
                                                     this.state.playlist.canEdit ?
                                                     <li>
                                                         <Link href="/create-playlist" customParam={`playlistId=${this.state.playlist.custom_url}`} as={`/create-playlist/${this.state.playlist.custom_url}`}>
-                                                            <a href={`/create-playlist/${this.state.playlist.custom_url}`}><span className="material-icons">edit</span>{Translate(this.props, "Edit")}</a>
+                                                            <a href={`/create-playlist/${this.state.playlist.custom_url}`}><span className="material-icons" data-icon="edit"></span>{Translate(this.props, "Edit")}</a>
                                                         </Link>
                                                     </li>
                                                         : null
@@ -222,7 +222,7 @@ class TopView extends React.Component {
                                                 {
                                                     this.state.playlist.canDelete ?
                                                     <li>
-                                                        <a onClick={this.props.deletePlaylist} href="#"><span className="material-icons">delete</span>{Translate(this.props, "Delete")}</a>
+                                                        <a onClick={this.props.deletePlaylist} href="#"><span className="material-icons" data-icon="delete"></span>{Translate(this.props, "Delete")}</a>
                                                     </li>
                                                         : null
                                                 }
@@ -231,7 +231,7 @@ class TopView extends React.Component {
                                                 
                                                 <li>
                                                     <a href="#" onClick={this.openReport.bind(this)}>
-                                                    <span className="material-icons">flag</span>
+                                                    <span className="material-icons" data-icon="flag"></span>
                                                         {Translate(this.props, "Report")}
                                                     </a>
                                                 </li>

@@ -21,7 +21,7 @@ const index = (props) => {
             <li>
                 <Link href="/create-video">
                     <a className="dropdown-item iconmenu">
-                        <span className="material-icons">videocam</span>
+                        <span className="material-icons" data-icon="videocam"></span>
                         {props.t("Create Video")}
                     </a>
                 </Link>
@@ -33,7 +33,7 @@ const index = (props) => {
             <li>
                 <Link href="/create-audio">
                     <a className="dropdown-item iconmenu">
-                        <span className="material-icons">audiotrack</span>
+                        <span className="material-icons" data-icon="audiotrack"></span>
                         {props.t("Create Audio")}
                     </a>
                 </Link>
@@ -45,7 +45,7 @@ const index = (props) => {
             <li>
                 <Link href="/create-movie">
                     <a className="dropdown-item iconmenu">
-                        <span className="material-icons">movie</span>
+                        <span className="material-icons" data-icon="movie"></span>
                         {props.t("Create Movie")}
                     </a>
                 </Link>
@@ -58,7 +58,7 @@ const index = (props) => {
             <li>
                 <Link href="/create-series">
                     <a className="dropdown-item iconmenu">
-                        <span className="material-icons">live_tv</span>
+                        <span className="material-icons" data-icon="live_tv"></span>
                         {props.t("Create Series")}
                     </a>
                 </Link>
@@ -71,7 +71,7 @@ const index = (props) => {
             <li>
                 <Link href="/create-channel">
                     <a className="dropdown-item iconmenu">
-                        <span className="material-icons">add</span>
+                        <span className="material-icons" data-icon="add"></span>
                         {props.t("Create Channel")}
                     </a>
                 </Link>
@@ -83,7 +83,7 @@ const index = (props) => {
             <li>
                 <Link href="/create-blog">
                     <a className="dropdown-item iconmenu"> 
-                        <span className="material-icons">rss_feed</span>
+                        <span className="material-icons" data-icon="rss_feed"></span>
                         {props.t("Create Blog")}
                     </a>
                 </Link>
@@ -95,7 +95,7 @@ const index = (props) => {
             <li>
                 <Link href="/create-ad">
                     <a className="dropdown-item iconmenu">
-                    <span className="material-icons">subtitles</span>
+                    <span className="material-icons" data-icon="subtitles"></span>
                         {props.t("Create Advertisement")}
                     </a>
                 </Link>

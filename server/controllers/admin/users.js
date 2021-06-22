@@ -662,6 +662,15 @@ exports.settings = async (req, res) => {
              });
          }
     })
+    //get uploaded file by admin
+    const files = { "": "" }
+
+    await fileManager.findAll(req, { "column": "path", "like": "image" }).then(result => {
+        result.forEach(res => {
+            let url = res.path.split(/(\\|\/)/g).pop()
+            files[res.path] = res.orgName
+        });
+    })
     var reg_form = forms.create({
         member_registeration: fields.string({
             choices: { 1: 'Enabled', 0: 'Disabled',2:"Invite only" },
@@ -710,6 +719,14 @@ exports.settings = async (req, res) => {
             fieldsetClasses: "form_fieldset",
             cssClasses: { "field": ["form-group"] },
             value: settings.getSetting(req, "member_delete_account", "1")
+        }),
+        member_cancel_user_subscription: fields.string({
+            choices: { 1: 'Enabled', 0: 'Disabled' },
+            widget: widgets.select({ "classes": ["select"] }),
+            label: "User cancel user subscription plan",
+            fieldsetClasses: "form_fieldset",
+            cssClasses: { "field": ["form-group"] },
+            value: settings.getSetting(req, "member_cancel_user_subscription", "0")
         }),
         member_rating: fields.string({
             choices: { "1": "Enabled", "0": "Disabled" },
@@ -803,6 +820,14 @@ exports.settings = async (req, res) => {
             fieldsetClasses: "form_fieldset",
             cssClasses: { "field": ["form-group"] },
             value: settings.getSetting(req, "member_hot", '1').toString()
+        }),
+        default_member_plan: fields.string({
+            label: "Default Users Plan Photo",
+            choices: files,
+            required: true,
+            widget: widgets.select({ "classes": ["select"] }),
+            cssClasses: { "field": ["form-group"] },
+            value: settings.getSetting(req,"default_member_plan","").toString()
         }),
     }, { validatePastFirstError: true });
     reg_form.handle(req, {
@@ -1166,6 +1191,24 @@ exports.editLevel = async (req, res) => {
                 cssClasses: { "field": ["form-group"] },
                 value: cacheContent["member.username"] ? cacheContent["member.username"].toString() : "1"
             }),
+            allow_create_subscriptionplans: fields.string({
+                label: "Allow to create subscription plans?",
+                required: true,
+                choices: { "1": "Yes", "0": "No" },
+                widget: widgets.select({ "classes": ["select"] }),
+                fieldsetClasses: "form_fieldset",
+                cssClasses: { "field": ["form-group"] },
+                value: cacheContent["member.allow_create_subscriptionplans"] ? cacheContent["member.allow_create_subscriptionplans"].toString() : "0"
+            }),
+            show_homebutton_profile: fields.string({
+                label: "Show Home Button on member profile?",
+                required: true,
+                choices: { "1": "Yes", "0": "No" },
+                widget: widgets.select({ "classes": ["select"] }),
+                fieldsetClasses: "form_fieldset",
+                cssClasses: { "field": ["form-group"] },
+                value: cacheContent["member.show_homebutton_profile"] ? cacheContent["member.show_homebutton_profile"].toString() : "0"
+            }),
             
             ads: fields.string({
                 choices: {"1":"Yes, Users can create ads",'0':"No, Users can not create ads"},
@@ -1173,7 +1216,7 @@ exports.editLevel = async (req, res) => {
                 label:"Create Ads",
                 fieldsetClasses:"form_fieldset",
                 cssClasses: {"field" : ["form-group"]},
-                value:cacheContent['member.ads']  ?  cacheContent['member.ads']  : "1"
+                value:cacheContent['member.ads']  ?  cacheContent['member.ads']  : "0"
             }),
             editads: fields.string({
                 choices: editAdsOptions,
@@ -1287,7 +1330,24 @@ exports.editLevel = async (req, res) => {
                 widget: widgets.select({ "classes": ["select"] }),
                 cssClasses: { "field": ["form-group"] },
                 value: cacheContent["member.default_femalemainphoto"] ? cacheContent["member.default_femalemainphoto"].toString() : ""
-            })
+            }),
+            user_subscription_commission_type: fields.string({
+                choices: { "1": "Fixed Price", "2": "Percentage" },
+                widget: widgets.select({ "classes": ["select"] }),
+                label: "Commission Type of user subscription plans?",
+                fieldsetClasses: "form_fieldset",
+                cssClasses: { "field": ["form-group"] },
+                value: cacheContent["member.user_subscription_commission_type"] ? cacheContent["member.user_subscription_commission_type"].toString() : ""
+            }),
+            user_subscription_commission_value: fields.string({
+                label: "Get Commission from user subscription plans (put 0 if you not want comission.)",
+                cssClasses: { "field": ["form-group"] },
+                widget: widgets.text({ "classes": ["form-control"] }),
+                value: cacheContent["member.user_subscription_commission_value"] ? cacheContent["member.user_subscription_commission_value"].toString() : ""
+            }),
+        }
+        if(!process.env.enableHomeButton){
+            delete formFields1['show_homebutton_profile'];
         }
         formFields = { ...formFields, ...formFields1 }
     }

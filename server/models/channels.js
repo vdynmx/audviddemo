@@ -1,5 +1,6 @@
 const privacyModel = require("../models/privacy")
 const commonFunction = require("../functions/commonFunctions");
+const recurringFunctions = require("../functions/ipnsFunctions/channelSupportSubscriptions");
 module.exports = {
     getChannelSupporters:function(req,data) {
         return new Promise(function (resolve, reject) {
@@ -65,20 +66,20 @@ module.exports = {
                     condition.push(currentDay)
                     condition.push(nextDate)
 
-                    sql += "SELECT COUNT(*) as count,SUM(price) as amount,creation_date FROM transactions WHERE  creation_date >= ? AND creation_date <= ? AND (state = 'approved' || state = 'completed') AND type = 'channel_support' "
+                    sql += "SELECT COUNT(*) as count,SUM(price) as amount,transactions.creation_date FROM transactions INNER JOIN channels ON channels.channel_id = transactions.id  WHERE  transactions.creation_date >= ? AND transactions.creation_date <= ? AND (state = 'approved' || state = 'completed') AND type = 'channel_subscription' "
                     if(data.video_id){
                         condition.push(data.video_id)
                         sql += " AND id = ?"
                     }
                     if(data.user){
                         condition.push(data.user.user_id)
-                        sql += " AND owner_id = ?"
+                        sql += " AND channels.owner_id = ?"
                     }
-                    sql += " GROUP BY DATE_FORMAT(creation_date,'%Y-%m-%d %h')"
-
+                    sql += " GROUP BY DATE_FORMAT(transactions.creation_date,'%Y-%m-%d %h')"
+                    console.log(sql,condition);
                     req.getConnection(function (err, connection) {
                         connection.query(sql, condition, function (err, results, fields) {
-                            
+                            console.log(err)
                             if (err)
                                 resolve(false)
                             const resultArray = {}
@@ -135,16 +136,16 @@ module.exports = {
                     condition.push(firstDay)
                     condition.push(lastDay)
 
-                    sql += "SELECT COUNT(*) as count,SUM(price) as amount,creation_date FROM transactions WHERE  creation_date >= ? AND creation_date <= ? AND (state = 'approved' || state = 'completed') AND type = 'channel_support' "
+                    sql += "SELECT COUNT(*) as count,SUM(price) as amount,transactions.creation_date FROM transactions INNER JOIN channels ON channels.channel_id = transactions.id WHERE  transactions.creation_date >= ? AND transactions.creation_date <= ? AND (state = 'approved' || state = 'completed') AND type = 'channel_subscription' "
                     if(data.video_id){
                         condition.push(data.video_id)
                         sql += " AND id = ?"
                     }
                     if(data.user){
                         condition.push(data.user.user_id)
-                        sql += " AND owner_id = ?"
+                        sql += " AND channels.owner_id = ?"
                     }
-                    sql += " GROUP BY DATE_FORMAT(creation_date,'%Y-%m-%d')"
+                    sql += " GROUP BY DATE_FORMAT(transactions.creation_date,'%Y-%m-%d')"
 
                     req.getConnection(function (err, connection) {
                         connection.query(sql, condition, function (err, results, fields) {
@@ -211,16 +212,16 @@ module.exports = {
                     condition.push(weekObj)
                     condition.push(weekendObj)
 
-                    sql += "SELECT COUNT(*) as count,SUM(price) as amount,creation_date FROM transactions WHERE  creation_date >= ? AND creation_date <= ? AND (state = 'approved' || state = 'completed') AND type = 'channel_support' "
+                    sql += "SELECT COUNT(*) as count,SUM(price) as amount,transactions.creation_date FROM transactions INNER JOIN channels ON channels.channel_id = transactions.id WHERE  transactions.creation_date >= ? AND transactions.creation_date <= ? AND (state = 'approved' || state = 'completed') AND type = 'channel_subscription' "
                     if(data.video_id){
                         condition.push(data.video_id)
                         sql += " AND id = ?"
                     }
                     if(data.user){
                         condition.push(data.user.user_id)
-                        sql += " AND owner_id = ?"
+                        sql += " AND channels.owner_id = ?"
                     }
-                    sql += " GROUP BY DATE_FORMAT(creation_date,'%d')"
+                    sql += " GROUP BY DATE_FORMAT(transactions.creation_date,'%d')"
                     req.getConnection(function (err, connection) {
                         connection.query(sql, condition, function (err, results, fields) {
                             if (err)
@@ -260,16 +261,16 @@ module.exports = {
                     condition.push(start)
                     condition.push(end)
 
-                    sql += "SELECT COUNT(*) as count,SUM(price) as amount,creation_date FROM transactions WHERE  creation_date >= ? AND creation_date <= ? AND (state = 'approved' || state = 'completed') AND type = 'channel_support' "
+                    sql += "SELECT COUNT(*) as count,SUM(price) as amount,transactions.creation_date FROM transactions INNER JOIN channels ON channels.channel_id = transactions.id WHERE  transactions.creation_date >= ? AND transactions.creation_date <= ? AND (state = 'approved' || state = 'completed') AND type = 'channel_subscription' "
                     if(data.video_id){
                         condition.push(data.video_id)
                         sql += " AND id = ?"
                     }
                     if(data.user){
                         condition.push(data.user.user_id)
-                        sql += " AND owner_id = ?"
+                        sql += " AND channels.owner_id = ?"
                     }
-                    sql += " GROUP BY DATE_FORMAT(creation_date,'%m')"
+                    sql += " GROUP BY DATE_FORMAT(transactions.creation_date,'%m')"
                     req.getConnection(function (err, connection) {
                         connection.query(sql, condition, function (err, results, fields) {
                             if (err)
@@ -376,8 +377,13 @@ module.exports = {
                             connection.query("DELETE FROM recently_viewed WHERE type = 'channels' && id = ?", [parseInt(id)], function () { })
                             connection.query("DELETE FROM ratings WHERE type = 'channels' && id = ?", [parseInt(id)], function () { })
                             connection.query("DELETE FROM notifications WHERE (object_type = 'channels' && object_id = ?) OR (subject_type = 'channels' && object_id = ?)", [parseInt(id),parseInt(id)], function () { })
-                            connection.query("DELETE FROM reports WHERE type = ? AND id = ?", ["channels", channel.custom_url], function () {
-                            })
+                            connection.query("DELETE FROM reports WHERE type = ? AND id = ?", ["channels", channel.custom_url], function () {})
+                            connection.query("DELETE FROM followers WHERE type = 'channels' && id = ?", [parseInt(id)], function () { })
+
+                            let note = "Channel Deleted by Owner."
+                            //cancelled channel subscription
+                            recurringFunctions.cancelChannelSubscription(note,req,id).then(result => {})
+
                             resolve(true)
                         } else {
                             resolve("");
@@ -422,7 +428,11 @@ module.exports = {
                 if (data.orderby == "random") {
                     customSelect = ' FLOOR(1 + RAND() * channel_id) as randomSelect, '
                 }
-                let sql = 'SELECT followers.follower_id,channels.*,channels.cover as channelcover,channels.image as channelimage,'+customSelect+'likes.like_dislike,userdetails.displayname,userdetails.username,userdetails.verified,channels.verified as channelverified,IF(channels.image IS NULL || channels.image = "","' + req.appSettings['channel_default_photo'] + '",channels.image) as image,IF(channels.cover IS NULL || channels.cover = "","' + req.appSettings['channel_default_cover_photo'] + '",channels.cover) as cover,IF(userdetails.avtar IS NULL || userdetails.avtar = "",(SELECT value FROM `level_permissions` WHERE name = \"default_mainphoto\" AND type = \"member\" AND level_id = users.level_id),userdetails.avtar) as avtar,watchlaters.watchlater_id,favourites.favourite_id FROM channels '
+                let fields = 'followers.follower_id,channels.*,channels.cover as channelcover,channels.image as channelimage,'+customSelect+'likes.like_dislike,userdetails.displayname,userdetails.username,userdetails.verified,channels.verified as channelverified,IF(channels.image IS NULL || channels.image = "","' + req.appSettings['channel_default_photo'] + '",channels.image) as image,IF(channels.cover IS NULL || channels.cover = "","' + req.appSettings['channel_default_cover_photo'] + '",channels.cover) as cover,IF(userdetails.avtar IS NULL || userdetails.avtar = "",(SELECT value FROM `level_permissions` WHERE name = \"default_mainphoto\" AND type = \"member\" AND level_id = users.level_id),userdetails.avtar) as avtar,watchlaters.watchlater_id,favourites.favourite_id'
+                if(data.countITEM){
+                    fields = "COUNT(channels.channel_id) as itemCount"
+                }
+                let sql = 'SELECT '+fields+' FROM channels '
                
                 
                 sql += ' LEFT JOIN users on users.user_id = channels.owner_id LEFT JOIN userdetails ON userdetails.user_id = users.user_id LEFT JOIN likes ON likes.id = channels.channel_id AND likes.type = "channels"  AND likes.owner_id =  ' + owner_id + ' LEFT JOIN watchlaters ON watchlaters.id = channels.channel_id AND watchlaters.owner_id = ' + owner_id + ' LEFT JOIN favourites ON (favourites.id = channels.channel_id AND favourites.type = "channels" AND favourites.owner_id = ' + owner_id + ') LEFT JOIN followers ON (followers.id = channels.channel_id AND followers.type = "channels" AND followers.owner_id = ' + owner_id + ')  '
@@ -483,7 +493,7 @@ module.exports = {
                 await privacyModel.checkSQL(req,'channel','channels','channel_id').then(result => {
                     if(result){
                         sql += " AND ( "+result+" )"
-                    }
+                    } 
                 })
                 if (data.title) {
                     condition.push(data.title.toLowerCase())

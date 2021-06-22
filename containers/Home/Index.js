@@ -137,7 +137,7 @@ class Home extends Component {
                                         <div className="container hr"><div className="row"><div className="col-sm-12"><hr className="horline" /></div></div></div>
                                 : null
                                 }
-                                <TopVideos  {...this.props}   openPlaylist={this.props.openPlaylist} headerTitle={<span className="recent_video"><span className="material-icons">video_library</span></span>}  seemore={true} title={Translate(this.props,"Recent Videos")} sort="recent" videos={this.state.videos.recent_videos}  />
+                                <TopVideos  {...this.props}   openPlaylist={this.props.openPlaylist} headerTitle={<span className="recent_video"><span className="material-icons" data-icon="video_library"></span></span>}  seemore={true} title={Translate(this.props,"Recent Videos")} sort="recent" videos={this.state.videos.recent_videos}  />
                                 {
                                     this.props.pageInfoData.appSettings['recentvideo_ads'] ? 
                                         <AdsIndex paddingTop="20px" className="recentvideo_ads" ads={this.props.pageInfoData.appSettings['recentvideo_ads']} />
@@ -151,7 +151,7 @@ class Home extends Component {
                             <React.Fragment>
                                 <div className="container hr"><div className="row"><div className="col-sm-12"><hr className="horline" /></div></div></div>
                                 <div className="container">
-                                    <Members  {...this.props}  headerTitle={<span className="recent_video"><span className="material-icons">live_tv</span></span>}  seemore={true} titleHeading={Translate(this.props,"Best Livestreamer Of The Month")} sort="recent" type="member" members={this.state.livestreamers} />
+                                    <Members  {...this.props}  headerTitle={<span className="recent_video"><span className="material-icons" data-icon="live_tv"></span></span>}  seemore={true} titleHeading={Translate(this.props,"Best Livestreamer Of The Month")} sort="recent" type="member" members={this.state.livestreamers} />
                                 </div>
                             </React.Fragment>
                     : null
@@ -161,7 +161,7 @@ class Home extends Component {
                             <React.Fragment>
                                 <div className="container hr"><div className="row"><div className="col-sm-12"><hr className="horline" /></div></div></div>
                                 <div className="container">
-                                    <Members  {...this.props}  headerTitle={<span className="recent_video"><span className="material-icons">people</span></span>}  seemore={true} titleHeading={Translate(this.props,"Popular Members")} sort="recent" type="member" members={this.state.members} />
+                                    <Members  {...this.props}  headerTitle={<span className="recent_video"><span className="material-icons" data-icon="people"></span></span>}  seemore={true} titleHeading={Translate(this.props,"Popular Members")} sort="recent" type="member" members={this.state.members} />
                                 </div>
                             </React.Fragment>
                     : null
@@ -224,7 +224,7 @@ class Home extends Component {
                             <React.Fragment>
                                 <div className="container hr"><div className="row"><div className="col-sm-12"><hr className="horline" /></div></div></div>
                                 <Audio  {...this.props}  headerTitle={
-                                <span className="recent_video"><span className="material-icons">headset</span></span>
+                                <span className="recent_video"><span className="material-icons" data-icon="headset"></span></span>
                                 }   seemore={true} title={Translate(this.props,"Recent Audio")} type="latest" audio={this.state.audio}  />
                             </React.Fragment>
                     : null
@@ -233,7 +233,7 @@ class Home extends Component {
                     {
                         this.state.categories ? 
                             this.state.categories.map(cat => {
-                                return <React.Fragment key={cat.category.category_id+"_cnt"}><div className="container hr"><div className="row"><div className="col-sm-12"><hr className="horline" /></div></div></div><TopVideos key={cat.category.category_id+"_cat_videos"} {...this.props}   openPlaylist={this.props.openPlaylist} headerTitle={<span className="category"><span className="material-icons">category</span></span>}  subType="category_id" seemore={true} key={cat.category.category_id}  videos={cat.videos} title={Translate(this.props,cat.category.title)} type={cat.category.category_id}  /></React.Fragment>
+                                return <React.Fragment key={cat.category.category_id+"_cnt"}><div className="container hr"><div className="row"><div className="col-sm-12"><hr className="horline" /></div></div></div><TopVideos key={cat.category.category_id+"_cat_videos"} {...this.props}   openPlaylist={this.props.openPlaylist} headerTitle={<span className="category"><span className="material-icons" data-icon="category"></span></span>}  subType="category_id" seemore={true} key={cat.category.category_id}  videos={cat.videos} title={Translate(this.props,cat.category.title)} type={cat.category.category_id}  /></React.Fragment>
                             })
                     : null
                     }

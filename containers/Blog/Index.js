@@ -1,21 +1,12 @@
 import React from "react"
 import { connect } from "react-redux";
 import * as actions from '../../store/actions/general';
-
 import UserImage from "../User/Image"
-
 import UserTitle from "../User/Title"
-
 import Timeago from "../Common/Timeago"
-
 import Comment from "../../containers/Comments/Index"
-
 import Link from "../../components/Link/index"
-
 import MemberFollow from "../User/Follow"
-
-import config from "../../config";
-
 import Like from "../Like/Index"
 import Favourite from "../Favourite/Index"
 import Dislike from "../Dislike/Index"
@@ -27,9 +18,9 @@ import axios from "../../axios-orders"
 import asyncComponent from '../../hoc/asyncComponent/asyncComponent';
 import Translate from "../../components/Translate/Index"
 import general from '../../store/actions/general';
-
 import CensorWord from "../CensoredWords/Index"
 import { renderToString } from 'react-dom/server'
+import Plans from "../User/Plans"
 
 const CarouselBlogs = asyncComponent(() => {
     return import('./CarouselBlogs');
@@ -41,6 +32,8 @@ class Index extends React.Component {
         this.state = {
             blog: this.props.pageInfoData.blog,
             adult:this.props.pageInfoData.adultBlog,
+            needSubscription:props.pageInfoData.needSubscription,
+            plans:props.pageInfoData.plans,
         }
     }
     deleteBlog = (e) => {
@@ -82,7 +75,11 @@ class Index extends React.Component {
         if(prevState.localUpdate){
             return {...prevState,localUpdate:false}
         }else if ((nextProps.pageInfoData.blog && nextProps.pageInfoData.blog != prevState.blog)) {
-            return { blog: nextProps.pageInfoData.blog, adult:nextProps.pageInfoData.adultBlog }
+            return { 
+                blog: nextProps.pageInfoData.blog, adult:nextProps.pageInfoData.adultBlog,
+                needSubscription:nextProps.pageInfoData.needSubscription,
+                plans:nextProps.pageInfoData.plans,
+            }
         } else{
             return null
         }
@@ -216,6 +213,9 @@ class Index extends React.Component {
         }
     }
     replaceTags(description) {
+        if(!description){
+            return description
+        }
         description = description.replace(/(<a [^>]*)(target="[^"]*")([^>]*>)/gi, '$1$3');
         description = description.replace(/(<a [^>]*)(>)/gi, '$1 target="_blank" rel="nofollow"$2');
         return description;
@@ -311,16 +311,38 @@ class Index extends React.Component {
                                             }
                                     <div className="blog-content">
                                         {
-                                            this.state.blog.image ?
-                                                <div className="img-fluid mb-3">
-                                                    <img className="imgFull400h" src={this.props.pageInfoData.imageSuffix + this.state.blog.image} alt={renderToString(<CensorWord {...this.props} text={this.state.blog.title} />)} />
+                                        this.state.needSubscription ? 
+                                            <div className="details-tab">
+                                                <div className={`tab-content tab-pane active show`}>
+                                                    <div className="details-tab-box">
+                                                        <p className="plan-upgrade-subscribe">
+                                                            {
+                                                            this.state.needSubscription.type == "upgrade" ? 
+                                                                this.props.t("To watch more content, kindly upgrade your Subcription Plan.")
+                                                                :
+                                                                this.props.t("To watch more content, kindly Subscribe.")
+                                                            }
+                                                        </p>
+                                                        <Plans {...this.props} userSubscription={this.state.needSubscription.loggedin_package_id ? true : false} userSubscriptionID={this.state.needSubscription.loggedin_package_id} itemObj={this.state.blog} member={this.state.blog.owner} user_id={this.state.blog.owner_id} plans={this.state.plans} />
+                                                    </div>
                                                 </div>
-                                                : null
+                                            </div>
+                                        : 
+                                        <React.Fragment>
+                                            {
+                                                this.state.blog.image ?
+                                                    <div className="img-fluid mb-3">
+                                                        <img className="imgFull400h" src={this.props.pageInfoData.imageSuffix + this.state.blog.image} alt={renderToString(<CensorWord {...this.props} text={this.state.blog.title} />)} />
+                                                    </div>
+                                                    : null
+                                            }
+                                            <div className="content user-html" dangerouslySetInnerHTML={{ __html: this.replaceTags(this.state.blog.description) }}>
+                                                {/* {Parser(this.state.blog.description)} */}
+                                                {/* <Linkify componentDecorator={this.componentDecorator}>{renderToString(<CensorWord {...this.props} text={this.state.blog.description} />)}</Linkify> */}
+                                            </div>
+                                        </React.Fragment>
                                         }
-                                        <div className="content user-html" dangerouslySetInnerHTML={{ __html: this.replaceTags(this.state.blog.description) }}>
-                                            {/* {Parser(this.state.blog.description)} */}
-                                            {/* <Linkify componentDecorator={this.componentDecorator}>{renderToString(<CensorWord {...this.props} text={this.state.blog.description} />)}</Linkify> */}
-                                        </div>
+                                        
                                     </div>
                                     {
                                         this.state.blog.tags && this.state.blog.tags != "" ?
@@ -359,13 +381,13 @@ class Index extends React.Component {
                                                     </li>
                                                     <SocialShare  hideTitle={true} {...this.props} tags={this.state.blog.tags} url={`/blog/${this.state.blog.custom_url}`} title={renderToString(<CensorWord {...this.props} text={this.state.blog.title} />)} imageSuffix={this.props.pageInfoData.imageSuffix} media={this.state.blog.image} />
                                                 <div className="dropdown TitleRightDropdown">
-                                                    <a href="#" data-toggle="dropdown"><span className="material-icons">more_horiz</span></a>
+                                                    <a href="#" data-bs-toggle="dropdown"><span className="material-icons" data-icon="more_horiz"></span></a>
                                                     <ul className="dropdown-menu dropdown-menu-right edit-options">
                                                     {
                                                         this.state.blog.canEdit ?
                                                         <li>
                                                             <Link href="/create-blog" customParam={`blogId=${this.state.blog.custom_url}`} as={`/create-blog/${this.state.blog.custom_url}`}>
-                                                                <a><span className="material-icons">edit</span>{Translate(this.props, "Edit")}</a>
+                                                                <a><span className="material-icons" data-icon="edit"></span>{Translate(this.props, "Edit")}</a>
                                                             </Link>
                                                             </li>
                                                             : null
@@ -373,7 +395,7 @@ class Index extends React.Component {
                                                     {
                                                         this.state.blog.canDelete ?
                                                         <li>
-                                                            <a onClick={this.deleteBlog.bind(this)} href="#"><span className="material-icons">delete</span>{Translate(this.props, "Delete")}</a>
+                                                            <a onClick={this.deleteBlog.bind(this)} href="#"><span className="material-icons" data-icon="delete"></span>{Translate(this.props, "Delete")}</a>
                                                             </li>
                                                             : null
                                                     }
@@ -381,7 +403,7 @@ class Index extends React.Component {
                                                         this.state.blog.approve == 1 ? 
                                                     <li>
                                                         <a href="#" onClick={this.openReport.bind(this)}>
-                                                            <span className="material-icons">flag</span>
+                                                            <span className="material-icons" data-icon="flag"></span>
                                                             {Translate(this.props, "Report")}
                                                         </a>
                                                     </li>
@@ -393,7 +415,7 @@ class Index extends React.Component {
                                             </div>
                                         
                                         {
-                                            this.props.pageInfoData.appSettings[`${"blog_rating"}`] == 1 ?
+                                            !this.state.needSubscription && this.props.pageInfoData.appSettings[`${"blog_rating"}`] == 1 ?
                                                 <div className="animated-rater">
                                                     <Rating {...this.props} rating={this.state.blog.rating} type="blog" id={this.state.blog.blog_id} />
                                                 </div>

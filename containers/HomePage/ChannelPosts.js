@@ -174,10 +174,6 @@ class  Posts extends React.Component{
 
                                                         <div className="foot">
                                                             <div className="likeDislike">
-                                                                {/* <div className="icon like active" title="Like">
-                                                                    <span className="material-icons-outlined md-18">thumb_up</span>
-                                                                    89
-                                                                </div> */}
                                                                 <div className="icon like">
                                                                     <Like icon={true} {...this.props} like_count={post.like_count} item={post} type="channel_post" id={post.post_id} />{"  "}
                                                                 </div>
@@ -190,7 +186,7 @@ class  Posts extends React.Component{
                                                                 <div className="icon like">
                                                                     <Link  href="/post" customParam={`postId=${post.post_id}`} as={`/post/${post.post_id}`}>
                                                                         <a className="community-comment-a">
-                                                                            <span className="material-icons-outlined md-18">comment</span> {`${ShortNumber(post.comment_count ? post.comment_count : 0)}`}
+                                                                            <span className="material-icons-outlined md-18" data-icon="comment"></span> {`${ShortNumber(post.comment_count ? post.comment_count : 0)}`}
                                                                         </a> 
                                                                     </Link> 
                                                                 </div>

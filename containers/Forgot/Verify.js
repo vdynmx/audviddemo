@@ -86,7 +86,7 @@ class Form extends Component {
                     <div className="mainContentWrap">
                         <div className="container">
                             <div className="row">
-                                <div className="col-md-10 offset-md-1">
+                                <div className="col-md-10 offset-md-1 position-relative">
                                     <div className="formBoxtop loginp">
                                         {
                                             <React.Fragment>

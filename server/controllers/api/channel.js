@@ -900,31 +900,7 @@ exports.create = async (req, res) => {
                     await channelVideosModel.insert(channelVideoObj, req, channelId)
                 });
             }
-            //update item count in categories if changed
-            if (insertObject["category_id"] != channelObject.category_id) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count - 1 WHERE category_id = " + channelObject["category_id"]).then(result => {
-                }).catch(err => { })
-            }
-            if (insertObject["subcategory_id"] != channelObject.subcategory_id || (insertObject["category_id"] == 0 && channelObject.subcategory_id)) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count - 1 WHERE category_id = " + channelObject["subcategory_id"]).then(result => {
-                }).catch(err => { })
-            }
-            if (insertObject["subsubcategory_id"] != channelObject.subsubcategory_id || (insertObject["subcategory_id"] == 0 && channelObject.subsubcategory_id)) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count - 1 WHERE category_id = " + channelObject["subsubcategory_id"]).then(result => {
-                }).catch(err => { })
-            }
-            if (insertObject["category_id"] != channelObject.category_id && insertObject["category_id"] > 0) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["category_id"]).then(result => {
-                }).catch(err => { })
-                if (insertObject["subcategory_id"] != channelObject.subcategory_id && insertObject["subcategory_id"] > 0) {
-                    globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subcategory_id"]).then(result => {
-                    }).catch(err => { })
-                    if (insertObject["subsubcategory_id"] != channelObject.subsubcategory_id && insertObject["subsubcategory_id"] > 0) {
-                        globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subsubcategory_id"]).then(result => {
-                        }).catch(err => { })
-                    }
-                }
-            }
+           
             res.send({ channelId: channelId, message: constant.channel.EDIT, custom_url: channelObject.custom_url });
         }).catch(err => {
             return res.send({ error: fieldErrors.errors([{ msg: constant.general.DATABSE }], true), status: errorCodes.invalid }).end();
@@ -957,18 +933,7 @@ exports.create = async (req, res) => {
                 }).catch(err => {
 
                 })
-                if (insertObject["category_id"] != 0) {
-                    globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["category_id"]).then(result => {
-                        if (insertObject["subcategory_id"] != 0) {
-                            globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subcategory_id"]).then(result => {
-                                if (insertObject["subsubcategory_id"] != 0) {
-                                    globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subsubcategory_id"]).then(result => {
-                                    }).catch(err => { })
-                                }
-                            }).catch(err => { })
-                        }
-                    }).catch(err => { })
-                }
+                
 
                 res.send({ channelId: result.insertId, message: constant.channel.SUCCESS, custom_url: insertObject['custom_url'] });
             } else {

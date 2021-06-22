@@ -362,6 +362,10 @@ exports.signup = async (req, res) => {
         await globalModel.create(req, fieldUserDetails, 'userdetails').then(async result => {
 
         });
+        //create user free subscription plan
+        await globalModel.create(req, {owner_id:user_id,title:"Free Plan",description:"This is a free plan.",price:0,is_default:1,creation_date:formatted,modified_date:formatted}, 'member_plans').then(async result => {
+
+        });
         //subscribe to newsletter
         if(req.body.subscribe){
           userModel.newsletter({email:req.body.email,first_name:fieldUserDetails["first_name"],last_name:fieldUserDetails["last_name"]},req).then(result => {
@@ -397,8 +401,8 @@ exports.signup = async (req, res) => {
                 resultEmail['contactus']["title"] = process.env.PUBLIC_URL + "/contact/" 
                 resultEmail['contactus']["changeText"] = "Contact Us!"
                 resultEmail['email'] = {}
-                resultEmail['email']["title"] = fieldUserDetails.email
-                resultEmail['email']["changeText"] = fieldUserDetails.email
+                resultEmail['email']["title"] = fieldValues.email
+                resultEmail['email']["changeText"] = fieldValues.email
                 emailFunction.sendMessage(req, resultEmail).then(result => {
   
                 }).catch(err => {

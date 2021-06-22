@@ -107,6 +107,7 @@ module.exports = {
                     }
                     sql += ' WHEN view_privacy = "follow" THEN (SELECT id FROM followers WHERE type = "members" AND owner_id = audio.owner_id && id = '+owner_id+' )  '
                 }
+                sql += ' WHEN view_privacy LIKE "%package_%" THEN true'
                 sql += " ELSE false END"
                 resolve(sql)                
             })

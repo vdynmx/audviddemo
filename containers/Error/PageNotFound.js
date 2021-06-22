@@ -14,7 +14,7 @@ const PageNotFound = (props) => {
                         <div className="col-md-6 offset-md-1">
                             <h2>{props.t("Oops!, The Page you are looking for can't be found!")}</h2>
                             <Link href="/">
-                                <a> <span className='material-icons'>keyboard_arrow_left</span> {props.t("Go Back to the homepage")}</a>
+                                <a> <span className="material-icons" data-icon="keyboard_arrow_left"></span> {props.t("Go Back to the homepage")}</a>
                             </Link>
                         </div>
                     </div>

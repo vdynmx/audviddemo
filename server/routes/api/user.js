@@ -54,6 +54,64 @@ check("type").not().isEmpty().withMessage("Type should not be empty!").trim(),
 check("price").not().isEmpty().withMessage("Price should not be empty!").trim(),
 controller.bankdetails);
 
+router.use("/members/create-plan",isLogin, async (req, res, next) => {
+    req.allowedFileTypes = /jpeg|jpg|png|gif/
+    var currUpload = upload('image', "upload/images/plans/", req)
+    req.imageResize = [
+        { width: req.widthResize, height: req.heightResize }
+    ];
+    currUpload(req, res, function (err) {
+        if (err) {
+            req.imageError = "Uploaded image is too large to upload, please choose smaller image and try again.";
+            next()
+        } else {
+            req.fileName = req.file ? req.file.filename : false;
+            if (req.file && req.appSettings.upload_system != "s3"  && req.appSettings.upload_system != "wisabi") {
+                const extension = path.extname(req.fileName);
+                const file = path.basename(req.fileName, extension);
+                const pathName = req.serverDirectoryPath + "/public/upload/images/plans/"
+                const newFileName = file + "_main" + extension;
+                var resizeObj = new resize(pathName, req.fileName, req)
+                resizeObj.save(pathName+newFileName,{ width: req.widthResize, height: req.heightResize }).then(res => {
+                    if(res){
+                        fs.unlink(pathName + req.fileName, function (err) {
+                            if (err) {
+                                console.error(err);
+                            }
+                        });
+                        req.fileName = newFileName;
+                        next()
+                    }else{
+                        req.imageError = "Your image contains an unknown image file encoding. The file encoding type is not recognized, please use a different image.";
+                        next()
+                    }
+                })
+            }else if(req.appSettings.upload_system == "s3"  || req.appSettings.upload_system == "wisabi"){
+                req.fileName = req.originalS3ImageName
+                next()
+            } else {
+                next()
+            }
+        }
+    });
+},
+check("price")
+.optional({ checkFalsy:true })
+.custom((value, { req }) => {
+    if (req.body.plan_id ) {
+        return Promise.resolve(true)
+    } else if(parseFloat(req.body.price) > 0){
+        return Promise.resolve(true)
+    }  else{
+        return Promise.reject(
+            "Price is required field"
+        );
+    }
+}),
+check("title").not().isEmpty().withMessage("Title is required field").trim(),
+check("description").not().isEmpty().withMessage("Description is required field").trim(),
+controller.createPlan)
+
 router.post('/members/upload-cover',isLogin, async (req, res, next) => {
     req.allowedFileTypes = /jpeg|jpg|png|gif/
     req.imageResize = [
@@ -357,8 +415,12 @@ router.post('/members/delete',isLogin, multer().none(),[
     })
     privacyMiddleware.isValid(req, res, next, 'member', 'delete')
 }, controller.delete)
+router.post('/members/plan-delete',isLogin, multer().none(), controller.deletePlan)
+
+
 
 router.post('/members/videos', multer().none(), controller.getVideos)
+router.post('/members/subscribers', multer().none(), controller.getSubscribers)
 router.post('/members/blogs', multer().none(), controller.getBlogs)
 router.post('/members/channels', multer().none(), controller.getChannels)
 router.post('/members/blogs', multer().none(), controller.getBlogs)

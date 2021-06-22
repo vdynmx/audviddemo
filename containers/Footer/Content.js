@@ -193,9 +193,9 @@ const Content = (props) => {
                         {
                             props.pageInfoData.appSettings['video_adult'] == 1 || props.pageInfoData.appSettings['channel_adult'] == 1 || props.pageInfoData.appSettings['blog_adult'] == 1 || props.pageInfoData.appSettings['playlist_adult'] == 1 ?
                         <li>
-                            <div className="custom-control custom-switch adultSwitchFtr">
-                                <input type="checkbox" onChange={props.allowAdultContent} defaultChecked={props.adultChecked} className="custom-control-input" id="adultSwitchFtr" />
-                                <label className="custom-control-label" htmlFor="adultSwitchFtr">{Translate(props,"Adult content")}</label>
+                            <div className="form-check form-switch adultSwitchFtr">
+                                <input type="checkbox" onChange={props.allowAdultContent} defaultChecked={props.adultChecked} className="form-check-input" id="adultSwitchFtr" />
+                                <label className="form-check-label" htmlFor="adultSwitchFtr">{Translate(props,"Adult content")}</label>
                                 <span className="error"></span>
                             </div>
                         </li>

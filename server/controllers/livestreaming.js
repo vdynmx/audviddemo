@@ -3,6 +3,8 @@ const categoryModel = require("../models/categories")
 const settingModel = require("../models/settings")
 const md5 = require("md5")
 const globalModel = require("../models/globalModel")
+const privacyLevelModel = require("../models/levelPermissions")
+const userModel = require("../models/users")
 
 exports.create = async (req, res) => {
     await commonFunction.getGeneralInfo(req, res, "live_streaming_create")
@@ -27,6 +29,18 @@ exports.create = async (req, res) => {
         }
         req.app.render(req, res, '/page-not-found', req.query);
         return
+    }
+    //owner plans
+    await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',req.user.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        //get user plans
+        await userModel.getPlans(req, { owner_id: req.user.user_id }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
     }
     //get categories
     const categories = []

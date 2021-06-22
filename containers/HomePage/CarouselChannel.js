@@ -214,7 +214,7 @@ class CarouselChannel extends React.Component {
                         </div>
                     </div>
 
-                    <div className="row mob2col">
+                    <div className="row mob2 col gx-2">
                         {
                             this.state.channels.map(result => {
                                 return <div key={result.channel_id} className="col-xl-3 col-lg-4 col-md-4 col-sm-6"><Item  {...this.props} {...result} channel={result} /></div>

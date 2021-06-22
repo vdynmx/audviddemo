@@ -50,9 +50,9 @@ class Index extends React.Component {
         }
         return (
             this.props.pageInfoData.loggedInUserDetails && this.state.item.like_dislike == "like" ?
-                    <span onClick={this.onChange} className="active" title={Translate(this.props,'Like')}><span className="material-icons-outlined md-18">thumb_up</span>{" " + `${ShortNumber(this.props.like_count ? this.props.like_count : 0)}`}</span>
+                    <span onClick={this.onChange} className="active" title={Translate(this.props,'Like')}><span className="material-icons-outlined md-18" data-icon="thumb_up"></span>{" " + `${ShortNumber(this.props.like_count ? this.props.like_count : 0)}`}</span>
                 :
-                    <span onClick={this.onChange} title={Translate(this.props,'Like')}><span className="material-icons-outlined md-18">thumb_up</span>{" " + `${ShortNumber(this.props.like_count ? this.props.like_count : 0)}`}</span>
+                    <span onClick={this.onChange} title={Translate(this.props,'Like')}><span className="material-icons-outlined md-18" data-icon="thumb_up"></span>{" " + `${ShortNumber(this.props.like_count ? this.props.like_count : 0)}`}</span>
                    
         )
     }

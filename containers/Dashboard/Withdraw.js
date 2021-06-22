@@ -175,7 +175,7 @@ class Withdraw extends React.Component {
                     <td><Date {...this.props} creation_date={item.creation_date} initialLanguage={this.props.initialLanguage} format={'dddd, MMMM Do YYYY'} defaultTimezone={this.props.pageInfoData.defaultTimezone} /></td>
                     <td>
                         <div className="actionBtn">
-                            <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.delete.bind(this, item.withdraw_id)}><span className="material-icons">delete</span></a>
+                            <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.delete.bind(this, item.withdraw_id)}><span className="material-icons" data-icon="delete"></span></a>
                         </div>
                     </td>
                 </tr>
@@ -191,7 +191,7 @@ class Withdraw extends React.Component {
                             <form onSubmit={this.submitForm}>
                                 <div className="form-group col-xs-3 col-md-3">
                                     <label htmlFor="status" className="control-label">{Translate(this.props, "Status")}</label>
-                                    <select className="form-control" id="status" value={this.state.fields.status ? this.state.fields.status : ""} onChange={this.change.bind(this)}>
+                                    <select className="form-control form-select" id="status" value={this.state.fields.status ? this.state.fields.status : ""} onChange={this.change.bind(this)}>
                                         <option key={""} value="">{Translate(this.props, "")}</option>
                                         <option key="0" value={"0"}>{Translate(this.props, "Processing")}</option>
                                         <option key="1" value={"1"}>{Translate(this.props, "Approved")}</option>

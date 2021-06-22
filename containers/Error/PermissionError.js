@@ -14,7 +14,7 @@ const PermissionError = (props) => {
                         <div className="col-md-6 offset-md-1">
                             <h2>{props.t("Oops!, You don't have permission to view this page!")}</h2>
                             <Link href="/">
-                                <a href="#"> <span className='material-icons'>keyboard_arrow_left</span> {props.t("Go Back to the homepage")}</a>
+                                <a href="#"> <span className="material-icons" data-icon="keyboard_arrow_left"></span> {props.t("Go Back to the homepage")}</a>
                             </Link>
                         </div>
                     </div>

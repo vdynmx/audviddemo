@@ -490,8 +490,8 @@ class Index extends React.Component{
                                 {
                                       this.state.streamType != "rtmp" && this.state.cameraList && this.state.cameraList.length > 1 ?
                                     <div className="icon shareLinks">                                    
-                                        <span className="material-icons" onClick={this.changeCamera.bind(this)}>
-                                            flip_camera_android
+                                        <span className="material-icons" data-icon="flip_camera_android" onClick={this.changeCamera.bind(this)}>
+                                            
                                         </span>
                                          {/* <select value={this.state.cameraId} onChange={this.changeCamera.bind(this)}>
                                             <option>{this.props.t("Select Camera Option")}</option>
@@ -512,12 +512,12 @@ class Index extends React.Component{
                                             <div className="icon valumeBtn" onClick={this.CameraAudio.bind(this,'video')}>
                                                 {
                                                     this.state.videoMuted ? 
-                                                        <span className="material-icons">
-                                                            videocam_off
+                                                        <span className="material-icons" data-icon="videocam_off">
+                                                            
                                                         </span>
                                                     : 
-                                                        <span className="material-icons">
-                                                            videocam
+                                                        <span className="material-icons" data-icon="videocam">
+                                                            
                                                         </span>
                                                 }
                                             </div>

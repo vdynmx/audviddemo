@@ -176,6 +176,7 @@ exports.index = async(req,res) => {
         }else if(filter == "watchlater"){
             isValid = true
             data.mywatchlater = 1
+            data.myCustom = 1
             data.customSearch = true
         }else if(filter == "favourited" && req.appSettings["video_favourite"]){
             isValid = true
@@ -751,6 +752,22 @@ exports.index = async(req,res) => {
                 }).catch(err => {
                     console.log(err)
                 })
+                
+                await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',user.level_id).then(result => {
+                    req.query.planCreate = result  == 1 ? 1 : 0
+                })
+                //member subscription earning
+                if(req.query.planCreate == 1){
+                    await userModel.getStats(req,{criteria:"today",user:user}).then(result => {
+                        if(result){
+                            data.userSubscriptionEarning = result.spent
+                            data.xaxis = result.xaxis
+                            data.yaxis = result.yaxis
+                        }
+                    }).catch(err => {
+                        console.log(err)
+                    })
+                }
 
                 //channel support earning
                 const channelSupportTransaction = require("../../models/channels")

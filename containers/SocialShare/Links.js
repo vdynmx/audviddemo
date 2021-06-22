@@ -300,9 +300,35 @@ const Links = (props) => {
                 </div>
             : 
             <li className={props.className ? props.className : null}>
+                {
+                    props.countItems == 30 ? 
+                        <React.Fragment>
+                            <div className="social-share">
+                                <FacebookShareButton
+                                            url={shareUrl}
+                                            quote={title}
+                                            className="social-share__share-button">
+                                            <FacebookIcon
+                                            size={buttonHeightWidth}
+                                            round={round} />
+                                </FacebookShareButton>
+                            </div>
+                            <div className="social-share">
+                                <TwitterShareButton
+                                    url={shareUrl}
+                                    title={title}
+                                    className="social-share__share-button">
+                                    <TwitterIcon
+                                    size={buttonHeightWidth}
+                                    round={round} />
+                                </TwitterShareButton>
+                            </div>
+                        </React.Fragment>
+                : null
+                }
                 <a className="videoListBtns" href="#" title={Translate(props, "Share")}  onClick={props.openPopup}>
-                    <span className="material-icons md-18">
-                        share
+                    <span className="material-icons md-18" data-icon="share">
+                        
                     </span>
                     {
                         !props.hideTitle ? 

@@ -387,16 +387,16 @@ class Ads extends React.Component {
                         <div className="actionBtn">
                             {
                                 this.state.canDelete ?
-                                    <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.delete.bind(this, item.ad_id)}><span className="material-icons">delete</span></a>
+                                    <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.delete.bind(this, item.ad_id)}><span className="material-icons" data-icon="delete"></span></a>
                                     : null
                             }
                             {
                                 this.state.canEdit ?
-                                    <a href="#"  className="text-success" title={Translate(this.props, "Edit")} onClick={this.edit.bind(this, item.ad_id)}><span className="material-icons">edit</span></a>
+                                    <a href="#"  className="text-success" title={Translate(this.props, "Edit")} onClick={this.edit.bind(this, item.ad_id)}><span className="material-icons" data-icon="edit"></span></a>
                                     : null
                             }
                             <a href="#" className="text-info" onClick={this.analytics.bind(this, item.ad_id)} title={Translate(this.props, "Analytics")}>
-                                <span className="material-icons">show_chart</span>
+                                <span className="material-icons" data-icon="show_chart"></span>
                             </a>
                         </div>
                     </td>
@@ -424,7 +424,7 @@ class Ads extends React.Component {
                         </div>
                         
                         <div className="grid-menu justify-content-between search-form">
-                            <form onSubmit={this.submitForm}>
+                            <form onSubmit={this.submitForm} className="row gy-3">
                                 <div className="form-group col-xs-3 col-md-3">
                                     <label htmlFor="name" className="control-label">{Translate(this.props, "Name")}</label>
                                     <input type="text" onChange={this.change.bind(this)} value={this.state.fields.name ? this.state.fields.name : ""} id="name" className="form-control" placeholder={Translate(this.props, "Name")} />
@@ -438,7 +438,7 @@ class Ads extends React.Component {
                                         <React.Fragment>
                                             <div className="form-group col-xs-3 col-md-3">
                                                 <label htmlFor="category_id" className="control-label">{Translate(this.props, "Categories")}</label>
-                                                <select className="form-control" id="category_id" value={this.state.fields.category_id ? this.state.fields.category_id : ""} onChange={this.onCategoryChange}>
+                                                <select className="form-control form-select" id="category_id" value={this.state.fields.category_id ? this.state.fields.category_id : ""} onChange={this.onCategoryChange}>
                                                     {
                                                         categories.map(res => {
                                                             return (
@@ -452,7 +452,7 @@ class Ads extends React.Component {
                                                 subcategories.length > 0 ?
                                                     <div className="form-group col-xs-3 col-md-3">
                                                         <label htmlFor="subcategory_id" className="control-label">{Translate(this.props, "Sub Categories")}</label>
-                                                        <select className="form-control" id="subcategory_id" value={this.state.fields.subcategory_id ? this.state.fields.subcategory_id : ""} onChange={this.onSubCategoryChange}>
+                                                        <select className="form-control form-select" id="subcategory_id" value={this.state.fields.subcategory_id ? this.state.fields.subcategory_id : ""} onChange={this.onSubCategoryChange}>
                                                             {
                                                                 subcategories.map(res => {
                                                                     return (
@@ -468,7 +468,7 @@ class Ads extends React.Component {
                                                 subsubcategories.length > 0 ?
                                                     <div className="form-group col-xs-3 col-md-3">
                                                         <label htmlFor="subsubcategory_id" className="control-label">{Translate(this.props, "Sub Sub Categories")}</label>
-                                                        <select value={this.state.fields.subsubcategory_id ? this.state.fields.subsubcategory_id : ""} id="subsubcategory_id" className="form-control" onChange={this.onSubSubCategoryChange}>
+                                                        <select className="form-control form-select" value={this.state.fields.subsubcategory_id ? this.state.fields.subsubcategory_id : ""} id="subsubcategory_id" className="form-control" onChange={this.onSubSubCategoryChange}>
                                                             {
                                                                 subsubcategories.map(res => {
                                                                     return (
@@ -482,7 +482,7 @@ class Ads extends React.Component {
                                             }
                                             <div className="form-group col-xs-3 col-md-3">
                                                 <label htmlFor="status" className="control-label">{Translate(this.props, "Status")}</label>
-                                                <select className="form-control" id="status" value={this.state.fields.status ? this.state.fields.status : ""} onChange={this.change.bind(this)}>
+                                                <select className="form-control form-select" id="status" value={this.state.fields.status ? this.state.fields.status : ""} onChange={this.change.bind(this)}>
                                                     <option key={""} value="">{Translate(this.props, "")}</option>
                                                     <option key="1" value={"1"}>{Translate(this.props, "Enabled")}</option>
                                                     <option key="0" value={"0"}>{Translate(this.props, "Disabled")}</option>
@@ -491,7 +491,7 @@ class Ads extends React.Component {
                                             </div>
                                             <div className="form-group col-xs-3 col-md-3">
                                                 <label htmlFor="adult" className="control-label">{Translate(this.props, "Adult")}</label>
-                                                <select className="form-control" id="adult" value={this.state.fields.adult ? this.state.fields.adult : ""} onChange={this.change.bind(this)}>
+                                                <select className="form-control form-select" id="adult" value={this.state.fields.adult ? this.state.fields.adult : ""} onChange={this.change.bind(this)}>
                                                     <option key={""} value="">{Translate(this.props, "")}</option>
                                                     <option key="1" value={"1"}>{Translate(this.props, "Yes")}</option>
                                                     <option key="0" value={"0"}>{Translate(this.props, "No")}</option>
@@ -500,7 +500,7 @@ class Ads extends React.Component {
                                             </div>
                                             <div className="form-group col-xs-3 col-md-3">
                                                 <label htmlFor="approve" className="control-label">{Translate(this.props, "Approve")}</label>
-                                                <select className="form-control" id="approve" value={this.state.fields.approve ? this.state.fields.approve : ""} onChange={this.change.bind(this)}>
+                                                <select className="form-control form-select" id="approve" value={this.state.fields.approve ? this.state.fields.approve : ""} onChange={this.change.bind(this)}>
                                                     <option key={""} value="">{Translate(this.props, "")}</option>
                                                     <option key="1" value={"1"}>{Translate(this.props, "Yes")}</option>
                                                     <option key="0" value={"0"}>{Translate(this.props, "No")}</option>

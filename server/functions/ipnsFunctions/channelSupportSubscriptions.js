@@ -28,6 +28,8 @@ exports.onSubscriptionTransactionIpn = async (req,params, order,subscription,tra
     packageObj.interval = 1
     if(subscription.type.indexOf("channel_subscription") > -1){
       subscription.type = "channel_support"
+    }else if(subscription.type == "user_subscribe"){
+      packageObj.duration = 100
     }
     switch(params.event_type) {
       case 'charge.refunded':
@@ -376,33 +378,12 @@ exports.onSubscriptionTransactionIpn = async (req,params, order,subscription,tra
         })
     })
   }
-  
-  exports.cancelAll = async (user, note = null, subscription = null,req,order) => {
+  exports.cancelChannelSubscription = async (note = null,req,channel_id) => {
       
     let condition= []
-    let sql = "SELECT subscription_id FROM subscriptions WHERE owner_id = ? AND (status = 'active' || status = 'completed') ";
-    condition.push(user['user_id']);
-    if (subscription) {
-      condition.push(subscription.subscription_id)
-      sql += " AND subscription_id = ?"
-    }
-
-    //source_type
-    //source_id
-    let orderResourceType = {}
-    await globalModel.custom(req, "SELECT subscriptions.type,subscriptions.id FROM orders LEFT JOIN subscriptions ON subscriptions.subscription_id = orders.source_id WHERE orders.order_id = ?", [order.order_id]).then(result => {
-        if (result) {
-            const res = JSON.parse(JSON.stringify(result));
-            orderResourceType = res[0]
-        }
-    })
-    
-    if(Object.keys(orderResourceType).length == 0){
-        return
-    }
-
-    condition.push(orderResourceType.type)
-    condition.push(orderResourceType.id)
+    let sql = "SELECT subscription_id FROM subscriptions WHERE (status = 'active' || status = 'completed') ";
+    condition.push("channel_subscription")
+    condition.push(channel_id)
 
     sql += " AND type = ? AND id = ? "
 
@@ -410,16 +391,91 @@ exports.onSubscriptionTransactionIpn = async (req,params, order,subscription,tra
       const res = JSON.parse(JSON.stringify(results));
       if (res && res.length) {
         res.forEach(data => {
-          if(req.stripeIPN){
-            recurringFunctions.cancelStripe(req, subscription['gateway_profile_id'], note).then(res => {}).catch(err => {})
-          }else{
-            recurringFunctions.cancel(req, subscription['gateway_profile_id'], note).then(res => {}).catch(err => {})
+          if(data.gateway_id == 2){
+            recurringFunctions.cancelStripe(req, data['gateway_profile_id'], note).then(res => {}).catch(err => {})
+          }else if(data.gateway_id == 1){
+            recurringFunctions.cancel(req, data['gateway_profile_id'], note).then(res => {}).catch(err => {})
           }
         });
       }
     })
   }
- 
+  exports.cancelAll = async (user, note = null, subscription = null,req,order) => {
+      
+    let condition= []
+    let sql = "";
+    if(req.memberUSERID){
+      condition.push(user.user_id);
+      condition.push(req.memberUSERID);
+      sql = "SELECT subscription_id,gateway_profile_id,gateway_id FROM subscriptions WHERE owner_id = ? AND id = ? AND (status = 'active' || status = 'completed')";
+      condition.push(user.subscription_type)
+      sql += " AND type = ? "
+    }else if(req.userSubscriptionDelete){
+      if(user.owner_user_id){
+        condition.push(user.owner_user_id);
+        sql = "SELECT subscription_id,gateway_profile_id,gateway_id FROM subscriptions WHERE owner_id = ? AND (status = 'active' || status = 'completed')";
+      }else{
+        condition.push(user.channel_user_id);
+        sql = "SELECT subscription_id,gateway_profile_id,gateway_id FROM subscriptions WHERE id = ? AND (status = 'active' || status = 'completed')";
+      }
+      condition.push(user.subscription)
+      sql += " AND type = ? "
+    }else if(!req.userDelete){
+      sql = "SELECT subscription_id,gateway_profile_id,gateway_id FROM subscriptions WHERE owner_id = ? AND (status = 'active' || status = 'completed') ";
+      condition.push(user['user_id']);
+      if (subscription) {
+        condition.push(subscription.subscription_id)
+        sql += " AND subscription_id = ?"
+      }else if(user.subscription_type){
+        condition.push(user.subscription_type)
+        sql += " AND type = ? "
+      }
+    }else{
+      condition.push(user.channel_user_id);
+      sql = "SELECT subscription_id,gateway_profile_id,gateway_id FROM subscriptions WHERE id IN (SELECT channel_id FROM channels WHERE owner_id = ?) AND (status = 'active' || status = 'completed')";
+      condition.push(user.subscription_type)
+      sql += " AND type = ? "
+    }
+    //source_type
+    //source_id
+    if(order){
+      let orderResourceType = {}
+      await globalModel.custom(req, "SELECT subscriptions.* FROM orders LEFT JOIN subscriptions ON subscriptions.subscription_id = orders.source_id WHERE orders.order_id = ?", [order.order_id]).then(result => {
+          if (result) {
+              const res = JSON.parse(JSON.stringify(result));
+              orderResourceType = res[0]
+          }
+      })
+      
+      if(Object.keys(orderResourceType).length == 0){
+          return
+      }
+
+      condition.push(orderResourceType.type)
+      condition.push(orderResourceType.id)
+
+      sql += " AND type = ? AND id = ? "
+    }
+    globalModel.custom(req, sql, condition).then(results => {
+      const res = JSON.parse(JSON.stringify(results));
+      if (res && res.length) {
+        res.forEach(data => {
+          if(data.gateway_id == 2){
+            recurringFunctions.cancelStripe(req, data['gateway_profile_id'], note).then(res => {}).catch(err => {})
+          }else if(data.gateway_id == 1){
+            recurringFunctions.cancel(req, data['gateway_profile_id'], note).then(res => {}).catch(err => {})
+          }
+        });
+      }
+    })
+  }
+  exports.cancelParticular = (subscription,note) => {
+    if(subscription.gateway == 2){
+      recurringFunctions.cancelStripe(req, subscription['gateway_profile_id'], note).then(res => {}).catch(err => {})
+    }else if(subscription.gateway == 1){
+      recurringFunctions.cancel(req, subscription['gateway_profile_id'], note).then(res => {}).catch(err => {})
+    }
+  }
   exports.onPaymentSuccess = async (req,order, subscription, transaction, packageObj, user,dispute = false) => {
     return new Promise(async function (resolve, reject) {
       let changedData = false;
@@ -434,10 +490,23 @@ exports.onSubscriptionTransactionIpn = async (req,params, order,subscription,tra
         let expiration = null
         if (packageObj.is_recurring) {
            expiration = await recurringFunctions.getExpirationDate(packageObj)
+           if(subscription && subscription.gateway_id == 2){
+            let planExpirationDate = await recurringFunctions.planExpirationDate(packageObj,subscription.creation_date)
+            //check plan exires
+            if(planExpirationDate){
+              let planExpireDate = new Date(planExpirationDate);
+              let currentDate = new Date();
+              if(planExpireDate.getTime() <= currentDate.getTime()){
+                //expire plan
+                await exports.cancelAll(user, req.i18n.t("Package plan completed."),null,req,order);
+              }
+            }
+          }
         }
         if (expiration && !dispute) {
           updatedData['expiration_date'] = nodeDate.create(expiration).format("Y-m-d H:M:S")
         }
+
         // Change status
         if (subscription['status'] != 'completed') {
           updatedData['status'] = 'completed';

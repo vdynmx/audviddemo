@@ -588,10 +588,10 @@ module.exports = {
         })
     },
     insertFollowNotifications: function (req, data) {
-        return new Promise(function (resolve) {
+        return new Promise(function (resolve,reject) {
             req.getConnection(function (_, connection) {
                 const date = dateTime.create().format("Y-m-d H:M:S")
-                connection.query("INSERT INTO notifications (`owner_id`,`subject_type`,`subject_id`,`object_type`,`object_id`,`type`,`notification_send`,`creation_date`) SELECT owner_id,?,?,?,?,?,0,? FROM `followers` WHERE id = ? AND type = ? ", [dataObject.subject_type, data.subject_id, data.object_type, data.object_id, data.type, date, data.subject_id, data.subject_type == "users" ? "members" : data.subject_type], function (err, results) {
+                connection.query("INSERT INTO notifications (`owner_id`,`subject_type`,`subject_id`,`object_type`,`object_id`,`type`,`notification_send`,`creation_date`) SELECT owner_id,?,?,?,?,?,0,? FROM `followers` WHERE id = ? AND type = ? ", [data.subject_type, data.subject_id, data.object_type, data.object_id, data.type, date, data.subject_id, data.subject_type == "users" ? "members" : data.subject_type], function (err, results) {
                     if (err)
                         resolve(false)
                     if (results) {

@@ -753,15 +753,15 @@ exports.cloudRecrodingStart = async(req,res) => {
                         "channelType":1,
                         "streamTypes":2,
                         "audioProfile":1,
-                        "videoStreamType":1,
+                        "videoStreamType":0,
                         "maxIdleTime":120,
                         "transcodingConfig":{
-                            "width":480,
-                            "height":720,
-                            "fps":24,
-                            "bitrate":800,
-                            "maxResolutionUid":"1",
-                            "mixedVideoLayout":1
+                                "width":1920,
+                                "height":1080,
+                                "fps":30,
+                                "bitrate":6300,
+                                "mixedVideoLayout":1,
+                                "backgroundColor": "#000000"
                             }
                         },
                         "storageConfig":{
@@ -772,7 +772,8 @@ exports.cloudRecrodingStart = async(req,res) => {
                             "secretKey":settings["agora_s3_secret_access_key"],
                             "fileNamePrefix": [
                                 "upload",
-                                "livestreamings"
+                                "livestreamings",
+                                videoCustomUrl.toString()
                             ]
                         } 
                 }
@@ -870,8 +871,8 @@ exports.cloudRecrodingStop = async(req,res) => {
         //return res.send({ status: errorCodes.created }).end(); 
     })
     .catch(function (error) {
-        console.log(' error stop video')
-        //return res.send({ error: fieldErrors.errors([{ msg: constant.video.LIVESTREAMINGSTOPPINGERROR }], true), status: errorCodes.invalid }).end(); 
+        console.log(' error stop video',error);
+        return res.send({ error: fieldErrors.errors([{ msg: error.message }], true), status: errorCodes.invalid }).end(); 
     });
 }
 exports.artists = async(req,res) => {
@@ -1170,6 +1171,7 @@ exports.importUrl = async (req, res, next) => {
     const url = req.body["import-url"]
     if (req.appSettings["enable_iframely"] != "1" || req.appSettings["iframely_api_key"] == "") {
         await commonFunction.getUploadVideoInfo(url).then(async result => {
+            console.log(result);
             if (!result.status) {
                 let type = 0
                 let channel = ""
@@ -1337,7 +1339,7 @@ exports.create = async (req, res) => {
     insertObject["category_id"] = req.body.category_id ? req.body.category_id : 0
     insertObject["subcategory_id"] = req.body.subcategory_id ? req.body.subcategory_id : 0
     insertObject["subsubcategory_id"] = req.body.subsubcategory_id ? req.body.subsubcategory_id : 0
-    insertObject["price"] = parseFloat(req.body.price) > 0 ? parseFloat(req.body.price) > 0 : 0
+    insertObject["price"] = parseFloat(req.body.price) > 0 ? parseFloat(req.body.price) : 0
     insertObject["adult"] = req.body.adult ? req.body.adult : 0
     insertObject["search"] = req.body.search ? req.body.search : 1
     insertObject["view_privacy"] = req.body.privacy ? req.body.privacy : 'everyone'
@@ -1469,31 +1471,6 @@ exports.create = async (req, res) => {
     if (videoId) {
         //update existing video
         await globalModel.update(req, insertObject, "videos", 'video_id', videoId).then(async result => {
-            //update item count in categories if changed
-            if (insertObject["category_id"] != videoObject.category_id) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count - 1 WHERE category_id = " + videoObject["category_id"]).then(result => {
-                }).catch(err => { })
-            }
-            if (insertObject["subcategory_id"] != videoObject.subcategory_id || (insertObject["category_id"] == 0 && videoObject.subcategory_id)) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count - 1 WHERE category_id = " + videoObject["subcategory_id"]).then(result => {
-                }).catch(err => { })
-            }
-            if (insertObject["subsubcategory_id"] != videoObject.subsubcategory_id || (insertObject["subcategory_id"] == 0 && videoObject.subsubcategory_id)) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count - 1 WHERE category_id = " + videoObject["subsubcategory_id"]).then(result => {
-                }).catch(err => { })
-            }
-            if (insertObject["category_id"] != videoObject.category_id && insertObject["category_id"] > 0) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["category_id"]).then(result => {
-                }).catch(err => { })
-                if (insertObject["subcategory_id"] != videoObject.subcategory_id && insertObject["subcategory_id"] > 0) {
-                    globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subcategory_id"]).then(result => {
-                    }).catch(err => { })
-                    if (insertObject["subsubcategory_id"] != videoObject.subsubcategory_id && insertObject["subsubcategory_id"] > 0) {
-                        globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subsubcategory_id"]).then(result => {
-                        }).catch(err => { })
-                    }
-                }
-            }
 
             //create tip data
             if(req.body.tips){
@@ -1553,19 +1530,7 @@ exports.create = async (req, res) => {
         //create new video
         await globalModel.create(req, insertObject, "videos").then(async result => {
             if (result) {
-                //update category counts
-                if (insertObject["category_id"] != 0) {
-                    globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["category_id"]).then(result => {
-                        if (insertObject["subcategory_id"] != 0) {
-                            globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subcategory_id"]).then(result => {
-                                if (insertObject["subsubcategory_id"] != 0) {
-                                    globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subsubcategory_id"]).then(result => {
-                                    }).catch(err => { })
-                                }
-                            }).catch(err => { })
-                        }
-                    }).catch(err => { })
-                }
+                
                 let imagevideo = ""
                 if(insertObject['image']){
                     imagevideo = insertObject['image']
@@ -1608,6 +1573,14 @@ exports.create = async (req, res) => {
                                     "message": insertObject["type"] == 3 ? constant.channel.VIDEONOTIFYEDADDED :  constant.channel.VIDEOADDED
                                 });
                             }
+                        })
+                    }
+                }else{
+                    if(insertObject["type"] != 3){
+                        await notificationModel.insertFollowNotifications(req,{subject_type:"users",subject_id:req.user.user_id,object_type:"videos",object_id:result.insertId,type:"members_followed"}).then(result => {
+
+                        }).catch(err => {
+                            console.log(err)
                         })
                     }
                 }

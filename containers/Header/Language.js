@@ -6,7 +6,7 @@ const Language = (props) => {
         <React.Fragment>
             <li className="nav-item dropdown">
                 <a className="nav-link" href="#" id="navbarDropdown"
-                    role="button" data-toggle="dropdown" aria-haspopup="true"
+                    role="button" data-bs-toggle="dropdown" aria-haspopup="true"
                     aria-expanded="false">
                     <span className="flag-icon flag-icon-eg"> </span>  English
                 </a>

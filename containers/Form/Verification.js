@@ -81,7 +81,7 @@ class Verification extends Component {
     render() {
         if(this.state.requestSend){
             return (
-                <div className="alert alert-success" role="alert">
+                <div className="alert alert-success verification-request" role="alert">
                 {this.props.t(this.state.requestSend)}
                 </div>
             )

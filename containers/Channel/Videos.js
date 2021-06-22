@@ -243,7 +243,7 @@ class  Videos extends React.Component{
                         refreshFunction={this.refreshContent}
                     >
                         <div className="">
-                                <div className="row mob2col">
+                                <div className="row mob2 col gx-2">
                                 {
                                     this.state.videos.map(video => {
                                         return (

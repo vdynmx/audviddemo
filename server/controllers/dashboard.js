@@ -63,6 +63,18 @@ exports.index = async (req, res) => {
             user = result    
         }
     })
+
+    const privacyLevelModel = require("../models/levelPermissions")
+    await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',user.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    await privacyLevelModel.findBykey(req,"member",'show_homebutton_profile',user.level_id).then(result => {
+        req.query.showHomeButtom = result  == 1 && req.query.planCreate == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        req.query.userProfilePage = 1;
+    }
+
     await privacyModel.permission(req, 'member', 'delete', user).then(result => {
         user.canDelete = result
     })
@@ -95,7 +107,6 @@ exports.index = async (req, res) => {
         results: []
     }
     data.owner_id = owner_id
-    const privacyLevelModel = require("../models/levelPermissions")
     if(req.appSettings['enable_monetization'] == 1){
         await privacyLevelModel.findBykey(req,"member",'monetization',user.level_id).then(result => {
             if(result == 1 && parseFloat(req.appSettings['ads_cost_publisher']) > 0)
@@ -184,6 +195,7 @@ exports.index = async (req, res) => {
             data.orderby = "videos.view_count DESC"
         } else if (filter == "watchlater") {
             isValid = true
+            data.myCustom = 1
             data.mywatchlater = 1
             data.customSearch = true
         } else if (filter == "favourited" && req.appSettings["video_favourite"]) {
@@ -913,6 +925,22 @@ exports.index = async (req, res) => {
             console.log(err)
         })
 
+        await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',user.level_id).then(result => {
+            req.query.planCreate = result  == 1 ? 1 : 0
+        })
+        //member subscription earning
+        if(req.query.planCreate == 1){
+            await userModel.getStats(req,{criteria:"today",user:user}).then(result => {
+                if(result){
+                    data.userSubscriptionEarning = result.spent
+                    data.xaxis = result.xaxis
+                    data.yaxis = result.yaxis
+                }
+            }).catch(err => {
+                console.log(err)
+            })
+        }
+
         //channel support earning
         const channelSupportTransaction = require("../models/channels")
         await channelSupportTransaction.getSupportStats(req,{criteria:"today",user:user}).then(result => {
@@ -947,7 +975,7 @@ exports.index = async (req, res) => {
             }
         }).catch(err => {
             console.log(err)
-        })
+        }) 
         req.query.statsData = data
         const earningModel = require("../models/earning")
         let LimitNum = 21

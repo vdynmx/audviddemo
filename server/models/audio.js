@@ -45,8 +45,18 @@ module.exports = {
                // if(!data.myContent){
                 customUrlAudio = "audio.custom_url as vcustom_url,"
                // }
-                let sql = 'SELECT '+customUrlAudio+'audio.*,'+customSelect+'likes.like_dislike,userdetails.displayname,userdetails.username,userdetails.verified,IF(audio.image IS NULL || audio.image = "","' + req.appSettings['audio_default_photo'] + '",audio.image) as image,IF(userdetails.avtar IS NULL || userdetails.avtar = "",(SELECT value FROM `level_permissions` WHERE name = \"default_mainphoto\" AND type = \"member\" AND level_id = users.level_id),userdetails.avtar) as avtar,favourites.favourite_id FROM audio '
+
+               let isAllowedView = req.levelPermissions["audio.view"] && req.levelPermissions["audio.view"].toString() == "2";
+                let checkPlanColumn =  ' CASE WHEN '+(isAllowedView ? 1 : 0)+' = 1 THEN 1 WHEN audio.owner_id = '+owner_id+' THEN 1 WHEN member_plans.price IS NULL THEN 1 WHEN mp.price IS NULL THEN 0 WHEN  `member_plans`.price <= mp.price THEN 1'
+                checkPlanColumn +=  ' WHEN  `member_plans`.price > mp.price THEN 2'
+                checkPlanColumn += ' ELSE 0 END as is_active_package, '
+
+                let sql = 'SELECT '+checkPlanColumn+customUrlAudio+'audio.*,'+customSelect+'likes.like_dislike,userdetails.displayname,userdetails.username,userdetails.verified,IF(audio.image IS NULL || audio.image = "","' + req.appSettings['audio_default_photo'] + '",audio.image) as image,IF(userdetails.avtar IS NULL || userdetails.avtar = "",(SELECT value FROM `level_permissions` WHERE name = \"default_mainphoto\" AND type = \"member\" AND level_id = users.level_id),userdetails.avtar) as avtar,favourites.favourite_id FROM audio '
                 
+                condition.push(req.user ? req.user.user_id : 0)
+                sql += ' LEFT JOIN `member_plans` ON `member_plans`.member_plan_id = REPLACE(`audio`.view_privacy,"package_","") LEFT JOIN '
+                sql += ' `subscriptions` ON subscriptions.id = audio.owner_id AND subscriptions.owner_id = ? AND subscriptions.type = "user_subscribe" AND subscriptions.status IN ("active","completed") LEFT JOIN `member_plans` as mp ON mp.member_plan_id = `subscriptions`.package_id '
+
                 if (data.channel_id) {
                     sql += " LEFT JOIN channelaudio ON channelaudio.audio_id = audio.audio_id AND channel_id = " + data.channel_id
                 }
@@ -86,8 +96,6 @@ module.exports = {
                 }
 
                 sql += " WHERE 1=1 "
-
-                
 
                 await privacyModel.checkSQL(req,'audio','audio','audio_id').then(result => {
                     if(result){
@@ -155,6 +163,11 @@ module.exports = {
                     condition.push(data.custom_url)
                     sql += " AND audio.custom_url =?"
                 }
+
+                if(data.user_home_content){
+                    sql += " AND view_privacy LIKE 'package_%'";
+                }
+
                 //if (!data.myContent) {
                     sql += " GROUP BY audio.audio_id "
                // }
@@ -179,7 +192,7 @@ module.exports = {
                 }
                 connection.query(sql, condition, function (err, results, fields) {
                     if (err)
-                        reject(err)
+                        resolve(err)
 
                     if (results) {
                         const level = JSON.parse(JSON.stringify(results));
@@ -187,6 +200,8 @@ module.exports = {
                         if(level && level.length){
                             level.forEach(audio => {
                                 delete audio.password
+                                if(audio.is_active_package != 1)
+                                    delete audio.audio_file
                                 if(!req.allowPeaks){
                                     delete audio.peaks;
                                 }

@@ -7,6 +7,7 @@ const favouriteModel = require("../models/favourites")
 const recentlyViewed = require("../models/recentlyViewed")
 const dateTime = require("node-datetime")
 const globalModel = require("../models/globalModel")
+const privacyLevelModel = require("../models/levelPermissions")
 
 exports.create = async (req,res,next) => {
     
@@ -36,6 +37,19 @@ exports.create = async (req,res,next) => {
         req.app.render(req, res, '/page-not-found', req.query);
         return
     }
+     //owner plans
+     await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',req.user.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        //get user plans
+        await userModel.getPlans(req, { owner_id: req.user.user_id }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
+    }
+
     req.query.audioId = audioId
     if(req.query.data){
         res.send({data:req.query})
@@ -120,7 +134,7 @@ exports.browse = async (req, res) => {
 exports.view = async (req, res) => {
  
     await commonFunction.getGeneralInfo(req, res, 'audio_view')
-    
+    req.query.tabType = (req.query.type ? req.query.type : null)
     req.query.audioId = req.params.id
 
     let audio = {}
@@ -228,6 +242,61 @@ exports.view = async (req, res) => {
 
     })
 
+
+    //owner plans
+    await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',audio.owner.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        let isPermissionAllowed = false
+        if(req.user && (req.user.user_id == audio.owner_id || (req.levelPermissions["audio.view"] && req.levelPermissions["audio.view"].toString() == "2"))){
+            isPermissionAllowed = true;
+        }
+        if(audio.view_privacy.indexOf("package_") > -1 && !isPermissionAllowed){
+            let owner_id = req.user ? req.user.user_id : 0
+            let checkPlanSql = ""
+            let conditionPlanSql = [owner_id,audio.audio_id]
+            checkPlanSql += 'SELECT `member_plans`.price as `package_price`,`subscriptions`.package_id as loggedin_package_id,mp.price as loggedin_price,'
+            checkPlanSql+=  ' CASE WHEN member_plans.price IS NULL THEN 1 WHEN mp.price IS NULL THEN 0 WHEN  `member_plans`.price <= mp.price THEN 1'
+            checkPlanSql+=  ' WHEN  `member_plans`.price > mp.price THEN 2'
+            checkPlanSql += ' ELSE 0 END as is_active_package'
+            checkPlanSql += ' FROM `audio` LEFT JOIN `member_plans` ON `member_plans`.member_plan_id = REPLACE(`audio`.view_privacy,"package_","") LEFT JOIN'
+            checkPlanSql += ' `subscriptions` ON subscriptions.id = audio.owner_id AND subscriptions.owner_id = ? AND subscriptions.type = "user_subscribe" AND subscriptions.status IN ("active","completed") LEFT JOIN `member_plans` as mp ON mp.member_plan_id = `subscriptions`.package_id WHERE '
+            checkPlanSql += ' audio.audio_id = ? LIMIT 1'
+            await globalModel.custom(req,checkPlanSql,conditionPlanSql).then(result => {
+                if(result && result.length > 0){
+                    const res = JSON.parse(JSON.stringify(result))[0];
+                    if(res.is_active_package == 0){
+                        res.type = "new"
+                        req.query.needSubscription = res; 
+                    }else if(res.is_active_package == 2){
+                        res.type = "upgrade"
+                        req.query.needSubscription = res;
+                    }
+                }
+            })
+        }
+    }
+
+    if(req.query.needSubscription){
+        if(!req.query.tabType){
+            req.query.tabType = "plans"
+        }
+        //get user plans
+        await userModel.getPlans(req, { owner_id: audio.owner.user_id, item:req.query.needSubscription }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
+        delete audio.audio_file
+        delete audio.peaks
+    }else{
+        if(req.query.tabType == "plans"){
+            req.query.tabType = "about"
+        }if(!req.query.tabType){
+            req.query.tabType = "about"
+        }
+    }
     
     if (!req.query.password) {
         req.query.audio = audio

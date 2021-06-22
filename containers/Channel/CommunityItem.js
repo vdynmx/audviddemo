@@ -114,19 +114,19 @@ class Item extends React.Component {
                                 <ul className="LikeDislikeList">
                                     <li>
                                         <div className="dropdown TitleRightDropdown">
-                                            <a href="#" data-toggle="dropdown"><span className="material-icons">more_verti</span></a>
+                                            <a href="#" data-bs-toggle="dropdown"><span className="material-icons" data-icon="more_verti"></span></a>
                                             <ul className="dropdown-menu dropdown-menu-right edit-options">
                                             {
                                                 this.state.channel.canEdit ?
                                                 <li>
-                                                    <a href="#" onClick={(e) => this.props.adPost(this.state.post,e)}><span className="material-icons">edit</span>{Translate(this.props, "Edit")}</a>
+                                                    <a href="#" onClick={(e) => this.props.adPost(this.state.post,e)}><span className="material-icons" data-icon="edit"></span>{Translate(this.props, "Edit")}</a>
                                                 </li>
                                                     : null
                                             } 
                                             {
                                                 this.state.channel.canDelete ?
                                                 <li>
-                                                    <a onClick={this.delete} href="#"><span className="material-icons">delete</span>{Translate(this.props, "Delete")}</a>
+                                                    <a onClick={this.delete} href="#"><span className="material-icons" data-icon="delete"></span>{Translate(this.props, "Delete")}</a>
                                                     </li>
                                                     : null
                                             }
@@ -176,7 +176,7 @@ class Item extends React.Component {
                             <li>
                                 <Link  href="/post" customParam={`postId=${this.state.post.post_id}`} as={`/post/${this.state.post.post_id}`}>
                                     <a className="community-comment-a">
-                                        <span title={this.props.t("Comments")}><span className="material-icons md-18">comment</span> {`${ShortNumber(this.state.post.comment_count ? this.state.post.comment_count : 0)}`}</span>
+                                        <span title={this.props.t("Comments")}><span className="material-icons" data-icon="comment"></span> {`${ShortNumber(this.state.post.comment_count ? this.state.post.comment_count : 0)}`}</span>
                                     </a> 
                                 </Link>  
                             </li>

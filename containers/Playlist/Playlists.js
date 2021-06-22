@@ -255,7 +255,7 @@ class  Playlists extends React.Component{
                         releaseToRefreshContent={<Release release={true} {...this.props} />}
                         refreshFunction={this.refreshContent}
                     >
-                        <div className="row mob2col">
+                        <div className="row mob2 col gx-2">
                             {
                                 this.state.playlists.map(playlist => {
                                     return (

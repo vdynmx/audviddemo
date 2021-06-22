@@ -30,14 +30,14 @@ return (
                             memberFeatured == 1 && props.package.is_featured == 1 ?
                                 <li>
                                     <span className="fa-li">
-                                        <span className="material-icons">check</span>
+                                        <span className="material-icons" data-icon="check"></span>
                                     </span>
                                     {props.t("Featured member")}
                                     </li>
                                 :
                                 <li className="text-muted">
                                     <span className="fa-li">
-                                        <span className="material-icons">close</span>
+                                        <span className="material-icons" data-icon="close"></span>
                                     </span>
                                     {props.t("Featured member")}
                                     </li>
@@ -46,14 +46,14 @@ return (
                             memberSponsored == 1 && props.package.is_sponsored == 1 ?
                                 <li>
                                     <span className="fa-li">
-                                        <span className="material-icons">check</span>
+                                        <span className="material-icons" data-icon="check"></span>
                                     </span>
                                     {props.t("Sponsored member")}
                                     </li>
                                 :
                                 <li className="text-muted">
                                     <span className="fa-li">
-                                        <span className="material-icons">close</span>
+                                        <span className="material-icons" data-icon="close"></span>
                                     </span>
                                     {props.t("Sponsored member")}
                                     </li>
@@ -62,14 +62,14 @@ return (
                             memberHot == 1 && props.package.is_hot == 1 ?
                                 <li>
                                     <span className="fa-li">
-                                        <span className="material-icons">check</span>
+                                        <span className="material-icons" data-icon="check"></span>
                                     </span>
                                     {props.t("Hot member")}
                                     </li>
                                 :
                                 <li className="text-muted">
                                     <span className="fa-li">
-                                        <span className="material-icons">close</span>
+                                        <span className="material-icons" data-icon="close"></span>
                                     </span>
                                     {props.t("Hot member")}
                                     </li>
@@ -77,7 +77,7 @@ return (
                         {
                             <li>
                                 <span className="fa-li">
-                                    <span className="material-icons">check</span>
+                                    <span className="material-icons" data-icon="check"></span>
                                 </span>
                                 {props.package.upload_video_limit != 0 ? `${uploadLimitSize[props.package.upload_video_limit]} ${props.t("Video upload Limit")}` : props.t("Unlimited upload limit")}
                             </li>
@@ -85,7 +85,7 @@ return (
                         {
                             <li>
                                 <span className="fa-li">
-                                    <span className="material-icons">check</span>
+                                    <span className="material-icons" data-icon="check"></span>
                                 </span>
                                 {props.package.video_create_limit != 0 ? `${props.t("Upload upto {{video}} video(s)",{video:props.package.video_create_limit})}` : props.t("Upload unlimited video(s)")}
                             </li>
@@ -95,14 +95,14 @@ return (
                                 props.package.sell_videos ?
                                     <li>
                                         <span className="fa-li">
-                                            <span className="material-icons">check</span>
+                                            <span className="material-icons" data-icon="check"></span>
                                         </span>
                                         {props.t("Sell uploaded videos")}
                                     </li>
                                     :
                                     <li className="text-muted">
                                         <span className="fa-li">
-                                            <span className="material-icons">close</span>
+                                            <span className="material-icons" data-icon="close"></span>
                                         </span>
                                         {props.t("Sell uploaded Videos")}
                                     </li>
@@ -113,14 +113,14 @@ return (
                                 props.package.get_donation ?
                                     <li>
                                         <span className="fa-li">
-                                            <span className="material-icons">check</span>
+                                            <span className="material-icons" data-icon="check"></span>
                                         </span>
                                         {props.t("Get donation on uploaded videos")}
                                     </li>
                                     :
                                     <li className="text-muted">
                                         <span className="fa-li">
-                                            <span className="material-icons">close</span>
+                                            <span className="material-icons" data-icon="close"></span>
                                         </span>
                                         {props.t("Get donation on uploaded videos")}
                                     </li>
@@ -130,7 +130,7 @@ return (
                             channelEnable == 1 && props.package.create_channel == 1 ?
                                 <li>
                                     <span className="fa-li">
-                                        <span className="material-icons">check</span>
+                                        <span className="material-icons" data-icon="check"></span>
                                     </span>
                                     {props.package.channel_create_limit != 0 ? `${props.t("Create {{limit}} channel(s)",{limit:props.package.channel_create_limit})}` : props.t("Create unlimited channels")}
 
@@ -138,7 +138,7 @@ return (
                                 :
                                 <li className="text-muted">
                                     <span className="fa-li">
-                                        <span className="material-icons">close</span>
+                                        <span className="material-icons" data-icon="close"></span>
                                     </span>
                                     {props.t("Create channels")}
                                     </li>
@@ -148,14 +148,14 @@ return (
                             blogEnable == 1 && props.package.create_blogs == 1 ?
                                 <li>
                                     <span className="fa-li">
-                                        <span className="material-icons">check</span>
+                                        <span className="material-icons" data-icon="check"></span>
                                     </span>
                                     {props.package.blog_create_limit != 0 ? `${props.t("Create {{limit}} blog(s)",{limit:props.package.blog_create_limit})}` : props.t("Create unlimited blogs")}
                                     </li>
                                 :
                                 <li className="text-muted">
                                     <span className="fa-li">
-                                        <span className="material-icons">close</span>
+                                        <span className="material-icons" data-icon="close"></span>
                                     </span>
                                     {props.t("Create blogs")}
                                     </li>
@@ -165,14 +165,14 @@ return (
                             playlistEnable == 1 && props.package.create_playlist == 1 ?
                                 <li>
                                     <span className="fa-li">
-                                        <span className="material-icons">check</span>
+                                        <span className="material-icons" data-icon="check"></span>
                                     </span>
                                     {props.package.playlist_create_limit != 0 ? `${props.t("Create {{limit}} playlist(s)",{limit:props.package.playlist_create_limit})}` : props.t("Create unlimited playlists")}
                                     </li>
                                 :
                                 <li className="text-muted">
                                     <span className="fa-li">
-                                        <span className="material-icons">close</span>
+                                        <span className="material-icons" data-icon="close"></span>
                                     </span>
                                     {props.t("Create playlists")}
                                     </li>
@@ -183,14 +183,14 @@ return (
                             adsEnable == 1 && props.package.create_advertisement == 1 ?
                                 <li>
                                     <span className="fa-li">
-                                        <span className="material-icons">check</span>
+                                        <span className="material-icons" data-icon="check"></span>
                                     </span>
                                     {props.package.playlist_create_limit != 0 ? `${props.t("Create {{limit}} advertisement(s)",{limit:props.package.ad_create_limit})}` : props.t("Create unlimited advertisements")}
                                     </li>
                                 :
                                 <li className="text-muted">
                                     <span className="fa-li">
-                                        <span className="material-icons">close</span>
+                                        <span className="material-icons" data-icon="close"></span>
                                     </span>
                                     {props.t("Create advertisements")}
                                     </li>
@@ -200,14 +200,14 @@ return (
                             props.package.monetization == 1 ?
                                 <li>
                                     <span className="fa-li">
-                                        <span className="material-icons">check</span>
+                                        <span className="material-icons" data-icon="check"></span>
                                     </span>
                                     {props.t("Video monetization")}
                                     </li>
                                 :
                                 <li className="text-muted">
                                     <span className="fa-li">
-                                        <span className="material-icons">close</span>
+                                        <span className="material-icons" data-icon="close"></span>
                                     </span>
                                     {props.t("Video monetization")}
                                     </li>

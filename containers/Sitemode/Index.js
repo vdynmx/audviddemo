@@ -41,13 +41,13 @@ class Sitemode extends React.Component{
                     <a className="dropdown-item iconmenu parent" style={{cursor:"pointer"}} href="#" onClick={this.changeSiteMode}>
                         {
                             !this.props.iconLast ? 
-                        <span className="material-icons parent">nights_stay</span>
+                        <span className="material-icons parent" data-icon="nights_stay"></span>
                         : null
                         }
                         {this.props.t("Mode")}
                         {
                             this.props.iconLast ? 
-                        <span className="material-icons parent ml-2">nights_stay</span>
+                        <span className="material-icons parent ml-2" data-icon="nights_stay"></span>
                         : null
                         }
                     </a>

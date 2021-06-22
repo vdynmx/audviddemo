@@ -148,7 +148,7 @@ class Index extends React.Component {
                             </div>
                             <div className="notify-content-action">
                                     <span><span className="material-icons" className="material-icons dropbtn show prevent notclosenotification parent" onClick={(e) => this.props.deleteNotification( notification.notification_id,e)}>close</span></span>
-                                    <span className="markRead show prevent notclosenotification parent" data-toggle="tooltip" onClick={(e) => this.props.markUnread( notification.notification_id,e)}></span>
+                                    <span className="markRead show prevent notclosenotification parent" data-bs-toggle="tooltip" onClick={(e) => this.props.markUnread( notification.notification_id,e)}></span>
                                 </div>
                         </div>
                     </li>

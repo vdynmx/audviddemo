@@ -157,7 +157,7 @@ class SideFixedMenu extends React.Component{
                         hideSmallMenu ? 
                         <div className="top-header side-menu-top">
                             <div className="left-side">
-                                <div className="menu-icon" onClick={this.showHideMenu}><span className="material-icons">menu</span></div>
+                                <div className="menu-icon" onClick={this.showHideMenu}><span className="material-icons" data-icon="menu"></span></div>
                                 <div className="logo">
                                     <Link href="/">
                                         <a onClick={this.closeMenu}><img src={logo} className="img-fluid" /></a>
@@ -173,7 +173,7 @@ class SideFixedMenu extends React.Component{
                         <li>
                             <Link href="/">
                                 <a className={(path == "/" ? "active" : "")}>
-                                    <span className="material-icons">home</span> {Translate(this.props,'Home')}
+                                    <span className="material-icons" data-icon="home"></span> {Translate(this.props,'Home')}
                                 </a>
                             </Link>
                         </li>
@@ -195,13 +195,13 @@ class SideFixedMenu extends React.Component{
                                     <li>
                                         <Link href="/dashboard" as="/dashboard/videos/my_recent" customParam="type=videos&filter=my_recent">
                                             <a className={(path.indexOf('/dashboard/videos/my_recent') > -1 ? "active" : "")}>
-                                                <span className="material-icons">history</span> {Translate(this.props,'History')}
+                                                <span className="material-icons" data-icon="history"></span> {Translate(this.props,'History')}
                                             </a>
                                         </Link>
                                     </li>
                                     <li>
                                         <Link href="/dashboard" as="/dashboard/purchases" customParam="type=purchases">
-                                            <a className={(path.indexOf('/dashboard/purchases') > -1 ? "active" : "")}><span className="material-icons">shop_two</span> {Translate(this.props,'Purchases')}</a>
+                                            <a className={(path.indexOf('/dashboard/purchases') > -1 ? "active" : "")}><span className="material-icons" data-icon="shop_two"></span> {Translate(this.props,'Purchases')}</a>
                                         </Link>
                                     </li>
                                 </React.Fragment>
@@ -209,17 +209,17 @@ class SideFixedMenu extends React.Component{
                         }
                         <li>
                             <Link href="/videos" as="/videos/latest" customParam="sort=latest">
-                    <a className={(path.indexOf('/videos/latest') > -1 ? "active" : "")}><span className="material-icons">videocam</span> {Translate(this.props,'Latest Videos')}</a>
+                    <a className={(path.indexOf('/videos/latest') > -1 ? "active" : "")}><span className="material-icons" data-icon="videocam"></span> {Translate(this.props,'Latest Videos')}</a>
                             </Link>
                         </li>
                         <li>
                             <Link href="/videos" as="/videos/trending" customParam="pageType=trending">
-                    <a className={(path.indexOf('/videos/trending') > -1 ? "active" : "")}><span className="material-icons">trending_up</span> {Translate(this.props,'Trending Videos')}</a>
+                    <a className={(path.indexOf('/videos/trending') > -1 ? "active" : "")}><span className="material-icons" data-icon="trending_up"></span> {Translate(this.props,'Trending Videos')}</a>
                             </Link>
                         </li>
                         <li>
                             <Link href="/videos" as="/videos/top" customParam="pageType=top">
-                    <a className={(path.indexOf('/videos/top') > -1 ? "active" : "")}><span className="material-icons">bar_chart</span> {Translate(this.props,'Top Videos')}</a>
+                    <a className={(path.indexOf('/videos/top') > -1 ? "active" : "")}><span className="material-icons" data-icon="bar_chart"></span> {Translate(this.props,'Top Videos')}</a>
                             </Link>
                         </li>
                     </ul>
@@ -319,9 +319,9 @@ class SideFixedMenu extends React.Component{
                             <LanguageSwitcher {...this.props} />
                             {
                                 this.props.pageInfoData.appSettings['video_adult'] == 1 || this.props.pageInfoData.appSettings['channel_adult'] == 1 || this.props.pageInfoData.appSettings['blog_adult'] == 1 || this.props.pageInfoData.appSettings['playlist_adult'] == 1 ?
-                                <div className="custom-control custom-switch adultSwitchFtr">
-                                    <input onChange={this.allowAdultContent} defaultChecked={this.state.adult}  type="checkbox" className="custom-control-input" id="adultSwitchFtr"  />
-                                    <label className="custom-control-label" htmlFor="adultSwitchFtr">{this.props.t("Adult content")}</label>
+                                <div className="form-check form-switch adultSwitchFtr">
+                                    <input onChange={this.allowAdultContent} defaultChecked={this.state.adult}  type="checkbox" className="form-check-input" id="adultSwitchFtr"  />
+                                    <label className="form-check-label" htmlFor="adultSwitchFtr">{this.props.t("Adult content")}</label>
                                     <span className="error"></span>
                                 </div>
                             : null

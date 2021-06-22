@@ -44,7 +44,7 @@ const Create = (props) => {
                         <label onClick={e => {
                                 commentref.current.click();
                             }}> 
-                            <span className="material-icons">camera_alt</span>
+                            <span className="material-icons" data-icon="camera_alt"></span>
                         </label>
                         <input className="fileNone" onChange={props.changeImage.bind(this,props.comment_id)}  ref={commentref} type="file" />
                     </div>

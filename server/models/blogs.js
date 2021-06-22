@@ -75,7 +75,11 @@ module.exports = {
                 if (data.orderby == "random") {
                     customSelect = ' FLOOR(1 + RAND() * blog_id) as randomSelect, '
                 }
-                let sql = 'SELECT blogs.*,'+customSelect+'likes.like_dislike,userdetails.displayname,userdetails.username,userdetails.verified,IF(blogs.image IS NULL || blogs.image = "","' + req.appSettings['blog_default_photo'] + '",blogs.image) as image,IF(userdetails.avtar IS NULL || userdetails.avtar = "",(SELECT value FROM `level_permissions` WHERE name = \"default_mainphoto\" AND type = \"member\" AND level_id = users.level_id),userdetails.avtar) as avtar,favourites.favourite_id FROM blogs '
+                let fields = 'blogs.*,'+customSelect+'likes.like_dislike,userdetails.displayname,userdetails.username,userdetails.verified,IF(blogs.image IS NULL || blogs.image = "","' + req.appSettings['blog_default_photo'] + '",blogs.image) as image,IF(userdetails.avtar IS NULL || userdetails.avtar = "",(SELECT value FROM `level_permissions` WHERE name = \"default_mainphoto\" AND type = \"member\" AND level_id = users.level_id),userdetails.avtar) as avtar,favourites.favourite_id'
+                if(data.countITEM){
+                    fields = "COUNT(blogs.blog_id) as itemCount"
+                }
+                let sql = 'SELECT '+fields+' FROM blogs '
                 
                 
                 sql += ' LEFT JOIN users on users.user_id = blogs.owner_id  LEFT JOIN userdetails ON users.user_id = userdetails.user_id LEFT JOIN likes ON likes.id = blogs.blog_id AND likes.type = "blogs"  AND likes.owner_id =  ' + owner_id + '  LEFT JOIN favourites ON (favourites.id = blogs.blog_id AND favourites.type = "blogs" AND favourites.owner_id = ' + owner_id + ') '
@@ -214,6 +218,10 @@ module.exports = {
                     condition.push(data.custom_url)
                     sql += " AND blogs.custom_url =?"
                 }
+                if(data.user_home_content){
+                    sql += " AND view_privacy LIKE 'package_%'";
+                }
+                
                 if (data.mycommented) {
                     sql += " GROUP BY blogs.blog_id "
                 }
@@ -226,7 +234,7 @@ module.exports = {
                 } else {
                     sql += " ORDER BY blogs.blog_id desc "
                 }
-
+                
                 if (data.limit) {
                     condition.push(data.limit)
                     sql += " LIMIT ?"

@@ -148,7 +148,7 @@ class Item extends React.Component {
                                 <a className="chnnlName" onClick={this.props.closePopUp}>
                                     {<CensorWord {...this.props} text={this.state.channel.title} />}
                                     {this.state.channel.channelverified == 1 ?
-                                        <span className="verifiedUser" title={Translate(this.props,"verified")}><span className="material-icons">check</span></span>
+                                        <span className="verifiedUser" title={Translate(this.props,"verified")}><span className="material-icons" data-icon="check"></span></span>
                                         : null
                                     }
                                 </a>
@@ -156,14 +156,14 @@ class Item extends React.Component {
                             {
                                     this.props.canDelete || this.props.canEdit || this.props.pageInfoData.appSettings["channels_browse_share"] == 1 ? 
                                 <div className="dropdown TitleRightDropdown">
-                                    <a href="#" data-toggle="dropdown"><span className="material-icons">more_vert</span></a>
+                                    <a href="#" data-bs-toggle="dropdown"><span className="material-icons" data-icon="more_vert"></span></a>
                                     <ul className="dropdown-menu dropdown-menu-right edit-options">
                                         {
                                             this.props.canEdit ?
                                                 <li>
                                                     <Link href="/create-channel" customParam={`channelId=${this.state.channel.custom_url}`} as={`/create-channel/${this.state.channel.custom_url}`}>
                                                         <a>
-                                                        <span className="material-icons">edit</span>{Translate(this.props,"Edit")}
+                                                        <span className="material-icons" data-icon="edit"></span>{Translate(this.props,"Edit")}
                                                     </a>
                                                     </Link>
                                                 </li>
@@ -173,7 +173,7 @@ class Item extends React.Component {
                                             this.props.canDelete ?
                                                 <li>
                                                     <a href="#" onClick={this.delete.bind(this)}>
-                                                    <span className="material-icons">delete</span>{Translate(this.props,"Delete")}
+                                                    <span className="material-icons" data-icon="delete"></span>{Translate(this.props,"Delete")}
                                                 </a>
                                                 </li>
                                                 : null
@@ -182,7 +182,7 @@ class Item extends React.Component {
                                             this.props.canEdit ?
                                                 <li>
                                                     <a href="#"  onClick={this.analytics}>
-                                                        <span className="material-icons">show_chart</span>
+                                                        <span className="material-icons" data-icon="show_chart"></span>
                                                         {Translate(this.props,"Analytics")}
                                                 </a>
                                                 </li>

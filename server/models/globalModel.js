@@ -5,7 +5,7 @@ module.exports = {
                 connection.query(query,data,function(err,results,fields)
                 {
                     if(process.env.NODE_ENV != "production")
-                    console.log(err,'custom');
+                        console.log(err,'custom');
                     if(err)
                         resolve(false)
                     if(results){
@@ -21,7 +21,7 @@ module.exports = {
         return new Promise(function(resolve, reject) {
             req.getConnection(function(err,connection){
                 
-                connection.query('INSERT INTO '+tablename+' SET ?',data,function(err,results,fields)
+                connection.query('INSERT IGNORE INTO '+tablename+' SET ?',data,function(err,results,fields)
                 {
                     if(process.env.NODE_ENV != "production")
                     console.log(err,'insert')
@@ -42,6 +42,8 @@ module.exports = {
                 
                 connection.query('DELETE FROM '+tablename+' WHERE '+PrimaryKey+" = ?",[where],function(err,results,fields)
                 {
+                    if(process.env.NODE_ENV != "production")
+                    console.log(err,'delete')
                     if(err)
                         resolve(false)
                     if(results){
@@ -60,7 +62,7 @@ module.exports = {
                 connection.query('UPDATE '+tablename+' SET ? WHERE '+PrimaryKey+" = ?",[data,where],function(err,results,fields)
                 {
                     if(process.env.NODE_ENV != "production")
-                    console.log(err,'update')
+                        console.log(err,'update')
                     if(err)
                         resolve(false)
                     if(results){

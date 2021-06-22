@@ -10,7 +10,7 @@ const Popup = (props) => {
                 <div className="modal-content">
                     <div className="modal-body">
                         <div className="loginRgtrBox loginRgtrBoxPopup">
-                            <button type="button" className="close" data-dismiss="modal">&times;</button>
+                            <button type="button" className="close btn-close" data-bs-dismiss="modal">&times;</button>
                             <Form {...props} popup={true} />
                         </div>
                     </div>

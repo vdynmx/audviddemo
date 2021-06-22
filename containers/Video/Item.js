@@ -208,7 +208,7 @@ class Item extends React.Component {
                         {
                             this.props.pageInfoData.appSettings["videos_playlist"] == 1 && this.props.pageInfoData.appSettings["enable_playlist"] == 1 && (!this.props.pageInfoData.levelPermissions || this.props.pageInfoData.levelPermissions['playlist.create'] == 1) && !playlist_id ?
                                 <a className="playlist" title={Translate(this.props, "Save to playlist")} onClick={this.playlistOpen} href="#">
-                                    <span className="material-icons">playlist_add</span>
+                                    <span className="material-icons" data-icon="playlist_add"></span>
                                 </a>
                                 : null
                         }
@@ -251,14 +251,14 @@ class Item extends React.Component {
                             {
                                 this.props.canDelete || this.props.canEdit || this.props.pageInfoData.appSettings["videos_share"] == 1 ? 
                             <div className="dropdown TitleRightDropdown">
-                                <a href="#" data-toggle="dropdown"><span className="material-icons">more_vert</span></a>
+                                <a href="#" data-bs-toggle="dropdown"><span className="material-icons" data-icon="more_vert"></span></a>
                                 <ul className="dropdown-menu dropdown-menu-right edit-options">
                                     {
                                         this.props.canEdit ?
                                             <li>
                                                 <Link href="/create-video" customParam={`videoId=${this.state.video.custom_url}`} as={`/create-video/${this.state.video.custom_url}`}>
                                                     <a className="addPlaylist addEdit"  title={Translate(this.props, "Edit")}>
-                                                    <span className="material-icons">edit</span>
+                                                    <span className="material-icons" data-icon="edit"></span>
                                                     {Translate(this.props, "Edit")}
                                                     </a>
                                                 </Link>
@@ -269,7 +269,7 @@ class Item extends React.Component {
                                             this.props.canDelete ?
                                             <li>
                                                 <a className="addPlaylist addDelete" title={Translate(this.props, "Delete")} href="#" onClick={this.deleteVideo}>
-                                                <span className="material-icons">delete</span>
+                                                <span className="material-icons" data-icon="delete"></span>
                                                 {Translate(this.props, "Delete")}
                                                 </a>
                                             </li>
@@ -279,7 +279,7 @@ class Item extends React.Component {
                                         this.props.canEdit ?
                                                 <li>
                                                     <a href="#" className="addPlaylist addEdit" onClick={this.analytics} title={Translate(this.props, "Analytics")}>
-                                                    <span className="material-icons">show_chart</span>
+                                                    <span className="material-icons" data-icon="show_chart"></span>
                                                     {Translate(this.props, "Analytics")}
                                                     </a>
                                                 </li>
@@ -294,7 +294,7 @@ class Item extends React.Component {
                                         this.props.pageInfoData.appSettings["videos_playlist"] == 1 && this.props.pageInfoData.appSettings["enable_playlist"] == 1 && (!this.props.pageInfoData.levelPermissions || this.props.pageInfoData.levelPermissions['playlist.create'] == 1) && !playlist_id ?
                                             <li>
                                             <a className="playlist" title={Translate(this.props, "Save to playlist")} onClick={this.playlistOpen} href="#">
-                                                <span className="material-icons">playlist_add</span>
+                                                <span className="material-icons" data-icon="playlist_add"></span>
                                                 {Translate(this.props, "Save to playlist")}
                                             </a>
                                             </li>

@@ -244,8 +244,8 @@ class Donation extends React.Component {
                                 return (
                                     <div className="tipBtn" key={item.tip_id}>
                                         <button className="d-flex" onClick={this.chooseOption.bind(this,i)}>
-                                            <div className="icon"><span className="material-icons text-primary">
-                                                    payments
+                                            <div className="icon"><span className="material-icons text-primary" data-icon="payments">
+                                                    
                                                 </span>
                                             </div>
                                         <span>{ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...perprice} />)}</span>

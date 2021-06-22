@@ -170,7 +170,7 @@ class Countries extends Component {
                                     <div className="container form">
                                         <form className="formFields" onSubmit={this.submit}>
                                             <div className="form-group genres_input">
-                                                <select className="form-input form-control" value={this.state.values} onChange={this.addCountryValue}>
+                                                <select className="form-input form-control form-select" value={this.state.values} onChange={this.addCountryValue}>
                                                     {
                                                         this.state.countries.map((item,i) => {
                                                             return(
@@ -259,7 +259,7 @@ class Countries extends Component {
                                                                     <td>{countries.nicename}</td>
                                                                     <td>
                                                                         <div className="actionBtn">
-                                                                            <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteCountry.bind(this, countries.movie_country_id)}><span className="material-icons">delete</span></a>                                                                                           
+                                                                            <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteCountry.bind(this, countries.movie_country_id)}><span className="material-icons" data-icon="delete"></span></a>                                                                                           
                                                                         </div>
                                                                     </td>
                                                                 </tr>

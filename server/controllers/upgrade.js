@@ -247,9 +247,9 @@ exports.successul = async (req, res, next) => {
                 let memberSubscription = require("../functions/ipnsFunctions/memberSubscriptions");
                 await memberSubscription.cancelAll(req.user, "User changed subscription plan.",null,req);
                 //cancel other active subscription
-                globalModel.update(req,{status:"cancelled"},"subscriptions","owner_id",req.user.user_id)
+                await globalModel.update(req,{status:"cancelled"},"subscriptions","owner_id",req.user.user_id)
                 //cancel other active orders
-                globalModel.update(req,{state:"cancelled"},"orders","owner_id",req.user.user_id)
+                await globalModel.update(req,{state:"cancelled"},"orders","owner_id",req.user.user_id)
                  
                 await globalModel.create(req, {gateway_id:gateway ? gateway : 1,type:"member_subscription",id:req.user.user_id, expiration_date: changed_expiration_date, owner_id: req.user.user_id, package_id: package_id, status: responseGateway.state.toLowerCase(),creation_date: currentDate, modified_date: currentDate, gateway_profile_id: responseGateway.id,order_id:req.session.orderId }, "subscriptions").then(async result => {
                     globalModel.update(req,{gateway_id:gateway ? gateway : 1,gateway_transaction_id:responseGateway.id,state:responseGateway.state.toLowerCase(),'source_id':result.insertId},"orders","order_id",req.session.orderId)
@@ -327,9 +327,9 @@ exports.successul = async (req, res, next) => {
                  let memberSubscription = require("../functions/ipnsFunctions/memberSubscriptions");
                  await memberSubscription.cancelAll(req.user, "User changed subscription plan.",null,req);
                 //cancel other active subscription
-                globalModel.update(req,{status:"cancelled"},"subscriptions","owner_id",req.user.user_id)
+                await globalModel.update(req,{status:"cancelled"},"subscriptions","owner_id",req.user.user_id)
                 //cancel other active orders
-                globalModel.update(req,{state:"cancelled"},"orders","owner_id",req.user.user_id)
+                await globalModel.update(req,{state:"cancelled"},"orders","owner_id",req.user.user_id)
                 
                 let changed_expiration_date = await recurringPaypal.getExpirationDate(packageObj)
                 await globalModel.create(req, {gateway_id:gateway ? gateway : 1, type:"member_subscription",id:req.user.user_id, expiration_date: changed_expiration_date, owner_id: req.user.user_id, package_id: package_id, status: responseGateway.state.toLowerCase(),creation_date: currentDate, modified_date: currentDate, gateway_profile_id: responseGateway.id,order_id:req.session.orderId }, "subscriptions").then(async result => {
@@ -374,9 +374,9 @@ exports.finishPayment = async(req,res) => {
     let memberSubscription = require("../functions/ipnsFunctions/memberSubscriptions");
     await memberSubscription.cancelAll(req.user, "User changed subscription plan.",null,req);
     //cancel other active subscription
-    globalModel.update(req,{status:"cancelled"},"subscriptions","owner_id",req.user.user_id)
+    await globalModel.update(req,{status:"cancelled"},"subscriptions","owner_id",req.user.user_id)
     //cancel other active orders
-    globalModel.update(req,{state:"cancelled"},"orders","owner_id",req.user.user_id)    
+    await globalModel.update(req,{state:"cancelled"},"orders","owner_id",req.user.user_id)    
     let changed_expiration_date = await recurringPaypal.getExpirationDate(packageObj)
     await globalModel.create(req, {gateway_id:2,type:"member_subscription",id:req.user.user_id, expiration_date: changed_expiration_date, owner_id: req.user.user_id, package_id: package_id, status: responseGateway.state.toLowerCase(),creation_date: currentDate, modified_date: currentDate, gateway_profile_id: responseGateway.id,order_id:req.session.orderId }, "subscriptions").then(async result => {
         globalModel.update(req,{gateway_id:2,gateway_transaction_id:responseGateway.id,state:responseGateway.state.toLowerCase(),'source_id':result.insertId},"orders","order_id",req.session.orderId)

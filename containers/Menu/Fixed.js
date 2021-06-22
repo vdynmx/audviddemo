@@ -381,7 +381,7 @@ class FixedMenu extends Component {
                         <div className="col-lg-12">
                             <div className="top-header pl-md-3 pr-md-3">
                                 <div className="left-side">
-                                    <div className="menu-icon" onClick={this.showHideMenu}><span className="material-icons">menu</span></div>
+                                    <div className="menu-icon" onClick={this.showHideMenu}><span className="material-icons" data-icon="menu"></span></div>
                                     <div className="logo">
                                         <Link href="/">
                                             <a><img src={logo} className="img-fluid" /></a>
@@ -391,7 +391,7 @@ class FixedMenu extends Component {
                                 <div className="head-search">
                                     <div className="search-box">
                                         <input type="text" name="search" onFocus={this.searchClicked} onChange={(e) => { this.setState({localUpdate:true, search: e.target.value }) }} placeholder={Translate(this.props,'Search')} />
-                                        <button onClick={this.search.bind(this)}><span className="material-icons">search</span></button>
+                                        <button onClick={this.search.bind(this)}><span className="material-icons" data-icon="search"></span></button>
                                     </div>
                                 </div>
                                 <div className="rightTopList right-side">
@@ -402,8 +402,8 @@ class FixedMenu extends Component {
                                                     <li className={!this.props.mobileMenu ? `nav-item dropdown${this.state.style == "block" ? " active" : ""}` : `dropdown MobDropdownNav${this.state.style == "block" ? " active" : ""}`}  style={{cursor:"pointer"}}  >
                                                         <a className={!this.props.mobileMenu ? "parent nav-link notclose usepicHead logged-in-cnt" : "parent loggedUer notclose usepicHead logged-in-cnt"} onClick={(e) => this.openToggle("settings",e)}  style={{cursor:"pointer"}} href="#" 
                                                             role="button">
-                                                                <span className="material-icons notclose parent">account_circle</span>
-                                                                <span className="material-icons notclose parent">arrow_drop_down</span>
+                                                                <span className="material-icons notclose parent" data-icon="account_circle"></span>
+                                                                <span className="material-icons notclose parent" data-icon="arrow_drop_down"></span>
                                                         </a>
                                                         <ul className="dropdown-menu dropdown-menu-right iconMenuList" ref={this.props.setSettingsWrapperRef}  style={{display:this.state.style}} >
                                                             <span className="dropdown-menu-arrow"></span>
@@ -418,7 +418,7 @@ class FixedMenu extends Component {
                                                                     </li>
                                                                     :
                                                                     <li>
-                                                                        <a className="dropdown-item iconmenu" id="loginFormPopup" data-toggle="modal" data-target="#loginpop" href="/login">{Translate(this.props, "Login")}</a>
+                                                                        <a className="dropdown-item iconmenu" id="loginFormPopup" data-bs-toggle="modal" data-bs-target="#loginpop" href="/login">{Translate(this.props, "Login")}</a>
                                                                     </li>
                                                                 : null
                                                         }
@@ -432,7 +432,7 @@ class FixedMenu extends Component {
                                                                     </li>
                                                                     :
                                                                     <li>
-                                                                        <a href="/signup" className="dropdown-item iconmenu" data-toggle="modal" data-target="#registerpop">{Translate(this.props, "Sign Up")}</a>
+                                                                        <a href="/signup" className="dropdown-item iconmenu" data-bs-toggle="modal" data-bs-target="#registerpop">{Translate(this.props, "Sign Up")}</a>
                                                                     </li>
                                                                 : null
                                                         }

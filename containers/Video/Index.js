@@ -1,19 +1,14 @@
 import React, { Component } from "react"
 import { connect } from "react-redux"
-
 import Form from '../../components/DynamicForm/Index'
-
 import Validator from '../../validators'
-
 import axios from "../../axios-orders"
 import Player from "./Player"
-
 import OutsidePlayer from "./OutsidePlayer"
 import AdsIndex from "../Ads/Index"
 import Image from "../Image/Index"
 import Artists from "../Artist/Artists";
 import ShortNumber from "short-number"
-
 import Link from "../../components/Link/index";
 import SocialShare from "../SocialShare/Index"
 import Like from "../Like/Index"
@@ -27,7 +22,6 @@ import swal from 'sweetalert'
 import StartLiveStreaming from "../LiveStreaming/StartLiveStreaming"
 import MediaStreaming from "../LiveStreaming/MediaLiveStreaming"
 import Comment from "../../containers/Comments/Index"
-
 import MemberFollow from "../User/Follow"
 import  Chat from "../LiveStreaming/Chat"
 import RelatedVideos from "./RelatedVideos"
@@ -40,6 +34,7 @@ import Members from "../User/Browse"
 import Currency from "../Upgrade/Currency"
 import Gateways from "../Gateways/Index"
 import ReactDOMServer from "react-dom/server"
+import Plans from "../User/Plans"
 
 const { BroadcastChannel } = require('broadcast-channel');
 
@@ -66,10 +61,14 @@ class Index extends Component {
             userAdVideo: this.props.pageInfoData.userAdVideo,
             adminAdVideo: this.props.pageInfoData.adminAdVideo,
             password: this.props.pageInfoData.password,
-            logout:false
+            logout:false,
+            needSubscription:props.pageInfoData.needSubscription,
+            plans:props.pageInfoData.plans,
+            tabType:props.pageInfoData.tabType ? props.pageInfoData.tabType : "about"
         }
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
         this.getHeight = this.getHeight.bind(this)
+        this.plansSubscription = React.createRef();
     }
     updateWindowDimensions() {
         this.setState({localUpdate:true, width: window.innerWidth },() => {
@@ -122,7 +121,10 @@ class Index extends Component {
                 password: nextProps.pageInfoData.password,
                 adult: nextProps.pageInfoData.adultVideo,
                 logout:false,
-                changeHeight:true
+                changeHeight:true,
+                needSubscription:nextProps.pageInfoData.needSubscription,
+                plans:nextProps.pageInfoData.plans,
+                tabType:nextProps.pageInfoData.tabType ? nextProps.pageInfoData.tabType : "about"
             }
         } else{
             return null
@@ -139,11 +141,23 @@ class Index extends Component {
         window.removeEventListener('resize', this.updateWindowDimensions);
         let deleteMessage = Translate(this.props, "Are you sure you want to close the player?")
         let deleteTitle = Translate(this.props, "Queue will be cleared")
-        if (this.props.pageInfoData.appSettings['video_miniplayer'] == 1 && this.props.pageInfoData.appSettings['enable_iframely'] == 0 && this.state.video && this.state.video.approve == 1 &&  this.state.video.status == 1 && this.state.width > 992 && !this.state.logout) {
+        if (!this.state.needSubscription && this.props.pageInfoData.appSettings['video_miniplayer'] == 1 && this.props.pageInfoData.appSettings['enable_iframely'] == 0 && this.state.video && this.state.video.approve == 1 &&  this.state.video.status == 1 && this.state.width > 992 && !this.state.logout) {
             if (this.state.playlistVideos) {
-                this.props.updatePlayerData([], this.state.playlistVideos, this.state.video, deleteMessage, deleteTitle,this.props.pageInfoData.liveStreamingURL)
+                let videos = [...this.state.playlistVideos]
+                videos.forEach( (video, itemIndex) => {
+                    if(video.is_active_package != 1){
+                        videos.splice(itemIndex, 1);
+                    }
+                })
+                this.props.updatePlayerData([], videos, this.state.video, deleteMessage, deleteTitle,this.props.pageInfoData.liveStreamingURL)
             } else if (this.state.relatedVideos) {
-                this.props.updatePlayerData(this.state.relatedVideos, [], this.state.video, deleteMessage, deleteTitle,this.props.pageInfoData.liveStreamingURL)
+                let videos = [...this.state.relatedVideos]
+                videos.forEach( (video, itemIndex) => {
+                    if(video.is_active_package != 1){
+                        videos.splice(itemIndex, 1);
+                    }
+                })
+                this.props.updatePlayerData(videos, [], this.state.video, deleteMessage, deleteTitle,this.props.pageInfoData.liveStreamingURL)
             } else {
                 this.props.updatePlayerData([], [], this.state.video, deleteMessage, deleteTitle,this.props.pageInfoData.liveStreamingURL)
             }
@@ -151,6 +165,13 @@ class Index extends Component {
             this.props.updateAudioData(this.props.audios, this.props.song_id,0,this.props.t("Submit"),this.props.t("Enter Password"))
     }
     componentDidMount() {
+        if($(".nav-tabs > li > a.active").length == 0){
+            if(this.state.needSubscription){
+              this.pushTab("plans")
+            }else{
+              this.pushTab("videos")
+            }
+          }
         if(this.props.song_id)
             this.props.updateAudioData(this.props.audios, this.props.song_id,this.props.song_id,this.props.t("Submit"),this.props.t("Enter Password"))
 
@@ -521,6 +542,22 @@ class Index extends Component {
             //window.location.href = `/videos/purchase/${this.state.video.video_id}`
         }
     }
+    pushTab = (type) => {
+        if(this.state.tabType == type || !this.state.video){
+            return
+        }
+        this.setState({tabType:type,localUpdate:true})
+        Router.push(`/watch?videoId=${this.state.video.custom_url}`, `/watch/${this.state.video.custom_url}?type=${type}`,{ shallow: true })
+    }
+    scrollToSubscriptionPlans = () => {
+        if(this.state.tabType != "plans"){
+            this.setState({localUpdate:true,tabType:"plans"},() => {
+                this.plansSubscription.scrollIntoView()
+            })
+            return
+        }
+        this.plansSubscription.scrollIntoView()
+    }
     render() {
         let currentPlaying = 0
         if (this.state.playlistVideos) {
@@ -602,6 +639,8 @@ class Index extends Component {
                                             }
                                             <div id="background_theater" style={{display:this.state.fullWidth ? "block" : "none"}}></div>
                                             <div className={`${this.state.fullWidth ? "col-lg-12" : "col-xl-9 col-lg-8"} videoPlayerHeight`}>
+                                               {
+                                                   !this.state.needSubscription ?  
                                                 <div onMouseEnter={this.mouseEnter} onMouseLeave={this.mouseOut} >
                                                     <div className="videoPlayer">
                                                         <React.Fragment>
@@ -646,8 +685,35 @@ class Index extends Component {
                                                             : null
                                                     }
                                                 </div>
+                                                : 
+                                                    <div className="videoPlayer player-wrapper">
+                                                        <div className="subscription-update-plan-cnt">
+                                                            <div className="subscription-update-plan-title">
+                                                            {
+                                                                    this.state.needSubscription.type == "upgrade" ? 
+                                                                        this.props.t("To watch more content, kindly upgrade your Subcription Plan.")
+                                                                    :
+                                                                        this.props.t("To watch more content, kindly Subscribe.")
+                                                            }
+                                                            {
+                                                                <button onClick={this.scrollToSubscriptionPlans}>
+                                                                    {this.props.t("Subscription Plans")}
+                                                                </button>
+                                                            }
+                                                            {
+                                                                this.props.t("or")
+                                                            }
+                                                            {
+                                                                <button onClick={this.purchaseClicked}>
+                                                                    {this.props.t("Pay {{price}} to watch this video.",{price:ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props} {...userBalance} />)})}
+                                                                </button>
+                                                            }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
                                                 {
-                                                 this.state.video.approve == 1 ? 
+                                                 !this.state.needSubscription && this.state.video.approve == 1 ? 
                                                 <div className="bntfullWidht video-options" style={{display:"none"}}>
                                                     {/* <a href="#" onClick={this.miniPlayer.bind(this)}>
                                                         <i className="fas fa-compress"></i> {Translate(this.props,'Mini Player')}
@@ -660,7 +726,7 @@ class Index extends Component {
                                                 }
                                             </div>
                                             {
-                                            this.state.width <= 992 && this.state.video && this.state.video.approve == 1 && this.state.video.enable_chat == 1 && this.state.video.is_livestreaming == 1 && (this.state.video.channel_name || this.state.video.mediaserver_stream_id) ? 
+                                            !this.state.needSubscription && this.state.width <= 992 && this.state.video && this.state.video.approve == 1 && this.state.video.enable_chat == 1 && this.state.video.is_livestreaming == 1 && (this.state.video.channel_name || this.state.video.mediaserver_stream_id) ? 
                                                     <div className="col-lg-8 col-xl-9">
                                                         <div className="ls_sidbar top_video_chat">
                                                             <Chat {...this.props} channel={this.state.video.channel_name} streamId={this.state.video.mediaserver_stream_id} custom_url={this.state.video.custom_url} comments={this.state.video.chatcomments ? this.state.video.chatcomments : []} />
@@ -703,7 +769,7 @@ class Index extends Component {
                                                                         this.props.pageInfoData.appSettings["enable_playlist"] == 1 && (!this.props.pageInfoData.loggedInUserDetails || this.props.pageInfoData.levelPermissions['playlist.create'] == 1) ?
                                                                         <li>
                                                                             <a className="addPlaylist" title={Translate(this.props, "Save to playlist")} onClick={this.playlistOpen} href="#">
-                                                                                    <span className="material-icons">playlist_add</span>
+                                                                                    <span className="material-icons" data-icon="playlist_add"></span>
                                                                             </a>                                                                                
                                                                         </li>
                                                                         : null
@@ -713,7 +779,7 @@ class Index extends Component {
                                                                     this.state.video.approve == 1 && this.props.pageInfoData.appSettings['video_embed_code'] ? 
                                                                         <li>
                                                                             <a className="embedvideo" title={Translate(this.props, "Embed")} onClick={(e) => {e.preventDefault();this.setState({localUpdate:true,"embed":this.state.embed ? false : true})}} href="#">
-                                                                                    <span className="material-icons">code</span>
+                                                                                    <span className="material-icons" data-icon="code"></span>
                                                                             </a>                                                                                
                                                                         </li>
                                                                         : null
@@ -725,13 +791,13 @@ class Index extends Component {
                                                                     }
                                                                     <li>
                                                                         <div className="dropdown TitleRightDropdown">
-                                                                            <a href="#" data-toggle="dropdown"><span className="material-icons">more_horiz</span></a>
+                                                                            <a href="#" data-bs-toggle="dropdown"><span className="material-icons" data-icon="more_horiz"></span></a>
                                                                                 <ul className="dropdown-menu dropdown-menu-right edit-options">
                                                                                 {
                                                                                     this.state.video.canEdit ?
                                                                                         <li>
                                                                                             <Link href="/create-video" customParam={`videoId=${this.state.video.custom_url}`} as={`/create-video/${this.state.video.custom_url}`}>
-                                                                                                <a href={`/create-video/${this.state.video.custom_url}`}><span className="material-icons">edit</span>{Translate(this.props, "Edit")}</a>
+                                                                                                <a href={`/create-video/${this.state.video.custom_url}`}><span className="material-icons" data-icon="edit"></span>{Translate(this.props, "Edit")}</a>
                                                                                             </Link>
                                                                                         </li>
                                                                                         : null
@@ -739,7 +805,7 @@ class Index extends Component {
                                                                                 {
                                                                                     this.state.video.canDelete ?
                                                                                         <li>
-                                                                                            <a onClick={this.deleteVideo.bind(this)} href="#"><span className="material-icons">delete</span>{Translate(this.props, "Delete")}</a>
+                                                                                            <a onClick={this.deleteVideo.bind(this)} href="#"><span className="material-icons" data-icon="delete"></span>{Translate(this.props, "Delete")}</a>
                                                                                         </li>
                                                                                         : null
                                                                                 }
@@ -750,7 +816,7 @@ class Index extends Component {
                                                                                                     e.preventDefault();
                                                                                                     this.setState({localUpdate:true,"download":this.state.download ? false : true})
                                                                                                     }
-                                                                                                } href="#"><span className="material-icons">download</span>{Translate(this.props, "Download Video")}</a>
+                                                                                                } href="#"><span className="material-icons" data-icon="download"></span>{Translate(this.props, "Download Video")}</a>
                                                                                         </li>
                                                                                         : null
                                                                                 }
@@ -759,7 +825,7 @@ class Index extends Component {
                                                                                 this.state.video.approve == 1 ? 
                                                                                 <li>
                                                                                     <a href="#" onClick={this.openReport.bind(this)}>
-                                                                                    <span className="material-icons">flag</span>
+                                                                                    <span className="material-icons" data-icon="flag"></span>
                                                                                         {Translate(this.props, "Report")}
                                                                                     </a>
                                                                                 </li>
@@ -774,7 +840,7 @@ class Index extends Component {
                                                     </div>                
                                                     {
                                                         this.state.video && this.state.video.downloadFiles && this.state.download ? 
-                                                        <div class="videoDownload">
+                                                        <div className="videoDownload">
                                                             {
                                                                 this.state.video.downloadFiles.map(item => {
                                                                     let url = item.url.indexOf('http://') == -1 && item.url.indexOf("https://") == -1 ? this.props.pageInfoData.imageSuffix+item.url : item.url
@@ -788,8 +854,8 @@ class Index extends Component {
                                                     }
                                                     {
                                                         this.state.embed ? 
-                                                        <div class="videoEmbed" >
-                                                            <textarea name="embed" class="form-control" value={`<iframe src="${config.app_server}/embed/${this.state.video.custom_url}" frameborder="0" width="700" height="400" allowfullscreen><iframe>`}>
+                                                        <div className="videoEmbed" >
+                                                            <textarea name="embed" className="form-control" onChange={() => {}} value={`<iframe src="${config.app_server}/embed/${this.state.video.custom_url}" frameborder="0" width="700" height="400" allowfullscreen><iframe>`}>
                                                                 
                                                             </textarea> 
                                                         </div>
@@ -820,7 +886,7 @@ class Index extends Component {
                                                                                 {this.state.video.owner.displayname}
                                                                                 {
                                                                                     this.props.pageInfoData.appSettings['member_verification'] == 1 && this.state.video.owner.verified ?
-                                                                                        <span className="verifiedUser" title="verified"><span className="material-icons">check</span></span>
+                                                                                        <span className="verifiedUser" title="verified"><span className="material-icons" data-icon="check"></span></span>
                                                                                         : null
                                                                                 }
                                                                             </React.Fragment>
@@ -837,33 +903,67 @@ class Index extends Component {
 
                                                     <div className="details-tab">
                                                         <ul className="nav nav-tabs" id="myTab" role="tablist">
+                                                            {
+                                                                this.state.needSubscription ? 
+                                                                    <li className="nav-item">
+                                                                    <a className={`nav-link${this.state.tabType == "plans" ? " active" : ""}`} onClick={
+                                                                        () => this.pushTab("plans")
+                                                                    } data-bs-toggle="tab" href="#plans" ref={(ref) => this.plansSubscription = ref} role="tab" aria-controls="discription" aria-selected="false">{Translate(this.props,"Choose Plan")}</a>
+                                                                    </li>
+                                                                : null
+                                                            }
                                                             <li className="nav-item">
-                                                                <a className="nav-link active" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">{Translate(this.props, "About")}</a>
+                                                                <a className={`nav-link${this.state.tabType == "about" ? " active" : ""}`} onClick={
+                                                                    () => this.pushTab("about")
+                                                                } data-bs-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">{Translate(this.props, "About")}</a>
                                                             </li>
                                                             {
                                                                 this.props.pageInfoData.video.donors && this.props.pageInfoData.video.donors.results.length ?
                                                                     <li className="nav-item">
-                                                                        <a className="nav-link" data-toggle="tab" href="#donors" role="tab" aria-controls="donors" aria-selected="true">{Translate(this.props, "Donors")}</a>
+                                                                        <a className={`nav-link${this.state.tabType == "donors" ? " active" : ""}`} onClick={
+                                                                            () => this.pushTab("donors")
+                                                                        } data-bs-toggle="tab" href="#donors" role="tab" aria-controls="donors" aria-selected="true">{Translate(this.props, "Donors")}</a>
                                                                     </li>
                                                                     : null
                                                             }
                                                             {
                                                                 this.props.pageInfoData.video.artists && this.props.pageInfoData.video.artists.results.length ?
                                                                     <li className="nav-item">
-                                                                        <a className="nav-link" data-toggle="tab" href="#artists" role="tab" aria-controls="artists" aria-selected="true">{Translate(this.props, "Artists")}</a>
+                                                                        <a className={`nav-link${this.state.tabType == "artists" ? " active" : ""}`} onClick={
+                                                                            () => this.pushTab("artists")
+                                                                        } data-bs-toggle="tab" href="#artists" role="tab" aria-controls="artists" aria-selected="true">{Translate(this.props, "Artists")}</a>
                                                                     </li>
                                                                     : null
                                                             }
                                                             {
                                                                 this.props.pageInfoData.appSettings[`${"video_comment"}`] == 1 && this.state.video.approve == 1?
                                                                     <li className="nav-item">
-                                                                        <a className="nav-link" data-toggle="tab" href="#comments" role="tab" aria-controls="comments" aria-selected="true">{`${ShortNumber(this.state.video.comment_count ? this.state.video.comment_count : 0)}`}{" "}{Translate(this.props, "Comments")}</a>
+                                                                        <a className={`nav-link${this.state.tabType == "comments" ? " active" : ""}`} onClick={
+                                                                            () => this.pushTab("comments")
+                                                                        } data-bs-toggle="tab" href="#comments" role="tab" aria-controls="comments" aria-selected="true">{`${ShortNumber(this.state.video.comment_count ? this.state.video.comment_count : 0)}`}{" "}{Translate(this.props, "Comments")}</a>
                                                                     </li>
                                                                     : null
                                                             }
                                                         </ul>
                                                         <div className="tab-content" id="myTabContent">
-                                                            <div className="tab-pane fade active show" id="about" role="tabpanel">
+                                                        {
+                                                            this.state.needSubscription ? 
+                                                                <div className={`tab-pane fade${this.state.tabType == "plans" ? " active show" : ""}`} id="plans" role="tabpanel">
+                                                                <div className="details-tab-box">
+                                                                    <p className="plan-upgrade-subscribe">
+                                                                        {
+                                                                        this.state.needSubscription.type == "upgrade" ? 
+                                                                            this.props.t("To watch more content, kindly upgrade your Subcription Plan.")
+                                                                            :
+                                                                            this.props.t("To watch more content, kindly Subscribe.")
+                                                                        }
+                                                                    </p>
+                                                                    <Plans {...this.props} userSubscription={this.state.needSubscription.loggedin_package_id ? true : false} userSubscriptionID={this.state.needSubscription.loggedin_package_id} itemObj={this.state.video} member={this.state.video.owner} user_id={this.state.video.owner_id} plans={this.state.plans} />
+                                                                </div>
+                                                                </div>
+                                                            : null
+                                                            }
+                                                            <div className={`tab-pane fade${this.state.tabType == "about" ? " active show" : ""}`} id="about" role="tabpanel">
                                                                 <div className="details-tab-box">
                                                                     {
                                                                         this.props.pageInfoData.appSettings[`${"video_rating"}`] == 1 && this.state.video.approve == 1 ?
@@ -982,7 +1082,7 @@ class Index extends Component {
                                                             </div>
                                                             {
                                                                 this.props.pageInfoData.video.donors && this.props.pageInfoData.video.donors.results.length ?
-                                                                    <div className="tab-pane fade" id="donors" role="tabpanel">
+                                                                    <div className={`tab-pane fade${this.state.tabType == "donors" ? " active show" : ""}`} id="donors" role="tabpanel">
                                                                         <div className="details-tab-box">
                                                                             <Members  {...this.props} globalSearch={true}  channel_members={this.props.pageInfoData.video.donors.results} channel_pagging={this.props.pageInfoData.video.donors.pagging} video_id={this.props.pageInfoData.video.video_id} />
                                                                         </div>
@@ -991,7 +1091,7 @@ class Index extends Component {
                                                             }
                                                             {
                                                                 this.props.pageInfoData.appSettings[`${"video_comment"}`] == 1 && this.state.video.approve == 1 ?
-                                                                    <div className="tab-pane fade" id="comments" role="tabpanel">
+                                                                    <div className={`tab-pane fade${this.state.tabType == "comments" ? " active show" : ""}`} id="comments" role="tabpanel">
                                                                         <div className="details-tab-box">
                                                                             <Comment  {...this.props}  owner_id={this.state.video.owner_id} hideTitle={true} appSettings={this.props.pageInfoData.appSettings} commentType="video" type="videos" id={this.state.video.video_id} />
                                                                         </div>
@@ -1000,7 +1100,7 @@ class Index extends Component {
                                                             }
                                                             {
                                                                 this.props.pageInfoData.video.artists && this.props.pageInfoData.video.artists.results.length ?
-                                                                    <div className="tab-pane fade" id="artists" role="tabpanel">
+                                                                    <div className={`tab-pane fade${this.state.tabType == "artists" ? " active show" : ""}`} id="artists" role="tabpanel">
                                                                         <div className="details-tab-box">
                                                                             <Artists showData={4} className="artist_img" fromVideo={true} canDelete={this.props.pageInfoData.video.canDelete}  {...this.props}  artists={this.props.pageInfoData.video.artists.results} pagging={this.props.pageInfoData.video.artists.pagging} video_id={this.props.pageInfoData.video.video_id} />
                                                                         </div>
@@ -1056,7 +1156,7 @@ class Index extends Component {
                                                                                     <WatchLater className="watchLater" icon={true} {...this.props} item={video} id={video.video_id} />
                                                                                     <Link href="/watch" customParam={`videoId=${video.custom_url}&list=${this.state.playlist.custom_url}`} as={`/watch/${video.custom_url}?list=${this.state.playlist.custom_url}`}>
                                                                                         <a>
-                                                                                            <span className="material-icons">play_arrow</span>
+                                                                                            <span className="material-icons" data-icon="play_arrow"></span>
                                                                                         </a>
                                                                                     </Link>
                                                                                 </span>
@@ -1079,7 +1179,7 @@ class Index extends Component {
                                     }
 
                                     {
-                                       this.state.width > 992 && this.state.video && this.state.video.approve == 1 && this.state.video.enable_chat == 1 && this.state.video.is_livestreaming == 1 && (this.state.video.channel_name || this.state.video.mediaserver_stream_id) ? 
+                                       !this.state.needSubscription && this.state.width > 992 && this.state.video && this.state.video.approve == 1 && this.state.video.enable_chat == 1 && this.state.video.is_livestreaming == 1 && (this.state.video.channel_name || this.state.video.mediaserver_stream_id) ? 
                                             <div className="ls_sidbar" style={{ height: !this.state.fullWidth && !this.state.adult ? this.state.height.replace("-",'') : "0px" }}>
                                                 <Chat {...this.props} getHeight={this.getHeight} channel={this.state.video.channel_name} streamId={this.state.video.mediaserver_stream_id} custom_url={this.state.video.custom_url} comments={this.state.video.chatcomments ? this.state.video.chatcomments : []} />
                                             </div>    

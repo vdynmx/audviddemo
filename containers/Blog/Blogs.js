@@ -49,6 +49,8 @@ class Browse extends React.Component {
                 const items = [...this.state.blogs]
                 const changedItem = items[itemIndex]
                 changedItem.rating = rating
+                if(this.props.updateParentItems)
+                    this.props.updateParentItems("blogs",null,items);
                 this.setState({localUpdate:true, blogs: items })
             }
         });
@@ -58,6 +60,8 @@ class Browse extends React.Component {
             if (itemIndex > -1) {
                 const blogs = [...this.state.blogs]
                 blogs.splice(itemIndex, 1);
+                if(this.props.updateParentItems)
+                    this.props.updateParentItems("blogs",null,blogs);
                 this.setState({localUpdate:true, blogs: blogs })
             }
         })
@@ -74,6 +78,8 @@ class Browse extends React.Component {
                     if (this.props.pageInfoData.loggedInUserDetails && this.props.pageInfoData.loggedInUserDetails.user_id == ownerId) {
                         changedItem.favourite_id = null
                     }
+                    if(this.props.updateParentItems)
+                    this.props.updateParentItems("blogs",null,blogs);
                     this.setState({localUpdate:true, blogs: blogs })
                 }
             }
@@ -91,6 +97,8 @@ class Browse extends React.Component {
                     if (this.props.pageInfoData.loggedInUserDetails && this.props.pageInfoData.loggedInUserDetails.user_id == ownerId) {
                         changedItem.favourite_id = 1
                     }
+                    if(this.props.updateParentItems)
+                    this.props.updateParentItems("blogs",null,blogs);
                     this.setState({localUpdate:true, blogs: blogs })
                 }
             }
@@ -134,6 +142,8 @@ class Browse extends React.Component {
                             changedItem['like_dislike'] = "dislike"
                         changedItem['dislike_count'] = parseInt(changedItem['dislike_count']) + 1
                     }
+                    if(this.props.updateParentItems)
+                    this.props.updateParentItems("blogs",null,blogs);
                     this.setState({localUpdate:true, blogs: blogs })
                 }
             }
@@ -188,7 +198,7 @@ class Browse extends React.Component {
     }
     render() {
         let blogs = this.state.blogs.map(item => {
-            return <div key={item.blog_id} className="col-md-6">
+            return <div key={item.blog_id} className={`${this.props.from_user_profile ? "col-xl-4 col-lg-4 col-md-4 col-sm-6" : "col-md-6"}`}>
                 <Blog {...this.props} canDelete={this.props.canDelete} canEdit={this.props.canEdit} key={item.blog_id} {...item} result={item} />
             </div>
         })
@@ -207,7 +217,7 @@ class Browse extends React.Component {
                             releaseToRefreshContent={<Release release={true} {...this.props} />}
                             refreshFunction={this.refreshContent}
                         >
-                            <div className="row mob2col">
+                            <div className="row mob2 col gx-2">
                                 {blogs}
                             </div>
                         </InfiniteScroll>

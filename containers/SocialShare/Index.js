@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
 import Links from "./Links"
-
 import config from "../../config"
 import action from '../../store/actions/general'
-import CensorWord from "../CensoredWords/Index"
 import { renderToString } from 'react-dom/server'
+import CensorWord from "../CensoredWords/Index"
+
 class Index extends Component {
   constructor(props){
       super(props)
@@ -41,6 +40,8 @@ class Index extends Component {
             tags:nextProps.tags,
             round:nextProps.round
         }
+    }else {
+        return null
     }
 }
   componentDidUpdate(prevProps){
@@ -81,6 +82,7 @@ class Index extends Component {
     const emailTitle = renderToString(<CensorWord {...this.props} text={title} />)
     const emailBody = renderToString(<CensorWord {...this.props} text={""} />)
     const buttonHeightWidth = this.state.buttonHeightWidth
+    
     return (
         this.state.countItems == "all" ? 
             <div className="popup_wrapper_cnt">
@@ -96,7 +98,7 @@ class Index extends Component {
                                     <img alt={this.state.title} className="" src={media} />
                                 </div>
                                 <div className="name">
-                                    <h3>{this.state.title}</h3>
+                                <h3>{<CensorWord {...this.props} text={this.state.title} />}</h3>
                                 </div>
                             </div>
                             <Links {...this.props} tags={this.state.tags}  countItems="all" url={shareUrl} title={title} media={media} emailTitle={emailTitle} emailBody={emailBody} />

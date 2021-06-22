@@ -438,7 +438,7 @@ import Router from "next/router"
                                                         <h3 className="search-heading-title">{this.props.t("Popular Videos")}</h3>
                                                     : null
                                                 }
-                                                <div className="row mob2col">
+                                                <div className="row mob2 col gx-2">
                                                     { items }
                                                 </div>
                                             </div>

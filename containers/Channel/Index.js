@@ -1,37 +1,30 @@
 import React, { Component } from "react"
 import { connect } from "react-redux";
 import * as actions from '../../store/actions/general';
-
 import Validator from '../../validators';
 import axios from "../../axios-orders"
-
 import AddVideos from '../../containers/Video/Popup'
 import Form from '../../components/DynamicForm/Index'
-
 import Cover from "../Cover/Index"
 import Translate from "../../components/Translate/Index"
 import Rating from "../Rating/Index"
-
 import Comment from "../Comments/Index"
 import Videos from "./Videos"
 import Playlists from "../Playlist/Playlists"
 import Artists from "../Artist/Artists";
 import Router from "next/router"
 import swal from 'sweetalert'
-
 import Link from "../../components/Link/index"
 import CensorWord from "../CensoredWords/Index"
 import ShortNumber from "short-number"
-
 import Community from "./Communities"
 import AddPost from "./AddPost"
 import Members from "../User/Browse"
-
 import asyncComponent from '../../hoc/asyncComponent/asyncComponent';
 const CarouselChannels = asyncComponent(() => {
     return import('./CarouselChannel');
 });
-
+import Plans from "../User/Plans"
 import Date from "../Date"
 
 class Index extends Component {
@@ -43,9 +36,11 @@ class Index extends Component {
       openPopup: false,
       openPlaylistPopup: false,
       relatedChannels: props.pageInfoData.relatedChannels,
-      password:this.props.pageInfoData.password,
-      adult:this.props.pageInfoData.adultChannel,
-
+      password:props.pageInfoData.password,
+      adult:props.pageInfoData.adultChannel,
+      needSubscription:props.pageInfoData.needSubscription,
+      plans:props.pageInfoData.plans,
+      tabType:props.pageInfoData.tabType ? props.pageInfoData.tabType : "videos"
     }
     this.closePopup = this.closePopup.bind(this)
     this.chooseVideos = this.chooseVideos.bind(this)
@@ -66,7 +61,10 @@ class Index extends Component {
           password:nextProps.pageInfoData.password,
           adult:nextProps.pageInfoData.adultChannel,
           openPopup:false,
-          openPlaylistPopup:false
+          openPlaylistPopup:false,
+          needSubscription:nextProps.pageInfoData.needSubscription,
+          plans:nextProps.pageInfoData.plans,
+          tabType:nextProps.pageInfoData.tabType ? nextProps.pageInfoData.tabType : "videos"
         }
     } else{
         return null
@@ -132,7 +130,13 @@ class Index extends Component {
       });
   }
   componentDidMount() {
-
+    if($(".nav-tabs > li > a.active").length == 0){
+      if(this.state.needSubscription){
+        this.pushTab("plans")
+      }else{
+        this.pushTab("videos")
+      }
+    }
    
     this.props.socket.on('ratedItem', data => {
       let id = data.itemId
@@ -243,24 +247,26 @@ class Index extends Component {
         this.setState({localUpdate:true, channel: item })
       }
     });
-    this.props.socket.on('videoAdded', data => {
-      if (this.state.channel &&  data.channel_id == this.props.pageInfoData.channel.channel_id) {
-        this.props.openToast(Translate(this.props,data.message), "success");
-        setTimeout(() => {
-          Router.push(`/channel?channelId=${this.props.pageInfoData.channel.custom_url}`, `/channel/${this.props.pageInfoData.channel.custom_url}`)
-        },1000);
-        
-      }
-    }) 
-    this.props.socket.on('playlistAdded', data => {
-      if (this.state.channel && data.channel_id == this.props.pageInfoData.channel.channel_id) {
-        this.props.openToast(data.message, "success");
-        setTimeout(() => {
-          Router.push(`/channel?channelId=${this.props.pageInfoData.channel.custom_url}`, `/channel/${this.props.pageInfoData.channel.custom_url}`)
-        },1000);
-        
-      }
-    })
+    if(!this.state.needSubscription){
+      this.props.socket.on('videoAdded', data => {
+        if (this.state.channel &&  data.channel_id == this.props.pageInfoData.channel.channel_id) {
+          this.props.openToast(Translate(this.props,data.message), "success");
+          setTimeout(() => {
+            Router.push(`/channel?channelId=${this.props.pageInfoData.channel.custom_url}`, `/channel/${this.props.pageInfoData.channel.custom_url}`)
+          },1000);
+          
+        }
+      }) 
+      this.props.socket.on('playlistAdded', data => {
+        if (this.state.channel && data.channel_id == this.props.pageInfoData.channel.channel_id) {
+          this.props.openToast(data.message, "success");
+          setTimeout(() => {
+            Router.push(`/channel?channelId=${this.props.pageInfoData.channel.custom_url}`, `/channel/${this.props.pageInfoData.channel.custom_url}`)
+          },1000);
+          
+        }
+      })
+    }
     this.props.socket.on('channelCoverReposition', data => {
       let id = data.channel_id
       if (this.state.channel && id == this.state.channel.channel_id) {
@@ -365,6 +371,13 @@ class Index extends Component {
     }
     this.setState({localUpdate:true, openPopup: false })
   }
+  pushTab = (type) => {
+    if(this.state.tabType == type || !this.state.channel){
+      return
+  }
+    this.setState({tabType:type,localUpdate:true})
+    Router.push(`/channel?channelId=${this.props.pageInfoData.channel.custom_url}`, `/channel/${this.props.pageInfoData.channel.custom_url}?type=${type}`,{ shallow: true })
+  }
   render() {
     let validatorUploadImport = []
     let fieldUploadImport = []
@@ -437,52 +450,98 @@ class Index extends Component {
                                   </div>
                             :
                              <React.Fragment>
-                               
                             <div className="details-tab">
                               <ul className="nav nav-tabs" id="myTab" role="tablist">
-                              <li className="nav-item">
-                                  <a className="nav-link active" data-toggle="tab" href="#videos" role="tab" aria-controls="discription" aria-selected="false">{Translate(this.props,"Videos")}</a>
+                              {
+                                this.state.needSubscription ? 
+                                <li className="nav-item">
+                                  <a className={`nav-link${this.state.tabType == "plans" ? " active" : ""}`} onClick={
+                                    (e) => { e.preventDefault(); this.pushTab("plans") }
+                                  } data-bs-toggle="tab" href="#" role="tab" aria-controls="discription" aria-selected="false">{Translate(this.props,"Choose Plan")}</a>
                                 </li>
+                                : null
+                              }
+                              {
+                                !this.state.needSubscription ? 
+                                <li className="nav-item">
+                                    <a className={`nav-link${this.state.tabType == "videos" ? " active" : ""}`} onClick={
+                                    (e) => { e.preventDefault(); this.pushTab("videos") }
+                                  } data-bs-toggle="tab" href="#" role="tab" aria-controls="discription" aria-selected="false">{Translate(this.props,"Videos")}</a>
+                                  </li>
+                                  : null
+                                }
                                 {
                                   this.props.pageInfoData.channel.playlists ?
                                     <li className="nav-item">
-                                      <a className="nav-link" data-toggle="tab" href="#playlists" role="tab" aria-controls="playlists" aria-selected="true">{Translate(this.props,"Playlists")}</a>
+                                      <a className={`nav-link${this.state.tabType == "playlists" ? " active" : ""}`} onClick={
+                                    (e) => { e.preventDefault(); this.pushTab("playlists")}
+                                  } data-bs-toggle="tab" href="#" role="tab" aria-controls="playlists" aria-selected="true">{Translate(this.props,"Playlists")}</a>
                                     </li>
                                     : null
                                 }
                                 {
                                   this.props.pageInfoData.channel.supporters ?
                                     <li className="nav-item">
-                                      <a className="nav-link" data-toggle="tab" href="#supporters" role="tab" aria-controls="supporters" aria-selected="true">{Translate(this.props,"Supporters")}</a>
+                                      <a className={`nav-link${this.state.tabType == "supporters" ? " active" : ""}`} onClick={
+                                    (e) => { e.preventDefault(); this.pushTab("supporters") }
+                                  } data-bs-toggle="tab" href="#" role="tab" aria-controls="supporters" aria-selected="true">{Translate(this.props,"Supporters")}</a>
                                     </li>
                                     : null
                                 }
-                                <li className="nav-item">
-                                  <a className="nav-link" data-toggle="tab" href="#community" role="tab" aria-controls="community" aria-selected="true">{Translate(this.props,"Community")}</a>
-                                </li>
+                                {
+                                  !this.state.needSubscription ? 
+                                    <li className="nav-item">
+                                      <a className={`nav-link${this.state.tabType == "community" ? " active" : ""}`} onClick={
+                                    (e) => { e.preventDefault(); this.pushTab("community") }
+                                  } data-bs-toggle="tab" href="#" role="tab" aria-controls="community" aria-selected="true">{Translate(this.props,"Community")}</a>
+                                    </li>
+                                  : null
+                                }
                                 {
                                   this.props.pageInfoData.channel.artists && this.props.pageInfoData.channel.artists.results && this.props.pageInfoData.channel.artists.results.length ?
                                   <li className="nav-item">
-                                      <a className="nav-link" data-toggle="tab" href="#artists" role="tab" aria-controls="artists" aria-selected="true">{Translate(this.props,"Artists")}</a>
+                                      <a className={`nav-link${this.state.tabType == "artists" ? " active" : ""}`} onClick={
+                                    (e) => { e.preventDefault(); this.pushTab("artists") }
+                                  } data-bs-toggle="tab" href="#" role="tab" aria-controls="artists" aria-selected="true">{Translate(this.props,"Artists")}</a>
                                     </li>
                                     : null
                                 }
                                 {
                                   this.props.pageInfoData.appSettings[`${"channel_comment"}`] == 1 && this.state.channel.approve == 1 ?
                                     <li className="nav-item">
-                                      <a className="nav-link" data-toggle="tab" href="#comments" role="tab" aria-controls="comments" aria-selected="true">{`${ShortNumber(this.state.channel.comment_count ? this.state.channel.comment_count : 0)}`}{" "}{Translate(this.props,"Comments")}</a>
+                                      <a className={`nav-link${this.state.tabType == "comments" ? " active" : ""}`} onClick={
+                                    (e) => { e.preventDefault(); this.pushTab("comments") }
+                                  } data-bs-toggle="tab" href="#" role="tab" aria-controls="comments" aria-selected="true">{`${ShortNumber(this.state.channel.comment_count ? this.state.channel.comment_count : 0)}`}{" "}{Translate(this.props,"Comments")}</a>
                                     </li>
                                     : null
                                 }
-                              <li className="nav-item">
-                                      <a className="nav-link" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">{Translate(this.props,"About")}</a>
-                                    </li>
-                                
-                                                                    
-                                
+                                <li className="nav-item">
+                                  <a className={`nav-link${this.state.tabType == "about" ? " active" : ""}`} onClick={
+                                    (e) => { e.preventDefault(); this.pushTab("about") }
+                                  } data-bs-toggle="tab" href="#" role="tab" aria-controls="about" aria-selected="true">{Translate(this.props,"About")}</a>
+                                </li>
                               </ul>
                               <div className="tab-content" id="myTabContent">
-                                <div className="tab-pane fade active show" id="videos" role="tabpanel">
+                                {
+                                  this.state.needSubscription ? 
+                                    <div className={`tab-pane fade${this.state.tabType == "plans" ? " active show" : ""}`} id="plans" role="tabpanel">
+                                      <div className="details-tab-box">
+                                        <p className="plan-upgrade-subscribe">
+                                            {
+                                              this.state.needSubscription.type == "upgrade" ? 
+                                                this.props.t("To watch more content, kindly upgrade your Subcription Plan.")
+                                                :
+                                                this.props.t("To watch more content, kindly Subscribe.")
+                                            }
+                                        </p>
+                                        <Plans {...this.props} userSubscription={this.state.needSubscription.loggedin_package_id ? true : false} userSubscriptionID={this.state.needSubscription.loggedin_package_id} itemObj={this.state.channel} member={this.state.channel.owner} user_id={this.state.channel.owner_id} plans={this.state.plans} />
+                                      </div>
+                                    </div>
+                                  : null
+                                }
+                                {
+                                  !this.state.needSubscription ? 
+                                <div className={`tab-pane fade${this.state.tabType == "videos" ? " active show" : ""}`} id="videos" role="tabpanel">
                                   <div className="details-tab-box">{
                                     this.props.pageInfoData.channel.canEdit ?
                                       <button onClick={this.openPopup}>{Translate(this.props,"Add Videos")}</button>
@@ -491,7 +550,11 @@ class Index extends Component {
                                     <Videos canDelete={this.props.pageInfoData.channel.canDelete}  {...this.props}  videos={this.props.pageInfoData.channel.videos.results} pagging={this.props.pageInfoData.channel.videos.pagging} channel_id={this.props.pageInfoData.channel.channel_id} />
                                   </div>
                                 </div>
-                                <div className="tab-pane fade" id="community" role="tabpanel">
+                                  : null
+                                }
+                                {
+                                  !this.state.needSubscription ?
+                                <div className={`tab-pane fade${this.state.tabType == "community" ? " active show" : ""}`} id="community" role="tabpanel">
                                   <div className="details-tab-box">{
                                     this.props.pageInfoData.channel.canEdit ?
                                       <button onClick={this.adPost}>{Translate(this.props,"Add Post")}</button>
@@ -500,11 +563,12 @@ class Index extends Component {
                                     <Community canDelete={this.props.pageInfoData.channel.canDelete} canEdit={this.props.pageInfoData.channel.canEdit} channel={this.state.channel}  {...this.props}  posts={this.props.pageInfoData.channel.posts.results} pagging={this.props.pageInfoData.channel.posts.pagging} channel_id={this.props.pageInfoData.channel.channel_id} />
                                   </div>
                                 </div>
-                                
+                                : null
+                                }
 
                                 {
                                   this.props.pageInfoData.channel.playlists ?
-                                    <div className="tab-pane fade" id="playlists" role="tabpanel">
+                                    <div className={`tab-pane fade${this.state.tabType == "playlists" ? " active show" : ""}`} id="playlists" role="tabpanel">
                                       <div className="details-tab-box">
                                         {
                                           this.props.pageInfoData.channel.canEdit ?
@@ -518,7 +582,7 @@ class Index extends Component {
                                 }
                                 {
                                   this.props.pageInfoData.channel.supporters ?
-                                    <div className="tab-pane fade" id="supporters" role="tabpanel">
+                                    <div className={`tab-pane fade${this.state.tabType == "supporters" ? " active show" : ""}`} id="supporters" role="tabpanel">
                                       <div className="details-tab-box">
                                         <Members  {...this.props} globalSearch={true}  channel_members={this.props.pageInfoData.channel.supporters.results} channel_pagging={this.props.pageInfoData.channel.supporters.pagging} channel_id={this.props.pageInfoData.channel.channel_id} />
                                       </div>
@@ -527,7 +591,7 @@ class Index extends Component {
                                 }
                                 {
                                   this.props.pageInfoData.channel.artists && this.props.pageInfoData.channel.artists.results && this.props.pageInfoData.channel.artists.results.length ?
-                                    <div className="tab-pane fade" id="artists" role="tabpanel">
+                                    <div className={`tab-pane fade${this.state.tabType == "artists" ? " active show" : ""}`} id="artists" role="tabpanel">
                                       <div className="details-tab-box">
                                         <Artists canDelete={this.props.pageInfoData.channel.canDelete}  {...this.props}  artists={this.props.pageInfoData.channel.artists.results} pagging={this.props.pageInfoData.channel.artists.pagging} channel_id={this.props.pageInfoData.channel.channel_id} />
                                       </div>
@@ -539,14 +603,14 @@ class Index extends Component {
                                 
                                 {
                                   this.props.pageInfoData.appSettings[`${"channel_comment"}`] == 1 && this.state.channel.approve == 1 ?
-                                    <div className="tab-pane fade" id="comments" role="tabpanel">
+                                    <div className={`tab-pane fade${this.state.tabType == "comments" ? " active show" : ""}`} id="comments" role="tabpanel">
                                       <div className="details-tab-box">
                                         <Comment  {...this.props}  owner_id={this.state.channel.owner_id} hideTitle={true} appSettings={this.props.pageInfoData.appSettings} commentType="channel" type="channels" id={this.state.channel.channel_id} />
                                       </div>
                                     </div>
                                     : null
                                 }
-                              <div className="tab-pane fade" id="about" role="tabpanel">
+                              <div className={`tab-pane fade${this.state.tabType == "about" ? " active show" : ""}`} id="about" role="tabpanel">
                                   <div className="details-tab-box">
                                   {
                                     this.props.pageInfoData.appSettings[`${"channel_rating"}`] == 1 && this.state.channel.approve == 1 ?
@@ -660,18 +724,13 @@ class Index extends Component {
                                     }
                                   </div>
                                 </div>
-
-                                
-                                
                               </div>
                             </div>
                             </React.Fragment>
                             }
-                            
                           </div>
                         </div>
                       </div>
-                    
               {
                   this.state.relatedChannels && this.state.relatedChannels.length ?
                   <React.Fragment>

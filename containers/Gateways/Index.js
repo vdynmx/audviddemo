@@ -9,10 +9,10 @@ class Index extends React.Component{
     constructor(props) {
         super(props)        
         this.state = {
-            paypal:props.pageInfoData.appSettings['payment_paypal_method'] == 1,
-            stripe:props.pageInfoData.appSettings['payment_stripe_method'] == 1,
-            cashfree:props.pageInfoData.appSettings['payment_cashfree_method'] == 1,
-            bank:props.pageInfoData.appSettings['payment_bank_method'] == 1
+            paypal:props.pageInfoData.appSettings['paypalEnabled'] == 1,
+            stripe:props.pageInfoData.appSettings['stripeEnabled'] == 1,
+            cashfree:props.pageInfoData.appSettings['cashfreeEnabled'] == 1,
+            bank:props.pageInfoData.appSettings['bankTransferEnabled'] == 1
         }
     }
 
@@ -94,33 +94,38 @@ class Index extends React.Component{
                 <div className="popup_wrapper_cnt">
                     <div className="popup_cnt">
                         <div className="comments">
-                            <div className="VideoDetails-commentWrap">
+                            <div className="payment-cnt">
                                 <div className="popup_wrapper_cnt_header">
                                     <h2>{Translate(this.props, "Choose a payment method")}</h2>
                                     <a onClick={this.props.closePopup} className="_close"><i></i></a>
                                 </div>
-                                <div className=" gateway-options">
-                                    {
-                                        this.state.paypal ? 
-                                            <button onClick={this.paypal}><img src="/static/images/paypal.png" />{Translate(this.props,'Paypal')}</button>
-                                        : null
-                                    }
-                                    {
-                                        this.state.stripe ? 
-                                            <button onClick={this.stripe}><img src="/static/images/stripe.webp" />{Translate(this.props,'Credit Card')}</button>
-                                        : null
-                                    }
-                                    {/* {
-                                        this.state.cashfree ? 
-                                            <button onClick={this.cashfree}><img src="/static/images/cashfree.png" />{Translate(this.props,'Cashfree')}</button>
-                                        : null
-                                    } */}
-                                    {
-                                        this.state.bank ? 
-                                            <button onClick={this.bank}><img src="/static/images/bank.png" />{Translate(this.props,'Bank Transfer')}</button>
-                                        : null
-                                    }
-                                </div>
+                                {
+                                    !this.state.paypal && !this.state.stripe && !this.state.bank ? 
+                                    <p className="no-gateway-enabled">{this.props.t("No Payment Gateway enabled. Please contact admin.")}</p>
+                                :
+                                    <div className=" gateway-options">
+                                        {
+                                            this.state.paypal ? 
+                                                <button onClick={this.paypal}><img src="/static/images/paypal.png" />{Translate(this.props,'Paypal')}</button>
+                                            : null
+                                        }
+                                        {
+                                            this.state.stripe ? 
+                                                <button onClick={this.stripe}><img src="/static/images/stripe.webp" />{Translate(this.props,'Credit Card')}</button>
+                                            : null
+                                        }
+                                        {/* {
+                                            this.state.cashfree ? 
+                                                <button onClick={this.cashfree}><img src="/static/images/cashfree.png" />{Translate(this.props,'Cashfree')}</button>
+                                            : null
+                                        } */}
+                                        {
+                                            this.state.bank ? 
+                                                <button onClick={this.bank}><img src="/static/images/bank.png" />{Translate(this.props,'Bank Transfer')}</button>
+                                            : null
+                                        }
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>

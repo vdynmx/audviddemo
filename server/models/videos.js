@@ -2,7 +2,6 @@ const privacyModel = require("../models/privacy")
 const dateTime = require("node-datetime")
 const  socketio = require("../socket")
 const commonFunction = require("../functions/commonFunctions");
-const axios = require("axios")
 module.exports = {
     getDefaultTips: function(req,data){
         return new Promise(function (resolve, reject) {
@@ -123,7 +122,7 @@ module.exports = {
                     owner_id = parseInt(req.user.user_id)
                 }
 
-                let sql = "SELECT SUM(tip_donors.price) as donatePrice,COUNT(tip_donors.owner_id) as donateCount,followers.follower_id,userdetails.*,likes.like_dislike,favourites.favourite_id,IF(userdetails.avtar IS NULL || userdetails.avtar = '',(SELECT value FROM `level_permissions` WHERE name = CASE WHEN userdetails.gender = 'male' THEN 'default_mainphoto' WHEN userdetails.gender = 'female'  THEN 'default_femalemainphoto' END  AND type = \"member\" AND level_id = users.level_id),userdetails.avtar) as avtar,IF(userdetails.cover IS NULL OR userdetails.cover = '',(SELECT value FROM `level_permissions` WHERE name = \"default_coverphoto\" AND type = \"member\" AND level_id = users.level_id),userdetails.cover) as cover FROM tip_donors LEFT JOIN users ON users.user_id = tip_donors.owner_id LEFT JOIN userdetails ON userdetails.user_id = users.user_id LEFT JOIN followers on followers.id = users.user_id AND followers.owner_id = " + owner_id + " AND followers.type = 'members' LEFT JOIN likes ON likes.id = users.user_id AND likes.type = 'members'  AND likes.owner_id =  " + owner_id + "  LEFT JOIN favourites ON (favourites.id = users.user_id AND favourites.type = 'members' AND favourites.owner_id = " + owner_id + ") "
+                let sql = "SELECT tip_donors.creation_date as tip_date,SUM(tip_donors.price) as donatePrice,COUNT(tip_donors.owner_id) as donateCount,followers.follower_id,userdetails.*,likes.like_dislike,favourites.favourite_id,IF(userdetails.avtar IS NULL || userdetails.avtar = '',(SELECT value FROM `level_permissions` WHERE name = CASE WHEN userdetails.gender = 'male' THEN 'default_mainphoto' WHEN userdetails.gender = 'female'  THEN 'default_femalemainphoto' END  AND type = \"member\" AND level_id = users.level_id),userdetails.avtar) as avtar,IF(userdetails.cover IS NULL OR userdetails.cover = '',(SELECT value FROM `level_permissions` WHERE name = \"default_coverphoto\" AND type = \"member\" AND level_id = users.level_id),userdetails.cover) as cover FROM tip_donors LEFT JOIN users ON users.user_id = tip_donors.owner_id LEFT JOIN userdetails ON userdetails.user_id = users.user_id LEFT JOIN followers on followers.id = users.user_id AND followers.owner_id = " + owner_id + " AND followers.type = 'members' LEFT JOIN likes ON likes.id = users.user_id AND likes.type = 'members'  AND likes.owner_id =  " + owner_id + "  LEFT JOIN favourites ON (favourites.id = users.user_id AND favourites.type = 'members' AND favourites.owner_id = " + owner_id + ") "
                 if(data.offthemonth){
                     sql += " LEFT JOIN videos ON videos.video_id = tip_donors.video_id "
                 }
@@ -133,6 +132,11 @@ module.exports = {
                 if(data.video_id){
                     condition.push(data.video_id)
                     sql += " AND tip_donors.video_id = ?"
+                }
+
+                if(data.video_owner_id){
+                    condition.push(data.video_owner_id)
+                    sql += " AND videos.owner_id = ?"
                 }
 
                 if(data.offthemonth){
@@ -379,46 +383,10 @@ module.exports = {
                             connection.query("DELETE FROM notifications WHERE (object_type = 'videos' && object_id = ?) OR (subject_type = 'videos' && object_id = ?)", [id,id], function () { })
                             connection.query("DELETE FROM reports WHERE type = ? AND id = ?", ["videos", video.custom_url], function () {
                             })
-                            if(video.mediaserver_stream_id){
-                                let videos = []
-                                if(video.agora_resource_id){
-                                    videos = video.agora_resource_id.split(',')
-                                }else{
-                                    videos = [video.mediaserver_stream_id]
-                                }
-                                if(req.appSettings["agora_s3_bucket"] && req.appSettings["agora_s3_access_key"] && req.appSettings['agora_s3_secret_access_key'] && req.appSettings['agora_s3_region']){
-                                    let imagepaths = video.code
-                                    if(imagepaths){
-                                        imagepaths.split(',').forEach(item => {
-                                            commonFunction.deleteAntmediaContent(req,res,"streams/"+item);
-                                        })
-                                    }
-                                    if(video.image && video.image.indexOf('/LiveApp/') > -1)
-                                        commonFunction.deleteAntmediaContent(req,res,video.image.replace("/LiveApp/",''));
-                                }
-                                videos.forEach(item => {
-                                    if(item){
-
-                                     
-
-                                        var config = { 
-                                            method: 'delete',
-                                            url: req.appSettings["antserver_media_url"].replace("https://","http://")+":5080/LiveApp/rest/v2/vods/"+item,
-                                            headers: { 
-                                                'Content-Type': 'application/json;charset=utf-8'
-                                            },
-                                            //httpsAgent: agent
-                                        };
-                                        axios(config)
-                                        .then(function (response) {
-                                        }).catch(function (error) {});
-                                    }
-                                })
-                                
-                            }
+                            
                             resolve(true)
                         } else {
-                            resolve("");
+                            resolve(false);
                         }
                     })
                 })
@@ -437,8 +405,30 @@ module.exports = {
                 if (data.orderby == "random") {
                     customSelect = ' FLOOR(1 + RAND() * video_id) as randomSelect, '
                 }
-                let sql = 'SELECT videos.*,'+customSelect+'likes.like_dislike,users.level_id,userdetails.displayname,userdetails.username,users.paypal_email,userdetails.verified,videos.image as orgImage,IF(videos.image IS NULL || videos.image = "","' + req.appSettings['video_default_photo'] + '",videos.image) as image,IF(userdetails.avtar IS NULL || userdetails.avtar = "",(SELECT value FROM `level_permissions` WHERE name = \"default_mainphoto\" AND type = \"member\" AND level_id = users.level_id),userdetails.avtar) as avtar,watchlaters.watchlater_id,favourites.favourite_id FROM videos '
-                
+                let checkPlanColumn = "";
+                if(!req.isview){
+                    let isAllowedView = req.levelPermissions["videos.view"] && req.levelPermissions["videos.view"].toString() == "2";
+                    checkPlanColumn =  ' CASE WHEN '+(isAllowedView ? 1 : 0)+' = 1 THEN 1 WHEN videos.owner_id = '+owner_id+' THEN 1 WHEN member_plans.price IS NULL THEN 1 WHEN transactions.transaction_id IS NOT NULL THEN 1 WHEN mp.price IS NULL THEN 0 WHEN  `member_plans`.price <= mp.price THEN 1'
+                    checkPlanColumn += ' WHEN `member_plans`.price <= mp.price AND (videos.category_id = 0 || mp.video_categories IS NULL || videos.category_id IN (mp.video_categories) ) THEN 1'
+                    checkPlanColumn +=  ' WHEN  `member_plans`.price > mp.price THEN 2'
+                    checkPlanColumn += ' ELSE 0 END as is_active_package, '
+                }else{
+                    checkPlanColumn = ' 1 as is_active_package,'
+                }
+                let fields = 'videos.*,'+checkPlanColumn+customSelect+'likes.like_dislike,users.level_id,userdetails.displayname,userdetails.username,users.paypal_email,userdetails.verified,videos.image as orgImage,IF(videos.image IS NULL || videos.image = "","' + req.appSettings['video_default_photo'] + '",videos.image) as image,IF(userdetails.avtar IS NULL || userdetails.avtar = "",(SELECT value FROM `level_permissions` WHERE name = \"default_mainphoto\" AND type = \"member\" AND level_id = users.level_id),userdetails.avtar) as avtar,watchlaters.watchlater_id,favourites.favourite_id'
+                if(data.countITEM){
+                    fields = "COUNT(videos.video_id) as itemCount"
+                }
+                let sql = 'SELECT '+fields+' FROM videos '
+                if(!req.isview){
+                    condition.push(req.user ? req.user.user_id : 0)
+                    sql += ' LEFT JOIN `member_plans` ON `member_plans`.member_plan_id = REPLACE(`videos`.view_privacy,"package_","") LEFT JOIN '
+                    sql += ' `subscriptions` ON subscriptions.id = videos.owner_id AND subscriptions.owner_id = ? AND subscriptions.type = "user_subscribe" AND subscriptions.status IN ("active","completed") LEFT JOIN `member_plans` as mp ON mp.member_plan_id = `subscriptions`.package_id '
+                    condition.push(owner_id)
+                    condition.push(owner_id)
+                    sql += ' LEFT JOIN transactions ON transactions.id = videos.video_id AND (transactions.state = "approved" || transactions.state = "completed") AND ((transactions.sender_id = 0 AND transactions.owner_id = ?) OR transactions.sender_id = ? ) AND transactions.type = "video_purchase" '
+                }
+
                 if (parseInt(data.channel_id)) {
                     condition.push(parseInt(data.channel_id))
                     if(!data.search){
@@ -521,16 +511,27 @@ module.exports = {
                 if (!data.myContent) {
 
                     if(data.liveStreamingPage){
-                        sql += " AND is_livestreaming = 1 "
-                    }else{
                         let customDate = ""
                         if(typeof req.appSettings['live_streaming_type'] == "undefined" || req.appSettings['live_streaming_type'] != 0){ 
                             condition.push(dateTime.create().format("Y-m-d H:M:S"))
                             customDate = " AND DATE_ADD(videos.modified_date, INTERVAL 1 MINUTE) > ? "
-
                         }
-                        sql += " AND ( ( is_livestreaming = 0 AND (code IS NOT NULL || videos.type = 3) ) ||  ( is_livestreaming = 1 "+customDate+"  )  )"
-                        
+                        sql += " AND is_livestreaming = 1 "+customDate
+                    }else{
+                        let customDate = ""
+                        if(!data.is_live_videos){
+                            if(typeof req.appSettings['live_streaming_type'] == "undefined" || req.appSettings['live_streaming_type'] != 0){ 
+                                condition.push(dateTime.create().format("Y-m-d H:M:S"))
+                                customDate = " AND DATE_ADD(videos.modified_date, INTERVAL 1 MINUTE) > ? "
+                            }
+                            sql += " AND ( (is_livestreaming = 0 AND (code IS NOT NULL || videos.type = 3)) ||  (is_livestreaming = 1 "+customDate+")  ) "
+                        }else{
+                            if(typeof req.appSettings['live_streaming_type'] == "undefined" || req.appSettings['live_streaming_type'] != 0){ 
+                                condition.push(dateTime.create().format("Y-m-d H:M:S"))
+                                customDate = " AND DATE_ADD(videos.modified_date, INTERVAL 1 MINUTE) > ? "
+                            }
+                            sql += " AND ( (is_livestreaming = 1 "+customDate+") || (mediaserver_stream_id IS NOT NULL && mediaserver_stream_id != '') || (channel_name IS NOT NULL && channel_name != '') ) "
+                        }
                     }
 
                     if (data.videoview) {
@@ -668,6 +669,12 @@ module.exports = {
                     }
                 })
 
+                if(data.user_home_content){
+                    sql += " AND view_privacy LIKE 'package_%'";
+                }
+                if(data.user_sell_home_content){
+                    sql += " AND CAST(videos.`price` AS DECIMAL(6,2)) > 0 ";
+                }
 
                 if (data.mycommented) {
                     sql += " GROUP BY videos.video_id "
@@ -698,14 +705,22 @@ module.exports = {
                     sql += " OFFSET ?"
                 }
                 connection.query(sql, condition, function (err, results) {
-                    if (err)
+                    
+                    if (err){
+                        console.log(err)
                         resolve(false)
+                    }
                     if (results) {
                         const level = JSON.parse(JSON.stringify(results));
                         const videos = []
                         if(level && level.length){
                             level.forEach(video => {
                                 delete video.password
+                                if(video.is_active_package != 1){
+                                    delete video.code
+                                    delete video.video_location
+                                    //video.type = 10000
+                                }
                                 videos.push(video)
                             })
                             resolve(videos)

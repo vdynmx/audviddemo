@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
 import Links from "./Links"
-
 import config from "../../config"
 import action from '../../store/actions/general'
+import CensorWord from "../CensoredWords/Index"
 
 class Index extends Component {
   constructor(props){
@@ -42,6 +41,7 @@ class Index extends Component {
     media = (isS3 ? this.state.imageSuffix : "")+media
     const emailTitle = title
     const emailBody = "Email Body"
+    console.log(this.state.title)
     return (
             <div className="popup_wrapper_cnt">
                 <div className="popup_cnt">
@@ -53,10 +53,10 @@ class Index extends Component {
                             </div>
                             <div className="shareVdoInfo">
                                 <div className="thumb">
-                                    <img alt={this.state.title} className="" src={media} />
+                                    <img className="" src={media} />
                                 </div>
                                 <div className="name">
-                                    <h3>{this.state.title}</h3>
+                                    <h3>{<CensorWord {...this.props} text={this.state.title} />}</h3>
                                 </div>
                             </div>
                             <Links tags={this.state.tags}  countItems="all" url={shareUrl} title={title} media={media} emailTitle={emailTitle} emailBody={emailBody} />
@@ -65,7 +65,7 @@ class Index extends Component {
                 </div>
             </div>
         );
-  }
+  } 
 }
 
 const mapDispatchToProps = dispatch => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -28,12 +28,12 @@ class Index extends React.Component{
     render(){
         const Right = props => (
             <button className="control-arrow control-next" onClick={props.onClick}>
-              <span className='material-icons'>keyboard_arrow_right</span>
+              <span className="material-icons" data-icon="keyboard_arrow_right"></span>
             </button>
           )
         const Left = props => (
             <button className="control-arrow control-prev" onClick={props.onClick}>
-              <span className='material-icons'>keyboard_arrow_left</span>
+              <span className="material-icons" data-icon="keyboard_arrow_left"></span>
             </button>
           )
         var settings = {
@@ -52,7 +52,8 @@ class Index extends React.Component{
                 settings: {
                   slidesToShow: this.props.itemAt1024,
                   slidesToScroll: 1,
-                  infinite: true,
+                  infinite: false,
+                  initialSlide: 0,
                   dots: false
                 }
               },
@@ -61,14 +62,18 @@ class Index extends React.Component{
                 settings: {
                   slidesToShow: this.props.itemAt600,
                   slidesToScroll: 1,
-                  initialSlide: 0
+                  infinite: false,
+                  initialSlide: 0,
+                  dots: false
                 }
               },
               {
                 breakpoint: 480,
                 settings: {
                   slidesToShow: this.props.itemAt480,
-                  slidesToScroll: 1
+                  slidesToScroll: 1,
+                  infinite: false,
+                  dots: false
                 }
               }
             ]
@@ -81,7 +86,7 @@ class Index extends React.Component{
                         settings: {
                         slidesToShow: this.props.itemAt1200,
                         slidesToScroll: 1,
-                        infinite: true,
+                        infinite: false,
                         dots: false
                         }
                     }
@@ -94,7 +99,7 @@ class Index extends React.Component{
                         settings: {
                         slidesToShow: this.props.itemAt1500,
                         slidesToScroll: 1,
-                        infinite: true,
+                        infinite: false,
                         dots: false
                         }
                     }
@@ -105,10 +110,10 @@ class Index extends React.Component{
                     {
                         breakpoint: 900,
                         settings: {
-                        slidesToShow: this.props.itemAt900,
-                        slidesToScroll: 1,
-                        infinite: true,
-                        dots: false
+                          slidesToShow: this.props.itemAt900,
+                          slidesToScroll: 1,
+                          infinite: false,
+                          dots: false
                         }
                     }
                 )

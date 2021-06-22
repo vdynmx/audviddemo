@@ -70,7 +70,7 @@ class Browse extends React.Component {
             <React.Fragment>
                     <div className="category-grid-wrap top30p">
                         <div className="container">
-                            <div className="row mob2col">
+                            <div className="row mob2 col gx-2">
                                 {
                                     this.state.categories.map(cat => {
                                         return (

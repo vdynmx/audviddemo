@@ -932,31 +932,7 @@ exports.create = async (req, res) => {
     if (movieId) {
         //update existing movie
         await globalModel.update(req, insertObject, "movies", 'movie_id', movieId).then(result => {
-            //update item count in categories if changed
-            if (insertObject["category_id"] != movieObject.category_id) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count - 1 WHERE category_id = " + movieObject["category_id"]).then(result => {
-                }).catch(err => { })
-            }
-            if (insertObject["subcategory_id"] != movieObject.subcategory_id || (insertObject["category_id"] == 0 && movieObject.subcategory_id)) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count - 1 WHERE category_id = " + movieObject["subcategory_id"]).then(result => {
-                }).catch(err => { })
-            }
-            if (insertObject["subsubcategory_id"] != movieObject.subsubcategory_id || (insertObject["subcategory_id"] == 0 && movieObject.subsubcategory_id)) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count - 1 WHERE category_id = " + movieObject["subsubcategory_id"]).then(result => {
-                }).catch(err => { })
-            }
-            if (insertObject["category_id"] != movieObject.category_id && insertObject["category_id"] > 0) {
-                globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["category_id"]).then(result => {
-                }).catch(err => { })
-                if (insertObject["subcategory_id"] != movieObject.subcategory_id && insertObject["subcategory_id"] > 0) {
-                    globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subcategory_id"]).then(result => {
-                    }).catch(err => { })
-                    if (insertObject["subsubcategory_id"] != movieObject.subsubcategory_id && insertObject["subsubcategory_id"] > 0) {
-                        globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subsubcategory_id"]).then(result => {
-                        }).catch(err => { })
-                    }
-                }
-            }
+          
             res.send({  message:constant.movie.EDIT });
             
         }).catch(err => {
@@ -966,19 +942,7 @@ exports.create = async (req, res) => {
         //create new movie
         await globalModel.create(req, insertObject, "movies").then(async result => {
             if (result) {
-                //update category counts
-                if (insertObject["category_id"] != 0) {
-                    globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["category_id"]).then(result => {
-                        if (insertObject["subcategory_id"] != 0) {
-                            globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subcategory_id"]).then(result => {
-                                if (insertObject["subsubcategory_id"] != 0) {
-                                    globalModel.custom(req, "UPDATE categories SET item_count = item_count + 1 WHERE category_id = " + insertObject["subsubcategory_id"]).then(result => {
-                                    }).catch(err => { })
-                                }
-                            }).catch(err => { })
-                        }
-                    }).catch(err => { })
-                }
+               
                 let editItem = {}
 
                 await movieModel.findById(result.insertId, req,false).then(async movie => {

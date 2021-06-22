@@ -1,11 +1,7 @@
 import React from "react"
-
 import axios from "../../axios-orders"
 import { connect } from "react-redux";
-
-import config from "../../config";
 import playlist from '../../store/actions/general';
-
 import InfiniteScroll from "react-infinite-scroll-component";
 import LoadMore from "../LoadMore/Index"
 import EndContent from "../LoadMore/EndContent"
@@ -13,15 +9,13 @@ import Release from "../LoadMore/Release"
 import VideoItem from "../Video/Item"
 import ShortNumber from "short-number"
 import Rating from "../Rating/Index"
-
 import ChannelItem from "../Channel/Item"
 import TopView from "./TopView"
-import Linkify from "react-linkify"
 import Comment from "../Comments/Index"
 import Translate from "../../components/Translate/Index"
-import CensorWord from "../CensoredWords/Index"
 
 import Photos from "./Photos"
+import Router  from "next/router";
 
 class Artist extends React.Component {
     constructor(props) {
@@ -31,7 +25,8 @@ class Artist extends React.Component {
             artist: props.pageInfoData.artist,
             items: props.pageInfoData.items.results,
             pagging: props.pageInfoData.items.pagging,
-            photos:props.pageInfoData.photos
+            photos:props.pageInfoData.photos,
+            tabType:props.pageInfoData.tabType ? props.pageInfoData.tabType : "about"
         }
         this.refreshContent = this.refreshContent.bind(this)
         this.loadMoreContent = this.loadMoreContent.bind(this)
@@ -205,6 +200,13 @@ class Artist extends React.Component {
     
         return replacedText;
     }
+    pushTab = (type) => {
+        if(this.state.tabType == type){
+          return
+      }
+        this.setState({tabType:type,localUpdate:true})
+        Router.push(`/artist?artistId=${this.state.artist.custom_url}`, `/artist/${this.state.artist.custom_url}?type=${type}`,{ shallow: true })
+      }
     render() {
         let content = null
         if (this.state.artist.type == "video") {
@@ -227,38 +229,44 @@ class Artist extends React.Component {
         return (
             <React.Fragment>
                 <TopView {...this.props}  type={this.state.artist.type} artist={this.state.artist} />
-
-
                 <div className="userDetailsWraps">
                     <div className="container">
                         <div className="row">
                             <div className="col-md-12">
                                 <div className="details-tab">
                                     <ul className="nav nav-tabs" id="myTab" role="tablist">
-                                    <li className="nav-item">
-                                            <a className="nav-link active" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">{Translate(this.props, "About")}</a>
+                                        <li className="nav-item">
+                                            <a className={`nav-link${this.state.tabType == "about" ? " active" : ""}`} onClick={
+                                                (e) => { e.preventDefault(); this.pushTab("about") }
+                                            } data-bs-toggle="tab" href="#" role="tab" aria-controls="about" aria-selected="true">{Translate(this.props, "About")}</a>
                                         </li>
                                         <li className="nav-item">
-                                            <a className="nav-link" data-toggle="tab" href="#items" role="tab" aria-controls="items" aria-selected="true">{Translate(this.props, this.state.artist.type == "video" ? "Videos" : "Channels")}</a>
+                                            <a className={`nav-link${this.state.tabType == "items" ? " active" : ""}`} onClick={
+                                                (e) => { e.preventDefault(); this.pushTab("items") }
+                                            } data-bs-toggle="tab" href="#" role="tab" aria-controls="items" aria-selected="true">{Translate(this.props, this.state.artist.type == "video" ? "Videos" : "Channels")}</a>
                                         </li>
                                        
                                         {
                                             this.props.pageInfoData.appSettings[`${this.state.artist.type + "_artist_comment"}`] == 1 ?
                                                 <li className="nav-item">
-                                                    <a className="nav-link" data-toggle="tab" href="#comments" role="tab" aria-controls="comments" aria-selected="true">{`${ShortNumber(this.state.artist.comment_count ? this.state.artist.comment_count : 0)}`}{" "}{Translate(this.props, "Comments")}</a>
+                                                    <a className={`nav-link${this.state.tabType == "comments" ? " active" : ""}`} onClick={
+                                                        (e) => { e.preventDefault(); this.pushTab("comments") }
+                                                    } data-bs-toggle="tab" href="#" role="tab" aria-controls="comments" aria-selected="true">{`${ShortNumber(this.state.artist.comment_count ? this.state.artist.comment_count : 0)}`}{" "}{Translate(this.props, "Comments")}</a>
                                                 </li>
                                                 : null
                                         }
                                          {
                                             this.state.photos && this.state.photos.results.length > 0 ?
                                                 <li className="nav-item">
-                                                    <a className="nav-link" data-toggle="tab" href="#photos" role="tab" aria-controls="photos" aria-selected="true">{Translate(this.props, "Photos")}</a>
+                                                    <a className={`nav-link${this.state.tabType == "photos" ? " active" : ""}`} onClick={
+                                                        (e) => { e.preventDefault(); this.pushTab("photos") }
+                                                    } data-bs-toggle="tab" href="#" role="tab" aria-controls="photos" aria-selected="true">{Translate(this.props, "Photos")}</a>
                                                 </li>
                                                 : null
                                         }
                                     </ul>
                                     <div className="tab-content" id="myTabContent">
-                                    <div className="tab-pane fade active show" id="about" role="tabpanel">
+                                    <div className={`tab-pane fade${this.state.tabType == "about" ? " active show" : ""}`} id="about" role="tabpanel">
                                             <div className="details-tab-box">
                                                 <React.Fragment>
                                                 {
@@ -324,7 +332,7 @@ class Artist extends React.Component {
                                                 </React.Fragment>
                                             </div>
                                         </div>
-                                        <div className="tab-pane fade" id="items" role="tabpanel">
+                                        <div className={`tab-pane fade${this.state.tabType == "items" ? " active show" : ""}`} id="items" role="tabpanel">
                                             <div className="details-tab-box">
                                                 <InfiniteScroll
                                                     dataLength={this.state.items.length}
@@ -339,7 +347,7 @@ class Artist extends React.Component {
                                                     releaseToRefreshContent={<Release release={true} {...this.props} />}
                                                     refreshFunction={this.refreshContent}
                                                 >
-                                                    <div className="row mob2col">
+                                                    <div className="row mob2 col gx-2">
                                                         {content}
                                                     </div>
                                                 </InfiniteScroll>
@@ -348,7 +356,7 @@ class Artist extends React.Component {
                                         
                                         {
                                             this.props.pageInfoData.appSettings[`${this.state.artist.type + "_artist_comment"}`] == 1 ?
-                                                <div className="tab-pane fade" id="comments" role="tabpanel">
+                                                <div className={`tab-pane fade${this.state.tabType == "comments" ? " active show" : ""}`} id="comments" role="tabpanel">
                                                     <div className="details-tab-box">
                                                         <Comment  {...this.props}  owner_id="artist" hideTitle={true} subtype={this.state.artist.type + "_"} appSettings={this.props.pageInfoData.appSettings} commentType="artist" type="artists" id={this.state.artist.artist_id} />
                                                     </div>
@@ -357,7 +365,7 @@ class Artist extends React.Component {
                                         }
                                         {
                                             this.state.photos && this.state.photos.results.length > 0 ?
-                                                <div className="tab-pane fade" id="photos" role="tabpanel">
+                                                <div className={`tab-pane fade${this.state.tabType == "photos" ? " active show" : ""}`} id="photos" role="tabpanel">
                                                     <div className="details-tab-box">
                                                         <Photos  {...this.props}  photos={this.state.photos} artist={this.state.artist} />
                                                     </div>

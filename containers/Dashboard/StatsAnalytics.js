@@ -107,7 +107,7 @@ class StatsAnalytics extends React.Component {
             <React.Fragment>
                 <div className="ads_analytics">
                     <div className="search_criteria">
-                        <span>Criteria:</span>
+                        <span>{this.props.t("Criteria:")}</span>
                         <select onChange={this.change.bind(this)} value={this.state.search}>
                             <option value="today">{this.props.t("Today")}</option>
                             <option value="this_week">{this.props.t("This Week")}</option>

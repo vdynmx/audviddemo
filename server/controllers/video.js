@@ -12,7 +12,6 @@ const playlistModel = require("../models/playlists")
 const globalModel = require("../models/globalModel")
 const oneTimePaypal = require("../functions/one-time-paypal")
 const  axios = require("axios")
-const md5 = require("md5")
 
 exports.download = async (req,res,next) => {
     const id = req.params.id
@@ -59,9 +58,9 @@ exports.download = async (req,res,next) => {
             }
         }else{
             let videos = video.code.split(',')
-            let videoPath = req.appSettings['liveStreamingServerURL']+":5443/LiveApp/streams/"
-            if(req.appSettings['liveStreamingCDNURL']){
-                videoPath = req.appSettings['liveStreamingCDNURL']+"/streams/"
+            let videoPath = req.query['liveStreamingServerURL']+":5443/LiveApp/streams/"
+            if(req.query['liveStreamingCDNURL']){
+                videoPath = req.query['liveStreamingCDNURL']+"/streams/"
             }
             if(videos.length > 1){
                 if(type == "4096p"){
@@ -101,9 +100,9 @@ exports.download = async (req,res,next) => {
                     file = videoPath + url
                 }
             }else{
-                file = req.appSettings['liveStreamingServerURL']+":5443/LiveApp/streams/"+video.code
-                if(req.appSettings['liveStreamingCDNURL']){
-                    file = req.appSettings['liveStreamingCDNURL']+"/streams/"+video.code
+                file = req.query['liveStreamingServerURL']+":5443/LiveApp/streams/"+video.code
+                if(req.query['liveStreamingCDNURL']){
+                    file = req.query['liveStreamingCDNURL']+"/streams/"+video.code
                 }
             }
         }
@@ -643,7 +642,7 @@ exports.browse = async (req, res) => {
 exports.view = async (req, res) => {
     await commonFunction.getGeneralInfo(req, res, 'video_view')
     req.query.videoId = req.params.id
-    
+    req.query.tabType = (req.query.type ? req.query.type : null)
     let video = {}
     let playlistId = req.query.list
     let playlist = {}
@@ -789,6 +788,8 @@ exports.view = async (req, res) => {
     }).catch(error => {
 
     })
+
+     
     let settings = await settingModel.settingData(req);
     if(parseInt(settings['live_stream_start']) == 1 && parseInt(video.is_livestreaming) == 1){
         if(settings['live_streaming_type'] == 1)
@@ -888,7 +889,7 @@ exports.view = async (req, res) => {
                 })
             }
         }else if((video.type == 10 || video.type == 11) && (parseFloat(video.price) > 0 && video.sell_videos) && req.user && !video.canEdit){
-            //check video purchased
+            //check video purchased 
             await videoModel.checkVideoPurchased({id:video.video_id,owner_id:req.user.user_id},req).then(result => {
                 if(result){
                     video.videoPurchased = true
@@ -907,6 +908,60 @@ exports.view = async (req, res) => {
     }
     if(video.canEdit){
         video.videoPurchased = true
+    }
+
+    //owner plans
+    await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',video.owner.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1 && !video.videoPurchased){
+        let isPermissionAllowed = false
+        if(req.user && (req.user.user_id == video.owner_id || (req.levelPermissions["videos.view"] && req.levelPermissions["videos.view"].toString() == "2"))){
+            isPermissionAllowed = true;
+        }
+        if(video.view_privacy.indexOf("package_") > -1 && !isPermissionAllowed){
+            let owner_id = req.user ? req.user.user_id : 0
+            let checkPlanSql = ""
+            let conditionPlanSql = [owner_id,video.video_id]
+            checkPlanSql += 'SELECT `member_plans`.price as `package_price`,`subscriptions`.package_id as loggedin_package_id,mp.price as loggedin_price,'
+            checkPlanSql+=  ' CASE WHEN member_plans.price IS NULL THEN 1 WHEN mp.price IS NULL THEN 0 WHEN  `member_plans`.price <= mp.price THEN 1'
+            checkPlanSql += ' WHEN `member_plans`.price <= mp.price AND (videos.category_id = 0 || mp.video_categories IS NULL || videos.category_id IN (mp.video_categories) ) THEN 1'
+            checkPlanSql+=  ' WHEN  `member_plans`.price > mp.price THEN 2'
+            checkPlanSql += ' ELSE 0 END as is_active_package'
+            checkPlanSql += ' FROM `videos` LEFT JOIN `member_plans` ON `member_plans`.member_plan_id = REPLACE(`videos`.view_privacy,"package_","") LEFT JOIN'
+            checkPlanSql += ' `subscriptions` ON subscriptions.id = videos.owner_id AND subscriptions.owner_id = ? AND subscriptions.type = "user_subscribe" AND subscriptions.status IN ("active","completed") LEFT JOIN `member_plans` as mp ON mp.member_plan_id = `subscriptions`.package_id WHERE '
+            checkPlanSql += ' videos.video_id = ? LIMIT 1'
+            await globalModel.custom(req,checkPlanSql,conditionPlanSql).then(result => {
+                if(result && result.length > 0){
+                    const res = JSON.parse(JSON.stringify(result))[0];
+                    if(res.is_active_package == 0){
+                        res.type = "new"
+                        req.query.needSubscription = res; 
+                    }else if(res.is_active_package == 2){
+                        res.type = "upgrade"
+                        req.query.needSubscription = res;
+                    }
+                }
+            })
+        }
+    }
+    
+    if(req.query.needSubscription){
+        if(!req.query.tabType){
+            req.query.tabType = "plans"
+        }
+        //get user plans
+        await userModel.getPlans(req, { owner_id: video.owner.user_id, item:req.query.needSubscription }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
+    }else{
+        if(req.query.tabType == "plans"){
+            req.query.tabType = "about"
+        }if(!req.query.tabType){
+            req.query.tabType = "about"
+        }
     }
     if (req.session.adsPaymentStatus) {
         req.query.adsPaymentStatus = req.session.adsPaymentStatus
@@ -1053,8 +1108,8 @@ exports.view = async (req, res) => {
         }else if(video.code && video.mediaserver_stream_id && req.query.liveStreamingServerURL){
             let videos = video.code.split(',')
             let videoPath = req.query.liveStreamingServerURL+":5443/LiveApp/streams/"
-            if(req.appSettings['liveStreamingCDNURL']){
-                videoPath = req.appSettings['liveStreamingCDNURL']+"/streams/"
+            if(req.query['liveStreamingCDNURL']){
+                videoPath = req.query['liveStreamingCDNURL']+"/streams/"
             }
             if(videos.length > 1){
                 if(video['4096p'] == 1){
@@ -1100,10 +1155,10 @@ exports.view = async (req, res) => {
                     file.push({key:"240p", "url" : videoPath + url })
                 }
             }else{
-                if(req.appSettings['liveStreamingCDNURL']){
-                    file.push({key:"240p", "url" : req.appSettings['liveStreamingCDNURL']+"/streams/"+video.code })
+                if(req.query['liveStreamingCDNURL']){
+                    file.push({key:"240p", "url" : req.query['liveStreamingCDNURL']+"/streams/"+video.code })
                 }else
-                    file.push({key:"240p", "url" : req.appSettings['liveStreamingServerURL']+":5443/LiveApp/streams/"+video.code })
+                    file.push({key:"240p", "url" : req.query['liveStreamingServerURL']+":5443/LiveApp/streams/"+video.code })
             }
         }
         if(Object.keys(file).length > 0)
@@ -1144,8 +1199,6 @@ exports.view = async (req, res) => {
     
         })
     }
-
-    
 
     if (req.query.data) {
         res.send({ data: req.query })
@@ -1256,6 +1309,18 @@ exports.create = async (req, res) => {
         }
         req.app.render(req, res, '/login', req.query);
         return
+    }
+    //owner plans
+    await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',req.user.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        //get user plans
+        await userModel.getPlans(req, { owner_id: req.user.user_id }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
     }
     //get categories
     const categories = []

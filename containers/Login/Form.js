@@ -237,8 +237,10 @@ class Form extends Component{
                             type: "LOGIN"
                         }
                     });
-                    //success   
-                    $('.loginRgtrBoxPopup').find('button').eq(0).trigger('click')
+                    //success  
+                    $("body").removeClass("modal-open");
+                    $("body").removeAttr("style");
+                    $('.loginRgtrBoxPopupForm').find('button').eq(0).trigger('click')
                     if(currentPath == "/" || currentPath == "/login")
                         Router.push('/')
                     else{
@@ -594,12 +596,12 @@ class Form extends Component{
                 <div className="forgot">
                     {
                         this.props.pageData.appSettings['member_registeration'] == 1 ? 
-                        this.props.router.pathname == "/login" || this.props.router.pathname == "/signup" ? 
+                        this.props.router.pathname == "/login" || this.props.router.pathname == "/signup" || this.props.user_login == 1 ? 
                             <Link href="/signup">
                                 <a>{Translate(this.props,"create an account?")}</a>
                             </Link>
                         : 
-                        <a href="/signup" data-dismiss="modal" data-target="#registerpop" data-toggle="modal" id="signupbtn">{Translate(this.props,"create an account?")}</a>
+                        <a href="/signup" data-bs-dismiss="modal" data-target="#registerpop" data-bs-toggle="modal" id="signupbtn">{Translate(this.props,"create an account?")}</a>
                         : null
                     }
                     <Link href="/forgot">

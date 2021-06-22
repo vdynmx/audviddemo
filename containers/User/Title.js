@@ -12,7 +12,7 @@ const Title = (props) => {
                 <span >{props.data.displayname} 
                     {
                         props.data.verified == 1 ? 
-                    <span className="verified"><span className="material-icons">check</span></span>
+                    <span className="verified"><span className="material-icons" data-icon="check"></span></span>
                     : null
                     }
                 

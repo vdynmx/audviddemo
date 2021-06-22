@@ -106,7 +106,7 @@ class General extends Component {
                 formFields.push({
                     key: "res_type_" + res.content_type,
                     type: "content",
-                    content: '<a href="#" class="change_type" rel="'+res.content_type+'"><h4 class="custom-control">' + Translate(this.props,res.content_type.charAt(0).toUpperCase() + res.content_type.slice(1)) + (this.state.type.indexOf(res.content_type) < 0 ? '<span class="material-icons alert_icon">arrow_right</span>' : '<span class="material-icons alert_icon">arrow_drop_down</span>') + '</h4></a>'
+                    content: '<a href="#" class="change_type" rel="'+res.content_type+'"><h4 class="custom-control">' + Translate(this.props,res.content_type.charAt(0).toUpperCase() + res.content_type.slice(1)) + (this.state.type.indexOf(res.content_type) < 0 ? '<span class="material-icons alert_icon" data-icon="arrow_right"></span>' : '<span class="material-icons alert_icon" data-icon="arrow_drop_down"></span>') + '</h4></a>'
                 })
                 type = res.content_type
                 fields = []

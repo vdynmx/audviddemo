@@ -327,6 +327,8 @@ class Form extends Component {
                         });
                         const currentPath = Router.pathname;
                         //success
+                        $("body").removeClass("modal-open");
+                        $("body").removeAttr("style");
                         $('#registerpop').find('.loginRgtrBoxPopup').find('button').eq(0).trigger('click')
                         if (currentPath == "/" || currentPath == "/signup")
                             Router.push('/')
@@ -459,7 +461,7 @@ class Form extends Component {
                 <SocialLogin {...this.props} />
                 : null
                 }   
-                <div className="form loginBox">
+                <div className="form loginBox signup-form">
                     <form onSubmit={e => { this.onSubmit(e); }}>
                         {
                             errorDiv
@@ -557,7 +559,7 @@ class Form extends Component {
                             </div>
                             <div className="col-sm-6">
                                 <div className="form-group">
-                                    <select name="timezone" className="form-control" value={this.state.fields.timezone.value} onChange={e => { this.onChange(e, "timezone"); }}>
+                                    <select name="timezone" className="form-control form-select" value={this.state.fields.timezone.value} onChange={e => { this.onChange(e, "timezone"); }}>
                                         {
                                             timezones.timezones.map(item => {
                                                 return (
@@ -590,7 +592,7 @@ class Form extends Component {
                         }
                         {
                             this.props.pageInfoData.appSettings['signup_form_gender'] == 1 ?  
-                        <div className="row">
+                        <div className="row gy-2 mt-2">
                             <div className="col-sm-12">
                                 <label htmlFor="file">{Translate(this.props, "Gender")}</label>
                             </div>
@@ -679,7 +681,7 @@ class Form extends Component {
                                 </GoogleReCaptchaProvider>
                             : null
                         }
-                        <div className="row">
+                        <div className="row mt-4">
                             <div className="col-sm-12">
                                 <button className="btn btn-default btn-login" type="submit"
                                 >
@@ -700,7 +702,7 @@ class Form extends Component {
                                 <a >{Translate(this.props, "Already have an account login?")}</a>
                             </Link>
                             :
-                            <a href="/login" id="loginbtn" data-dismiss="modal" data-target="#loginpop" data-toggle="modal">{Translate(this.props, "Already have an account login?")}</a>
+                            <a href="/login" id="loginbtn" data-dismiss="modal" data-bs-target="#loginpop" data-bs-toggle="modal">{Translate(this.props, "Already have an account login?")}</a>
                     }
                     <Link href="/forgot">
                         <a className="forgot-btn-signup">{Translate(this.props, "forgot password?")}</a>

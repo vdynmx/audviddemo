@@ -1,21 +1,15 @@
 import React, { Component } from "react";
-
 import Breadcrum from "../../components/Breadcrumb/Form";
-
 import Form from "../../components/DynamicForm/Index";
-
 import { connect } from "react-redux";
-
 import Validator from "../../validators";
-
 import axios from "../../axios-orders";
-
 import Router from "next/router";
 import confiFlile from "../../config"
-
 import { Editor } from '@tinymce/tinymce-react';
 import imageCompression from 'browser-image-compression';
-
+import Currency from "../Upgrade/Currency"
+import ReactDOMServer from "react-dom/server"
 
 class Blog extends Component {
   constructor(props) {
@@ -39,7 +33,8 @@ class Blog extends Component {
         ? props.pageInfoData.editItem.view_privacy
         : "everyone",
       success: false,
-      error: null
+      error: null,
+      plans:props.pageInfoData.plans ? props.pageInfoData.plans : [],
     };
     this.myRef = React.createRef();
   } 
@@ -69,7 +64,8 @@ class Blog extends Component {
             ? nextProps.pageInfoData.editItem.view_privacy
             : "everyone",
           success: false,
-          error: null
+          error: null,
+          plans:nextProps.pageInfoData.plans ? nextProps.pageInfoData.plans : [],
         }
     }
 }
@@ -448,6 +444,20 @@ componentDidUpdate(prevProps,prevState){
       });
     }
 
+    if(this.props.pageInfoData.appSettings.user_follow == "1"){
+        privacyOptions.push({
+            value:"follow",label:"Only people I follow",key:"follow"
+        })
+    }
+    if(this.state.plans.length > 0){
+        this.state.plans.forEach(item => {
+            let perprice = {}
+            perprice['package'] = { price: item.price }
+            privacyOptions.push({
+                value:"package_"+item.member_plan_id,label:this.props.t("Limited to {{plan_title}} ({{plan_price}}) and above",{plan_title:item.title,plan_price:ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...perprice} />)}),key:"package_"+item.member_plan_id
+            })
+        })
+    }
     formFields.push({
       key: "privacy",
       label: "Privacy",
@@ -516,7 +526,7 @@ componentDidUpdate(prevProps,prevState){
           <div className="mainContentWrap">
             <div className="container">
               <div className="row">
-                <div className="col-md-12">
+                <div className="col-md-12 position-relative">
                   <div className="formBoxtop loginp content-form" ref={this.myRef}>
                     <Form
                       className="form"

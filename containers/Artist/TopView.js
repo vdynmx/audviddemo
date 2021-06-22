@@ -106,7 +106,7 @@ class TopView extends React.Component {
         return (
             <div className="container">
                 <div className="row">
-                    <div className="col-md-12">
+                    <div className="col-md-12 position-relative">
                         <div className="channelInfo-wrap artistDetailsWrap">
                             <div className="playlist-profile-img">
                                 <Image title={this.state.artist.title} image={renderToString(<CensorWord {...this.props} text={this.state.artist.image} />)} imageSuffix={this.props.pageInfoData.imageSuffix} />
@@ -115,7 +115,7 @@ class TopView extends React.Component {
                             <div className="playlist-profile-title">
                                 <h4>{Translate(this.props,this.state.artist.title) + " "} {
                                     this.state.artist.verified ?
-                                        <span className="verifiedUser" title={Translate(this.props, "verified")}><span className="material-icons">check</span>
+                                        <span className="verifiedUser" title={Translate(this.props, "verified")}><span className="material-icons" data-icon="check"></span>
                                         </span>
                                         : null
                                 }</h4>

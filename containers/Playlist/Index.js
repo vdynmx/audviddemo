@@ -1,10 +1,7 @@
 import React from "react"
-
 import axios from "../../axios-orders"
 import { connect } from "react-redux";
-
 import playlist from '../../store/actions/general';
-
 import InfiniteScroll from "react-infinite-scroll-component";
 import LoadMore from "../LoadMore/Index"
 import EndContent from "../LoadMore/EndContent"
@@ -22,11 +19,11 @@ import CensorWord from "../CensoredWords/Index"
 import { renderToString } from 'react-dom/server'
 import ShortNumber from "short-number"
 import Rating from "../Rating/Index"
-
 import asyncComponent from '../../hoc/asyncComponent/asyncComponent';
 const CarouselPlaylists = asyncComponent(() => {
     return import('./CarouselPlaylist');
 });
+import Plans from "../User/Plans"
 
  
 class Playlist extends React.Component {
@@ -35,10 +32,13 @@ class Playlist extends React.Component {
         this.state = {
             page: 2,
             playlist: props.pageInfoData.playlist,
-            items: props.pageInfoData.playlist ? props.pageInfoData.playlist.videos.results : null,
-            pagging: props.pageInfoData.playlist ? props.pageInfoData.playlist.videos.pagging : null,
+            items: props.pageInfoData.playlist && props.pageInfoData.playlist.videos ? props.pageInfoData.playlist.videos.results : null,
+            pagging: props.pageInfoData.playlist && props.pageInfoData.playlist.videos ? props.pageInfoData.playlist.videos.pagging : null,
             adult:props.pageInfoData.adultPlaylist,
-            relatedPlaylists:props.pageInfoData.relatedPlaylists
+            relatedPlaylists:props.pageInfoData.relatedPlaylists,
+            needSubscription:props.pageInfoData.needSubscription,
+            plans:props.pageInfoData.plans,
+            tabType:props.pageInfoData.tabType ? props.pageInfoData.tabType : "videos"
         }
         this.refreshContent = this.refreshContent.bind(this)
         this.loadMoreContent = this.loadMoreContent.bind(this)
@@ -55,10 +55,13 @@ class Playlist extends React.Component {
             return {
                 page:2, 
                 playlist: nextProps.pageInfoData.playlist, 
-                items: nextProps.pageInfoData.playlist ? nextProps.pageInfoData.playlist.videos.results : null,
-                pagging: nextProps.pageInfoData.playlist ? nextProps.pageInfoData.playlist.videos.pagging : null,
+                items: nextProps.pageInfoData.playlist && nextProps.pageInfoData.playlist.videos ? nextProps.pageInfoData.playlist.videos.results : null,
+                pagging: nextProps.pageInfoData.playlist && nextProps.pageInfoData.playlist.videos? nextProps.pageInfoData.playlist.videos.pagging : null,
                 adult:nextProps.pageInfoData.adultPlaylis,
-                relatedPlaylists:nextProps.pageInfoData.relatedPlaylists 
+                relatedPlaylists:nextProps.pageInfoData.relatedPlaylists,
+                needSubscription:nextProps.pageInfoData.needSubscription,
+                plans:nextProps.pageInfoData.plans,
+                tabType:nextProps.pageInfoData.tabType ? nextProps.pageInfoData.tabType : "videos"
             }
         } else{
             return null
@@ -75,6 +78,16 @@ class Playlist extends React.Component {
         return itemIndex;
     }
     componentDidMount() {
+        if($(".nav-tabs > li > a.active").length == 0){
+            if(this.state.needSubscription){
+                this.pushTab("plans")
+            }else{
+                this.pushTab("videos")
+            }
+        }
+        if(this.state.needSubscription){
+            return
+        }
         this.props.socket.on('ratedItem', data => {
             let id = data.itemId
             let type = data.itemType
@@ -126,7 +139,6 @@ class Playlist extends React.Component {
                 this.setState({localUpdate:true, items: items })
             }
         });
-
         this.props.socket.on('unfavouriteItem', data => {
             let id = data.itemId
             let type = data.itemType
@@ -163,8 +175,6 @@ class Playlist extends React.Component {
                 }
             }
         });
-
-
         this.props.socket.on('likeDislike', data => {
             let itemId = data.itemId
             let itemType = data.itemType
@@ -269,163 +279,208 @@ class Playlist extends React.Component {
                 }
             });
     }
+    pushTab = (type) => {
+        if(this.state.tabType == type || !this.state.playlist){
+            return
+        }
+        this.setState({tabType:type,localUpdate:true})
+        Router.push(`/playlist?playlistId=${this.state.playlist.custom_url}`, `/playlist/${this.state.playlist.custom_url}?type=${type}`,{ shallow: true })
+      }
     render() {
+
         return (
             <React.Fragment>
                 {
-                this.state.playlist && this.state.playlist.approve != 1 ? 
-                    <div className="col-md-12">
-                        <div className="generalErrors">
-                            <div className="alert alert-danger alert-dismissible fade show" role="alert">
-                                {Translate(this.props,'This playlist still waiting for admin approval.')}
+                    this.state.playlist && this.state.playlist.approve != 1 ? 
+                        <div className="col-md-12">
+                            <div className="generalErrors">
+                                <div className="alert alert-danger alert-dismissible fade show" role="alert">
+                                    {Translate(this.props,'This playlist still waiting for admin approval.')}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                : null
+                    : null
                 }
                 {
                     !this.state.adult ? 
-                <TopView {...this.props} deletePlaylist={this.deletePlaylist}  playlist={this.state.playlist} />
-                : null
+                        <TopView {...this.props} deletePlaylist={this.deletePlaylist}  playlist={this.state.playlist} />
+                    : null
                 }
-                
-                            <div className="userDetailsWraps">
-                                <div className="container">
-                                    <div className="row">
-                                        <div className="col-md-12">
+                <div className="userDetailsWraps">
+                    <div className="container">
+                        <div className="row">
+                            <div className="col-md-12">
+                            {
+                                this.state.adult ?
+                                    <div className="adult-wrapper">
+                                        {Translate(this.props,'This playlist contains adult content.To view this playlist, Turn on adult content setting from site footer.')}
+                                    </div>
+                                :
+                                <div className="details-tab">
+                                    <ul className="nav nav-tabs" id="myTab" role="tablist">
+                                    {
+                                        this.state.needSubscription ? 
+                                        <li className="nav-item">
+                                        <a className={`nav-link${this.state.tabType == "plans" ? " active" : ""}`} onClick={
+                                            () => this.pushTab("plans")
+                                        } data-bs-toggle="tab" href="#plans" role="tab" aria-controls="discription" aria-selected="false">{Translate(this.props,"Choose Plan")}</a>
+                                        </li>
+                                        : null
+                                    }
+                                    {
+                                        !this.state.needSubscription ? 
+                                        <li className="nav-item">
+                                            <a className={`nav-link${this.state.tabType == "videos" ? " active" : ""}`} onClick={
+                                            () => this.pushTab("videos")
+                                        }  data-bs-toggle="tab" href="#videos" role="tab" aria-controls="videos" aria-selected="true">{Translate(this.props, "Videos")}</a>
+                                        </li>
+                                        : null
+                                    }
                                         {
-                                        this.state.adult ?
-                                            <div className="adult-wrapper">
-                                                {Translate(this.props,'This playlist contains adult content.To view this playlist, Turn on adult content setting from site footer.')}
-                                            </div>
-                                        :
-                                            <div className="details-tab">
-                                                <ul className="nav nav-tabs" id="myTab" role="tablist">
+                                            this.props.pageInfoData.appSettings[`${"playlist_comment"}`] == 1 && this.state.playlist.approve == 1 ?
                                                 <li className="nav-item">
-                                                        <a className="nav-link active" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">{Translate(this.props, "About")}</a>
-                                                    </li>
-                                                    <li className="nav-item">
-                                                        <a className="nav-link" data-toggle="tab" href="#videos" role="tab" aria-controls="videos" aria-selected="true">{Translate(this.props, "Videos")}</a>
-                                                    </li>
-                                                    
+                                                    <a className={`nav-link${this.state.tabType == "comments" ? " active" : ""}`} onClick={
+                                                            () => this.pushTab("comments")
+                                                        }  data-bs-toggle="tab" href="#comments" role="tab" aria-controls="comments" aria-selected="true">{`${ShortNumber(this.state.playlist.comment_count ? this.state.playlist.comment_count : 0)}`}{" "}{Translate(this.props, "Comments")}</a>
+                                                </li>
+                                                : null
+                                        }
+                                        <li className="nav-item">
+                                            <a className={`nav-link${this.state.tabType == "about" ? " active" : ""}`} onClick={
+                                                () => this.pushTab("about")
+                                            }  data-bs-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">{Translate(this.props, "About")}</a>
+                                        </li>
+                                    </ul>
+                                    <div className="tab-content" id="myTabContent">
+                                    {
+                                        this.state.needSubscription ? 
+                                            <div className={`tab-pane fade${this.state.tabType == "plans" ? " active show" : ""}`} id="plans" role="tabpanel">
+                                            <div className="details-tab-box">
+                                                <p className="plan-upgrade-subscribe">
                                                     {
-                                                        this.props.pageInfoData.appSettings[`${"playlist_comment"}`] == 1 && this.state.playlist.approve == 1 ?
-                                                            <li className="nav-item">
-                                                                <a className="nav-link" data-toggle="tab" href="#comments" role="tab" aria-controls="comments" aria-selected="true">{`${ShortNumber(this.state.playlist.comment_count ? this.state.playlist.comment_count : 0)}`}{" "}{Translate(this.props, "Comments")}</a>
-                                                            </li>
-                                                            : null
+                                                    this.state.needSubscription.type == "upgrade" ? 
+                                                        this.props.t("To watch more content, kindly upgrade your Subcription Plan.")
+                                                        :
+                                                        this.props.t("To watch more content, kindly Subscribe.")
                                                     }
-                                                </ul>
-                                                <div className="tab-content" id="myTabContent">
-                                                <div className="tab-pane fade active show" id="about" role="tabpanel">
-                                                        <div className="details-tab-box">
-                                                        {
-                                                            this.props.pageInfoData.appSettings[`${"playlist_rating"}`] == 1 && this.state.playlist.approve == 1 ?
-                                                            <React.Fragment>
-                                                                <div className="tabInTitle">
-                                                                    <h6>{Translate(this.props, "Rating")}</h6>
-                                                                    <div className="rating">
-                                                                        <div className="animated-rater rating">
-                                                                            <Rating {...this.props} rating={this.state.playlist.rating} type="playlist" id={this.state.playlist.playlist_id} />
-                                                                        </div>                                                                        
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                            </React.Fragment>
-                                                                : null
-                                                            }
-                                                            <React.Fragment>
-                                                                <div className="tabInTitle">
-                                                                    <h6>{Translate(this.props, "Owner")}</h6>
-                                                                    <div className="owner_name">
-                                                                        <Link href="/member" customParam={`memberId=${this.state.playlist.owner.username}`} as={`/${this.state.playlist.owner.username}`}>
-                                                                            <a className="name">
-                                                                                <React.Fragment>
-                                                                                    {this.state.playlist.owner.displayname}
-                                                                                    {
-                                                                                        this.props.pageInfoData.appSettings['member_verification'] == 1 &&  this.state.playlist.owner.verified ?
-                                                                                            <span className="verifiedUser" title={Translate(this.props, "verified")}><span className="material-icons">check</span></span>
-                                                                                            : null
-                                                                                    }
-                                                                                </React.Fragment>
-                                                                            </a>
-                                                                        </Link>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                            </React.Fragment>
-                                                            <React.Fragment>
-                                                                <div className="tabInTitle">
-                                                                    <h6>{Translate(this.props, "Created On")}</h6>
-                                                                    <div className="creation_date">
-                                                                        <Date {...this.props} initialLanguage={this.props.initialLanguage} creation_date={this.state.playlist.creation_date} format={'dddd, MMMM Do YYYY'} defaultTimezone={this.props.pageInfoData.defaultTimezone} />
-                                                                        
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                            </React.Fragment>
-                                                            {
-                                                                this.state.playlist.description ?
-                                                                    <React.Fragment>
-                                                                        <div className="tabInTitle">
-                                                                            <h6>{Translate(this.props, "Description")}</h6>
-                                                                            <div className="channel_description">
-                                                                                <Linkify properties={{ target: '_blank' }}>{renderToString(<CensorWord {...this.props} text={this.state.playlist.description} />)}</Linkify>
+                                                </p>
+                                                <Plans {...this.props} userSubscription={this.state.needSubscription.loggedin_package_id ? true : false} userSubscriptionID={this.state.needSubscription.loggedin_package_id} itemObj={this.state.playlist} member={this.state.playlist.owner} user_id={this.state.playlist.owner_id} plans={this.state.plans} />
+                                            </div>
+                                            </div>
+                                        : null
+                                    }
+                                    {
+                                        !this.state.needSubscription ? 
+                                        <div className={`tab-pane fade${this.state.tabType == "videos" ? " active show" : ""}`} id="videos" role="tabpanel">
+                                                <div className="details-tab-box">
+                                                    <InfiniteScroll
+                                                        dataLength={this.state.items.length}
+                                                        next={this.loadMoreContent}
+                                                        hasMore={this.state.pagging}
+                                                        loader={<LoadMore {...this.props} page={this.state.page} loading={true} itemCount={this.state.items.length} />}
+                                                        endMessage={
+                                                            <EndContent {...this.props} text={Translate(this.props,'No video created in this playlist yet.')} itemCount={this.state.items.length} />
+                                                        }
+                                                        pullDownToRefresh={false}
+                                                        pullDownToRefreshContent={<Release release={false} {...this.props} />}
+                                                        releaseToRefreshContent={<Release release={true} {...this.props} />}
+                                                        refreshFunction={this.refreshContent}
+                                                    >
+                                                        <div className="container">
+                                                            <div className="row">
+                                                                {
+                                                                    this.state.items.map(video => {
+                                                                        return (
+                                                                            <div key={video.video_id} className="col-md-4 col-sm-6">
+                                                                                <VideoItem  playlist_id={this.state.playlist.custom_url} {...this.props} video={video} {...video} />
                                                                             </div>
-                                                                        </div>
-                                                                    </React.Fragment>
-                                                                    : null
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                    <div className="tab-pane fade" id="videos" role="tabpanel">
-                                                        <div className="details-tab-box">
-                                                            <InfiniteScroll
-                                                                dataLength={this.state.items.length}
-                                                                next={this.loadMoreContent}
-                                                                hasMore={this.state.pagging}
-                                                                loader={<LoadMore {...this.props} page={this.state.page} loading={true} itemCount={this.state.items.length} />}
-                                                                endMessage={
-                                                                    <EndContent {...this.props} text={Translate(this.props,'No video created in this playlist yet.')} itemCount={this.state.items.length} />
+                                                                        )
+                                                                    })
                                                                 }
-                                                                pullDownToRefresh={false}
-                                                                pullDownToRefreshContent={<Release release={false} {...this.props} />}
-                                                                releaseToRefreshContent={<Release release={true} {...this.props} />}
-                                                                refreshFunction={this.refreshContent}
-                                                            >
-                                                                <div className="container">
-                                                                    <div className="row">
-                                                                        {
-                                                                            this.state.items.map(video => {
-                                                                                return (
-                                                                                    <div key={video.video_id} className="col-md-4 col-sm-6">
-                                                                                        <VideoItem  playlist_id={this.state.playlist.custom_url} {...this.props} video={video} {...video} />
-                                                                                    </div>
-                                                                                )
-                                                                            })
-                                                                        }
+                                                            </div>
+                                                        </div>
+                                                    </InfiniteScroll>
+                                                </div>
+                                            </div>
+                                       : null
+                                    }
+                                       <div className={`tab-pane fade${this.state.tabType == "about" ? " active show" : ""}`} id="about" role="tabpanel">
+                                                <div className="details-tab-box">
+                                                {
+                                                    this.props.pageInfoData.appSettings[`${"playlist_rating"}`] == 1 && this.state.playlist.approve == 1 ?
+                                                    <React.Fragment>
+                                                        <div className="tabInTitle">
+                                                            <h6>{Translate(this.props, "Rating")}</h6>
+                                                            <div className="rating">
+                                                                <div className="animated-rater rating">
+                                                                    <Rating {...this.props} rating={this.state.playlist.rating} type="playlist" id={this.state.playlist.playlist_id} />
+                                                                </div>                                                                        
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </React.Fragment>
+                                                        : null
+                                                    }
+                                                    <React.Fragment>
+                                                        <div className="tabInTitle">
+                                                            <h6>{Translate(this.props, "Owner")}</h6>
+                                                            <div className="owner_name">
+                                                                <Link href="/member" customParam={`memberId=${this.state.playlist.owner.username}`} as={`/${this.state.playlist.owner.username}`}>
+                                                                    <a className="name">
+                                                                        <React.Fragment>
+                                                                            {this.state.playlist.owner.displayname}
+                                                                            {
+                                                                                this.props.pageInfoData.appSettings['member_verification'] == 1 &&  this.state.playlist.owner.verified ?
+                                                                                    <span className="verifiedUser" title={Translate(this.props, "verified")}><span className="material-icons" data-icon="check"></span></span>
+                                                                                    : null
+                                                                            }
+                                                                        </React.Fragment>
+                                                                    </a>
+                                                                </Link>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </React.Fragment>
+                                                    <React.Fragment>
+                                                        <div className="tabInTitle">
+                                                            <h6>{Translate(this.props, "Created On")}</h6>
+                                                            <div className="creation_date">
+                                                                <Date {...this.props} initialLanguage={this.props.initialLanguage} creation_date={this.state.playlist.creation_date} format={'dddd, MMMM Do YYYY'} defaultTimezone={this.props.pageInfoData.defaultTimezone} />
+                                                                
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </React.Fragment>
+                                                    {
+                                                        this.state.playlist.description ?
+                                                            <React.Fragment>
+                                                                <div className="tabInTitle">
+                                                                    <h6>{Translate(this.props, "Description")}</h6>
+                                                                    <div className="channel_description">
+                                                                        <Linkify properties={{ target: '_blank' }}>{renderToString(<CensorWord {...this.props} text={this.state.playlist.description} />)}</Linkify>
                                                                     </div>
                                                                 </div>
-                                                            </InfiniteScroll>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    {
-                                                        this.props.pageInfoData.appSettings[`${"playlist_comment"}`] == 1 && this.state.playlist.approve == 1 ?
-                                                            <div className="tab-pane fade" id="comments" role="tabpanel">
-                                                                <div className="details-tab-box">
-                                                                    <Comment  {...this.props}  owner_id={this.state.playlist.owner_id} hideTitle={true} appSettings={this.props.pageInfoData.appSettings} commentType="playlist" type="playlists" id={this.state.playlist.playlist_id} />
-                                                                </div>
-                                                            </div>
+                                                            </React.Fragment>
                                                             : null
                                                     }
                                                 </div>
-                                            </div>
+                                            </div>                                        
+                                        {
+                                            this.props.pageInfoData.appSettings[`${"playlist_comment"}`] == 1 && this.state.playlist.approve == 1 ?
+                                                <div className={`tab-pane fade${this.state.tabType == "comments" ? " active show" : ""}`} id="comments" role="tabpanel">
+                                                    <div className="details-tab-box">
+                                                        <Comment  {...this.props}  owner_id={this.state.playlist.owner_id} hideTitle={true} appSettings={this.props.pageInfoData.appSettings} commentType="playlist" type="playlists" id={this.state.playlist.playlist_id} />
+                                                    </div>
+                                                </div>
+                                            : null
                                         }
-                                       </div>
                                     </div>
                                 </div>
+                            }
                             </div>
+                        </div>
+                    </div>
+                </div>
                 {
                   this.state.relatedPlaylists && this.state.relatedPlaylists.length ?
                   <React.Fragment>

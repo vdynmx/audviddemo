@@ -118,8 +118,8 @@ class Videos extends Component {
                                                                     <td>{countries.episode_id}</td>
                                                                     <td>
                                                                         <div className="actionBtn">
-                                                                            <a className="text-success" href="#" title={Translate(this.props, "Edit")} onClick={this.editVideo.bind(this, video.video_id)}><span className="material-icons">edit</span></a> 
-                                                                            <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteVideo.bind(this, video.video_id)}><span className="material-icons">delete</span></a>                                                                                           
+                                                                            <a className="text-success" href="#" title={Translate(this.props, "Edit")} onClick={this.editVideo.bind(this, video.video_id)}><span className="material-icons" data-icon="edit"></span></a> 
+                                                                            <a className="text-danger" href="#" title={Translate(this.props, "Delete")} onClick={this.deleteVideo.bind(this, video.video_id)}><span className="material-icons" data-icon="delete"></span></a>                                                                                           
                                                                         </div>
                                                                     </td>
                                                                 </tr>

@@ -144,14 +144,14 @@ class Index extends React.Component {
                         {
                                     this.props.canDelete || this.props.canEdit || this.props.pageInfoData.appSettings["blogs_browse_share"] == 1 ? 
                                 <div className="dropdown TitleRightDropdown">
-                                    <a href="#" data-toggle="dropdown"><span className="material-icons">more_vert</span></a>
+                                    <a href="#" data-bs-toggle="dropdown"><span className="material-icons" data-icon="more_vert"></span></a>
                                     <ul className="dropdown-menu dropdown-menu-right edit-options">
                                     {
                                         this.props.canEdit ?
                                         <li>
                                             <Link href="/create-blog" customParam={`blogId=${this.state.blog.custom_url}`} as={`/create-blog/${this.state.blog.custom_url}`}>
                                                 <a className="addPlaylist addEdit" title={Translate(this.props, "Edit")}>
-                                                <span className="material-icons">edit</span>{Translate(this.props, "Edit")}
+                                                <span className="material-icons" data-icon="edit"></span>{Translate(this.props, "Edit")}
                                                 </a>
                                             </Link>
                                             </li>
@@ -161,7 +161,7 @@ class Index extends React.Component {
                                         this.props.canDelete ?
                                         <li>
                                             <a className="addPlaylist addDelete"  title={Translate(this.props, "Delete")} href="#" onClick={this.delete.bind(this)}>
-                                                <span className="material-icons">delete</span>
+                                                <span className="material-icons" data-icon="delete"></span>
                                                 {Translate(this.props, "Delete")}
                                             </a>
                                             </li>
@@ -171,7 +171,7 @@ class Index extends React.Component {
                                         this.props.canEdit ?
                                         <li>
                                             <a href="#" className="addPlaylist addEdit"  onClick={this.analytics} title={Translate(this.props, "Analytics")}>
-                                                <span className="material-icons">show_chart</span>
+                                                <span className="material-icons" data-icon="show_chart"></span>
                                                     {Translate(this.props, "Analytics")}
                                             </a>
                                             </li>

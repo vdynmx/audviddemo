@@ -299,7 +299,7 @@ class AddVideo extends Component {
             seasons.push({key: item.season_id, value: item.season_id, label: `${index+1}`.length < 2 ? "S0"+(index+1) : "S"+(index+1)})
             if(item.season_id == this.state.season_id && item.episodes.length > 0){
                 item.episodes.forEach((item,index) => {
-                    episodes.push({key: item.episode_id, value: item.episode_id, label: `${index+1}`.length < 2 ? "E0"+(index+1) : "E"+(index+1)})
+                    episodes.push({key: item.episode_id, value: item.episode_id, label: `${item.episode_number}`.length < 2 ? "E0"+(item.episode_number) : "E"+(item.episode_number)})
                 })
             }
         })

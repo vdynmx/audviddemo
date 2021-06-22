@@ -57,9 +57,9 @@ class Index extends React.Component {
 
         return (
             this.props.pageInfoData.loggedInUserDetails && this.state.item.favourite_id ?
-                    <span onClick={this.onChange} className="active" title={Translate(this.props,'Favourite')}><span className="material-icons md-18">favorite_border</span>{" " + `${ShortNumber(this.props.favourite_count ? this.props.favourite_count : 0)}`}</span>                    
+                    <span onClick={this.onChange} className="active" title={Translate(this.props,'Favourite')}><span className="material-icons md-18" data-icon="favorite_border"></span>{" " + `${ShortNumber(this.props.favourite_count ? this.props.favourite_count : 0)}`}</span>                    
                 :
-                    <span onClick={this.onChange} title={Translate(this.props,'Favourite')}><span className="material-icons md-18">favorite_border</span>{" " + `${ShortNumber(this.props.favourite_count ? this.props.favourite_count : 0)}`}</span>
+                    <span onClick={this.onChange} title={Translate(this.props,'Favourite')}><span className="material-icons md-18" data-icon="favorite_border"></span>{" " + `${ShortNumber(this.props.favourite_count ? this.props.favourite_count : 0)}`}</span>
         )
     }
 }

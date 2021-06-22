@@ -27,7 +27,7 @@ class Earning extends React.Component {
             statsData:props.statsData
         }
         this.loadMoreContent = this.loadMoreContent.bind(this)
-    }
+    } 
     
     
     loadMoreContent() {
@@ -68,8 +68,31 @@ class Earning extends React.Component {
             commission['package'] = { price: item.admin_commission }
             let netamount = {}
             netamount['package'] = { price: (parseFloat(item.admin_commission ? item.admin_commission : 0) + parseFloat(item.amount)) }
+
+            let type = ""
+
+            if(item.transType != "ads"){
+                if(item.transType == "video_tip"){
+                    type = Translate(this.props,'Video Tip');
+                }else if(item.transType == "channel_subscription"){
+                    type = Translate(this.props,'Channel Support');
+                }else if(item.transType == "user_subscribe"){
+                    type = Translate(this.props,'Plan Subscription');
+                }else{
+                    type = Translate(this.props,'Video Purchases')
+                }
+                
+             }else{
+                type =  Translate(this.props,'From Advertisement')
+             }
+
             return (
                 <tr key={item.id+item.type}>
+                    <td>
+                        {
+                            type
+                        } 
+                    </td>
                     <td>
                         <Link href="/member" customParam={`memberId=${item.username}`} as={`/${item.username}`}>
                             <a>
@@ -86,17 +109,25 @@ class Earning extends React.Component {
                                 </a>
                             </Link> 
                             :
-                            "-"
+                            item.type == "channel" ? 
+                            <Link href="/channel" customParam={`channelId=${item.custom_url}`} as={`/channel/${item.custom_url}`}>
+                                    <a>
+                                        {<CensorWord {...this.props} text={item.title} />}
+                                    </a>
+                                </Link> 
+                            : 
+                            item.type == "user" ? 
+                                <Link href="/member" customParam={`memberId=${item.custom_url}`} as={`/${item.custom_url}`}>
+                                    <a>
+                                        {item.title}
+                                    </a>
+                                </Link>
+                            : null
                         }
                     </td>
                     <td>{ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } { ...netamount} />)}</td>
                     <td>{item.admin_commission ? ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...commission} /> ) : "-"}</td>
                     <td>{ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...amount} />)}</td>
-                    <td>
-                        {
-                            item.transType != "ads" ? (item.transType == "video_tip" ? Translate(this.props,'Video Tip') : Translate(this.props,'Video Purchases')) : Translate(this.props,'From Advertisement')
-                        } 
-                    </td>
                     <td>{<Timeago {...this.props}>{item.creation_date}</Timeago>}</td>
                     
                 </tr>
@@ -140,12 +171,12 @@ class Earning extends React.Component {
                                 <table className="table custTble1">
                                     <thead>
                                         <tr>
+                                            <th scope="col">{Translate(this.props,"Type")}</th>
                                             <th scope="col">{Translate(this.props,"Payer Name")}</th>
-                                            <th scope="col">{Translate(this.props,"Video")}</th>
+                                            <th scope="col">{Translate(this.props,"Item")}</th>
                                             <th scope="col">{Translate(this.props,"Amount")}</th>
                                             <th scope="col">{Translate(this.props,"Site Commission")}</th>
                                             <th scope="col">{Translate(this.props,"Net Earning")}</th>
-                                            <th scope="col">{Translate(this.props,"Type")}</th>
                                             <th scope="col">{Translate(this.props,"Creation Date")}</th>
                                         </tr>
                                     </thead>

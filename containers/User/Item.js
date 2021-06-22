@@ -79,8 +79,8 @@ class Item extends React.Component {
                         <React.Fragment>
                             {this.state.member.displayname}
                             {
-                                this.props.pageInfoData.appSettings['member_verification'] == 1 && this.state.member.verified ?
-                                    <span className="verifiedUser" title={Translate(this.props,"verified")}><span className="material-icons">check</span></span>
+                                this.props.pageInfoData.appSettings['member_verification'] == 1 && this.state.member.verified == 1 ?
+                                    <span className="verifiedUser" title={Translate(this.props,"verified")}><span className="material-icons" data-icon="check"></span></span>
                                     : null
                             }
                         </React.Fragment>

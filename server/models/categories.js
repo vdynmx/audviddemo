@@ -1,3 +1,12 @@
+let videoModel = require("./videos")
+let blogModel = require("./blogs")
+let channelModel = require("./channels")
+
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+      await callback(array[index], index, array);
+    }
+}
 module.exports = {
     findAll:  function(req,data){
         return new Promise(function(resolve, reject) {
@@ -19,10 +28,10 @@ module.exports = {
                 if(data && data.onlyCategories){
                     sql += " AND subcategory_id = 0 AND subsubcategory_id = 0"
                 }
-                if(data && data.item_count){
-                    condition.push(0)
-                    sql += " AND item_count > ?"
-                }
+                // if(data && data.item_count){
+                //     condition.push(0)
+                //     sql += " AND item_count > ?"
+                // }
                 if(data && data.slug){
                     condition.push(data.slug)
                     sql += " AND slug = ? "
@@ -62,13 +71,39 @@ module.exports = {
                     condition.push(data.offset)
                     sql += " OFFSET ?"
                 }
-                connection.query(sql,condition,function(err,results,fields)
+                connection.query(sql,condition,async function(err,results,fields)
                 {
                     if(err)
                         resolve(false)
                     if(results){
-                        const level = JSON.parse(JSON.stringify(results));
-                        resolve(level);
+                        const categories = JSON.parse(JSON.stringify(results));
+                        if(!categories || categories.length == 0){
+                            resolve(categories);
+                            return
+                        }
+                        let catData = []
+                        await asyncForEach(results, async (category,i) => {
+                            catData.push(category)
+                            if(data.type == "video"){
+                                await videoModel.getVideos(req,{category_id:category.category_id,countITEM:1}).then(result => {
+                                    if(result)
+                                        catData[i]["item_count"] = result[0].itemCount
+                                })
+                            }else if(data.type == "blog"){
+                                await blogModel.getBlogs(req,{category_id:category.category_id,countITEM:1}).then(result => {
+                                    if(result)
+                                        catData[i]["item_count"] = result[0].itemCount
+                                })
+                            }else if(data.type == "channel"){
+                                await channelModel.getChannels(req,{category_id:category.category_id,countITEM:1}).then(result => {
+                                    if(result)
+                                        catData[i]["item_count"] = result[0].itemCount
+                                })
+                            }
+                            if(i == categories.length - 1){
+                                resolve(catData)
+                            }
+                        });
                     }else{
                         resolve(false);
                     }

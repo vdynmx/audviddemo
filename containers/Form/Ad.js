@@ -120,7 +120,7 @@ class Ads extends Component {
                         <div className="mainContentWrap">
                             <div className="container">
                             <div className="row">
-                                <div className="col-md-12">
+                                <div className="col-md-12 position-relative">
                                 <div className="formBoxtop loginp content-form">
                                     <Form
                                         className="form"
@@ -147,7 +147,7 @@ class Ads extends Component {
                     <div className="mainContentWrap">
                         <div className="container">
                         <div className="row">
-                            <div className="col-md-12">
+                            <div className="col-md-12 position-relative">
                             <div className="formBoxtop loginp content-form">
                                 <Form
                                     className="form"
@@ -340,7 +340,7 @@ class Ads extends Component {
                 <div className="mainContentWrap">
                     <div className="container">
                     <div className="row">
-                        <div className="col-md-12">
+                        <div className="col-md-12 position-relative">
                         <div className="formBoxtop loginp content-form" ref={this.myRef}>
                             <Form
                                 empty={empty}

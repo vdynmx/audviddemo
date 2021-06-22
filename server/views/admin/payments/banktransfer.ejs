@@ -65,7 +65,10 @@
                                                     selected="selected" <% } %>>Recharge Wallet</option>
                                                 <option value="user_subscription"
                                                     <% if((query.type == 'user_subscription')){ %>
-                                                    selected="selected" <% } %>>Members Subscription</option>
+                                                    selected="selected" <% } %>>Site Members Subscription</option>
+                                                <option value="user_subscribe"
+                                                    <% if((query.type == 'user_subscribe')){ %>
+                                                    selected="selected" <% } %>>Paid Custom Members Subscription</option>
                                                 <option value="channel_subscription"
                                                     <% if((query.type == 'channel_subscription')){ %>
                                                     selected="selected" <% } %>>Channels Subscription</option>
@@ -131,7 +134,9 @@
                                 <%}else if(results[i].type == "recharge_wallet"){%>
                                     <%- "Recharge Wallet" %>
                                 <%}else if(results[i].type == "user_subscription"){%>
-                                    <%- "Members Subscription" %>
+                                    <%- "Site Members Subscription" %>
+                                <%}else if(results[i].type == "user_subscribe"){%>
+                                    <%- "Paid Custom Members Subscription" %>
                                 <%}else if(results[i].type == "channel_subscription"){%>
                                     <%- "Channels Subscription" %>
                                 <%}%>

@@ -9,6 +9,8 @@ errorCodes = require("../../functions/statusCodes"),
 constant = require("../../functions/constant"),
 globalModel = require("../../models/globalModel"),
 channelModel = require("../../models/channels"),
+privacyModel = require("../../models/privacy"),
+recurringModel = require("../../functions/ipnsFunctions/channelSupportSubscriptions"),
 dateTime = require("node-datetime"),
 videoMonetizationModel = require("../../models/videoMonetizations"),
 { validationResult } = require('express-validator'),
@@ -633,6 +635,70 @@ exports.edit = async (req, res) => {
     if(!res.headersSent)
         res.send({})
 }
+
+exports.deletePlan = async (req,res) => {
+    const plan_id = parseInt(req.body.plan_id)
+
+    let sql = "DELETE FROM member_plans WHERE member_plan_id = ?"
+    let condition = [plan_id]
+
+    if(req.user.level_id != 1){
+        condition.push(req.user.user_id)
+        sql += " AND owner_id = ?"
+    }
+
+    globalModel.custom(req,sql,condition).then(async result => {
+        if(result.affectedRows == 1){
+            //get plan subscriptions
+            await globalModel.custom(req,"SELECT * FROM subscriptions WHERE package_id = ? AND type = ?",[plan_id,"user_subscribe"]).then(async result => {
+                let subscriptions = JSON.parse(JSON.stringify(result));
+                if(subscriptions && subscriptions.length){
+                    //update all plan subscriptions
+                    await globalModel.custom(req,"UPDATE subscriptions SET status = 'cancelled' WHERE package_id = ? AND type = ?",[plan_id,"user_subscribe"]).then(res => {})                    
+                    subscriptions.forEach(sub => {
+                        recurringModel.cancelParticular(sub,"cancelled");
+                    });
+                }
+            })
+        }
+        res.send({ member_plan_id: plan_id,type:"delete", message: constant.member.PLANDELETE });
+    })
+}
+
+exports.getSubscribers = async (req,res) => {
+    const owner_id = parseInt(req.body.owner_id)
+    if (!owner_id) {
+        return res.send({})
+    }
+    let LimitNum = 12;
+    let page = 1
+    if (req.params.page == '') {
+        page = 1;
+    } else {
+        //parse int Convert String to number 
+        page = parseInt(req.body.page) ? parseInt(req.body.page) : 1;
+    }
+    let offsetArtist = (page - 1) * LimitNum
+    let member = {}
+    await userModel.getSubscribers(req,{user_id:owner_id, limit: LimitNum, offset:offsetArtist,member_plan_id:req.body.plan_id}).then(result => {
+        let pagging = false
+        if (result) {
+            pagging = false
+            if (result.length > LimitNum - 1) {
+                result = result.splice(0, LimitNum - 1);
+                pagging = true
+            }
+            member = {
+                pagging: pagging,
+                members: result
+            }
+        }
+    }).catch(error => {
+        console.log(error)
+    })
+    res.send(member)
+}
+
 exports.getVideos = async (req, res) => {
     const owner_id = parseInt(req.body.owner_id)
     if (!owner_id) {
@@ -652,6 +718,9 @@ exports.getVideos = async (req, res) => {
     data.limit = LimitNum
     data.offset = offset
     data.owner_id = owner_id
+    if(req.body.paidVideos){
+        data.user_sell_home_content = true;
+    }
     await videoModel.getVideos(req, data).then(result => {
         let pagging = false
         if (result) {
@@ -773,7 +842,90 @@ exports.otp = async (req,res) => {
     }
 
 }
+exports.createPlan = async (req , res) => {
+    
+    if (req.imageError) {
+        return res.send({ error: fieldErrors.errors([{ msg: req.imageError }], true), status: errorCodes.invalid }).end();
+    }
+    let plan_id = req.body.plan_id
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.send({ error: fieldErrors.errors(errors), status: errorCodes.invalid }).end();
+    }
+    // all set now
+    let insertObject = {} 
+    let planObject = {}
+    if (parseInt(plan_id) > 0) {
+        //uploaded
+        await globalModel.custom(req, "SELECT * FROM member_plans WHERE member_plan_id = ?", plan_id).then(async result => {
+            if (result) {
+                planObject = JSON.parse(JSON.stringify(result))[0];
+                await privacyModel.permission(req, 'member', 'edit', planObject).then(result => {
+                    if(!result){
+                        plan_id = null
+                        planObject = null
+                    }
+                }).catch(err => {
+                    plan_id = null
+                })
+            }
+        }).catch(err => {
+            plan_id = null
+        })
+    } else {
+        insertObject["owner_id"] = req.user.user_id;
+    } 
+    insertObject["title"] = req.body.title
+    insertObject["description"] = req.body.description ? req.body.description : ""
+    insertObject["video_categories"] = req.body.video_categories ? req.body.video_categories : null
+    
+    if (req.fileName) {
+        insertObject['image'] = "/upload/images/plans/" + req.fileName;
+        if(Object.keys(planObject).length && planObject.image)
+            commonFunction.deleteImage(req, res, planObject.image, 'plan/image');
+    }else if(!req.body.planImage){
+        insertObject['image'] = "";
+        if(Object.keys(planObject).length && planObject.image)
+            commonFunction.deleteImage(req, res, planObject.image, 'plan/image');
+    }
+    var dt = dateTime.create();
+    var formatted = dt.format('Y-m-d H:M:S');
+    if (!plan_id) {
+        insertObject["creation_date"] = formatted
+        insertObject['price'] = parseFloat(req.body.price)
+    }
+    insertObject["modified_date"] = formatted
 
+    if (plan_id) {
+        await globalModel.update(req, insertObject, "member_plans", 'member_plan_id', plan_id).then(async result => {
+            let item = {}
+            await userModel.getPlans(req,{member_plan_id:plan_id}).then(result => {
+                if(result){
+                    item = result[0]
+                }
+            })
+            res.send({ member_plan_id: plan_id,type:"edit", message: constant.member.PLANEDIT, item: item });
+        }).catch(err => {
+            return res.send({ error: fieldErrors.errors([{ msg: constant.general.DATABSE }], true), status: errorCodes.invalid }).end();
+        })
+    } else {
+        await globalModel.create(req, insertObject, "member_plans").then(async result => {
+            if (result) {    
+                let item = {}
+                await userModel.getPlans(req,{member_plan_id:result.insertId}).then(result => {
+                    if(result){
+                        item = result[0]
+                    }
+                })            
+                res.send({ member_plan_id: result.insertId,type:"create", message: constant.member.PLANCREATE, item: item });
+            } else {
+                return res.send({ error: fieldErrors.errors([{ msg: constant.general.DATABSE }], true), status: errorCodes.invalid }).end();
+            }
+        }).catch(err => {
+            return res.send({ error: fieldErrors.errors([{ msg: constant.general.DATABSE }], true), status: errorCodes.invalid }).end();
+        })
+    }
+}
 exports.bankdetails = async(req,res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

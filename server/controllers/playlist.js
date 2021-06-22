@@ -1,17 +1,17 @@
 const commonFunction = require("../functions/commonFunctions")
-const settingModel = require("../models/settings")
 const playlistModel = require("../models/playlists")
 const privacyModel = require("../models/privacy")
 const userModel = require("../models/users")
 const likeModel = require("../models/likes")
 const favouriteModel = require("../models/favourites")
 const videoModel = require("../models/videos")
-const privacyMiddleware = require("../middleware/has-permission")
 const ratingModel = require("../models/ratings")
 const recentlyViewed = require("../models/recentlyViewed")
 const dateTime = require("node-datetime")
+const privacyLevelModel = require("../models/levelPermissions")
+const globalModel = require("../models/globalModel")
 
-exports.create = async (req,res,next) => {
+exports.create = async (req,res) => {
     await commonFunction.getGeneralInfo(req,res,'playlist_edit_create')
     let isValid = true
     const playlistId = req.params.id
@@ -21,10 +21,10 @@ exports.create = async (req,res,next) => {
             req.query.playlistId = playlistId
             await privacyModel.permission(req, 'playlist', 'edit', playlist).then(result => {
                 isValid = result
-            }).catch(err => {
+            }).catch(() => {
                 isValid = false
             })
-        }).catch(err => {
+        }).catch(() => {
             isValid = false
         })
     }
@@ -36,7 +36,18 @@ exports.create = async (req,res,next) => {
         req.app.render(req, res, '/page-not-found', req.query);
         return
     }
-    
+    //owner plans
+    await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',req.user.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        //get user plans
+        await userModel.getPlans(req, { owner_id: req.user.user_id }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
+    }
     if(req.query.data){
         res.send({data:req.query})
         return
@@ -117,7 +128,7 @@ exports.browse = async (req, res) => {
 exports.view = async (req, res) => {
 
     await commonFunction.getGeneralInfo(req, res, 'playlist_view')
-    
+    req.query.tabType = (req.query.type ? req.query.type : "videos")
     req.query.playlistId = req.params.id
 
     let playlist = {}
@@ -125,7 +136,7 @@ exports.view = async (req, res) => {
     await playlistModel.findByCustomUrl(req.query.playlistId, req, res).then(result => {
         if (result)
             playlist = result
-    }).catch(error => {
+    }).catch(() => {
         if (req.query.data) {
             res.send({data: req.query,pagenotfound:1});
             return
@@ -146,7 +157,7 @@ exports.view = async (req, res) => {
                 req.app.render(req, res, '/permission-error', req.query);
                 return
             }
-        }).catch(error => {
+        }).catch(() => {
             showPlaylist = false
         })
     }else{
@@ -181,29 +192,86 @@ exports.view = async (req, res) => {
     }
     await commonFunction.updateMetaData(req,{title:playlist.title,description:playlist.description,image:playlist.image})
 
-    //playlist videos
-    let LimitNum = 13;
-    let page = 1
-    let offset = (page - 1) * LimitNum
-    playlist.videos = {
-        pagging: false,
-        result: []
-    }
-    await videoModel.getVideos(req,{playlist_id:playlist.playlist_id,limit:LimitNum}).then(result => {
-        let pagging = false
-        if (result) {
-            pagging = false
-            if (result.length > LimitNum - 1) {
-                result = result.splice(0, LimitNum - 1);
-                pagging = true
-            }
-            playlist.videos = {
-                'pagging': pagging,
-                results: result
-            }
-        }
+    //playlist user details
+    await userModel.findById(playlist.owner_id, req, res).then(result => {
+        playlist.owner = result
+    }).catch(() => {
+
     })
 
+    //owner plans
+    await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',playlist.owner.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        let isPermissionAllowed = false
+        if(req.user && (req.user.user_id == playlist.owner_id || (req.levelPermissions["playlists.view"] && req.levelPermissions["playlists.view"].toString() == "2"))){
+            isPermissionAllowed = true;
+        }
+        if(playlist.view_privacy && playlist.view_privacy.indexOf("package_") > -1 && !isPermissionAllowed){
+            let owner_id = req.user ? req.user.user_id : 0
+            let checkPlanSql = ""
+            let conditionPlanSql = [owner_id,playlist.playlist_id]
+            checkPlanSql += 'SELECT `member_plans`.price as `package_price`,`subscriptions`.package_id as loggedin_package_id,mp.price as loggedin_price,'
+            checkPlanSql+=  ' CASE WHEN member_plans.price IS NULL THEN 1 WHEN mp.price IS NULL THEN 0 WHEN  `member_plans`.price <= mp.price THEN 1'
+            checkPlanSql+=  ' WHEN  `member_plans`.price > mp.price THEN 2'
+            checkPlanSql += ' ELSE 0 END as is_active_package'
+            checkPlanSql += ' FROM `playlists` LEFT JOIN `member_plans` ON `member_plans`.member_plan_id = REPLACE(`playlists`.view_privacy,"package_","") LEFT JOIN'
+            checkPlanSql += ' `subscriptions` ON subscriptions.id = playlists.owner_id AND subscriptions.owner_id = ? AND subscriptions.type = "user_subscribe" AND subscriptions.status IN ("active","completed") LEFT JOIN `member_plans` as mp ON mp.member_plan_id = `subscriptions`.package_id WHERE '
+            checkPlanSql += ' playlists.playlist_id = ? LIMIT 1'
+            await globalModel.custom(req,checkPlanSql,conditionPlanSql).then(result => {
+                if(result && result.length > 0){
+                    const res = JSON.parse(JSON.stringify(result))[0];
+                    if(res.is_active_package == 0){
+                        res.type = "new"
+                        req.query.needSubscription = res; 
+                    }else if(res.is_active_package == 2){
+                        res.type = "upgrade"
+                        req.query.needSubscription = res;
+                    }
+                }
+            })
+        }
+    }
+
+    if(req.query.needSubscription){
+        if(req.query.tabType == "videos"){
+            req.query.tabType = "plans"
+        }
+        //get user plans
+        await userModel.getPlans(req, { owner_id: playlist.owner.user_id, item:req.query.needSubscription }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
+    }else{
+        if(req.query.tabType == "plans"){
+            req.query.tabType = "videos"
+        }
+    }
+    if(!req.query.needSubscription){
+        //playlist videos
+        let LimitNum = 13;
+        let page = 1
+        playlist.videos = {
+            pagging: false,
+            result: []
+        }
+        await videoModel.getVideos(req,{playlist_id:playlist.playlist_id,limit:LimitNum}).then(result => {
+            let pagging = false
+            if (result) {
+                pagging = false
+                if (result.length > LimitNum - 1) {
+                    result = result.splice(0, LimitNum - 1);
+                    pagging = true
+                }
+                playlist.videos = {
+                    'pagging': pagging,
+                    results: result
+                }
+            }
+        })
+    }
 
 
     if (req.user) {
@@ -228,12 +296,7 @@ exports.view = async (req, res) => {
         })
     }
 
-    //playlist user details
-    await userModel.findById(playlist.owner_id, req, res).then(result => {
-        playlist.owner = result
-    }).catch(error => {
-
-    })
+   
 
     if (req.appSettings['playlist_adult'] != 1 || (playlist.adult == 0 || (playlist.adult == 1 && req.query.adultAllowed))) {
         req.query.playlist = playlist

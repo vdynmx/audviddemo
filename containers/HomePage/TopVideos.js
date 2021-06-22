@@ -202,7 +202,7 @@ class TopVideos extends React.Component {
                             </div>
                         </div>
                     </div>
-                    <div className="row mob2col">
+                    <div className="row mob2 col gx-2">
                                 {
                                     this.state.videos.map(video => {
                                         return (

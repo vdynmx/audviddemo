@@ -14,6 +14,7 @@ const ratingModel = require("../models/ratings")
 const recentlyViewed = require("../models/recentlyViewed")
 const dateTime = require("node-datetime")
 const globalModel = require("../models/globalModel")
+const privacyLevelModel = require("../models/levelPermissions")
 
 exports.categories = async (req, res) => {
     await commonFunction.getGeneralInfo(req, res, 'browse_channel_category_view')
@@ -347,7 +348,7 @@ exports.post = async(req,res,next) => {
 exports.view = async (req, res) => {
 
     await commonFunction.getGeneralInfo(req, res, 'channel_view')
-    
+    req.query.tabType = (req.query.type ? req.query.type : "videos")
     req.query.channelId = req.params.id
 
     let channel = {}
@@ -411,105 +412,209 @@ exports.view = async (req, res) => {
     }
     await commonFunction.updateMetaData(req,{title:channel.title,description:channel.description,image:channel.image,keywords:channel.tags})
 
-    //channel videos
-    let LimitNum = 13;
-    let page = 1
-    let offset = (page - 1) * LimitNum
-    channel.videos = {
-        pagging: false,
-        result: []
-    }
-    await channelVideos.findAll(channel.channel_id, req, res, LimitNum, offset).then(result => {
-        let pagging = false
-        if (result) {
-            pagging = false
-            if (result.length > LimitNum - 1) {
-                result = result.splice(0, LimitNum - 1);
-                pagging = true
-            }
-            channel.videos = {
-                'pagging': pagging,
-                results: result
-            }
-        }
-    })
+    //channel user details
+    await userModel.findById(channel.owner_id, req, res).then(result => {
+        channel.owner = result
+    }).catch(error => {
 
-    if (req.appSettings["enable_playlist"] == 1) {
-        channel.playlists = {
+    })
+    //owner plans
+    await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',channel.owner.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        let isPermissionAllowed = false
+        if(req.user && (req.user.user_id == channel.owner_id || (req.levelPermissions["channels.view"] && req.levelPermissions["channels.view"].toString() == "2"))){
+            isPermissionAllowed = true;
+        }
+        if(channel.view_privacy.indexOf("package_") > -1 && !isPermissionAllowed){
+            let owner_id = req.user ? req.user.user_id : 0
+            let checkPlanSql = ""
+            let conditionPlanSql = [owner_id,channel.channel_id]
+            checkPlanSql += 'SELECT `member_plans`.price as `package_price`,`subscriptions`.package_id as loggedin_package_id,mp.price as loggedin_price,'
+            checkPlanSql+=  ' CASE WHEN member_plans.price IS NULL THEN 1 WHEN mp.price IS NULL THEN 0 WHEN  `member_plans`.price <= mp.price THEN 1'
+            checkPlanSql+=  ' WHEN  `member_plans`.price > mp.price THEN 2'
+            checkPlanSql += ' ELSE 0 END as is_active_package'
+            checkPlanSql += ' FROM `channels` LEFT JOIN `member_plans` ON `member_plans`.member_plan_id = REPLACE(`channels`.view_privacy,"package_","") LEFT JOIN'
+            checkPlanSql += ' `subscriptions` ON subscriptions.id = channels.owner_id AND subscriptions.owner_id = ? AND subscriptions.type = "user_subscribe" AND subscriptions.status IN ("active","completed") LEFT JOIN `member_plans` as mp ON mp.member_plan_id = `subscriptions`.package_id WHERE '
+            checkPlanSql += ' channels.channel_id = ? LIMIT 1'
+            await globalModel.custom(req,checkPlanSql,conditionPlanSql).then(result => {
+                if(result && result.length > 0){
+                    const res = JSON.parse(JSON.stringify(result))[0];
+                    if(res.is_active_package == 0){
+                        res.type = "new"
+                        req.query.needSubscription = res; 
+                    }else if(res.is_active_package == 2){
+                        res.type = "upgrade"
+                        req.query.needSubscription = res;
+                    }
+                }
+            })
+        }
+    }
+
+    if(req.query.needSubscription){
+        if(req.query.tabType == "videos"){
+            req.query.tabType = "plans"
+        }
+        //get user plans
+        await userModel.getPlans(req, { owner_id: channel.owner.user_id, item:req.query.needSubscription }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
+    }else{
+        if(req.query.tabType == "plans"){
+            req.query.tabType = "videos"
+        }
+    }
+    
+    if(!req.query.needSubscription){
+        //channel videos
+        let LimitNum = 13;
+        let page = 1
+        let offset = (page - 1) * LimitNum
+        channel.videos = {
             pagging: false,
-            result: [] 
+            result: []
         }
-        //channel playlists
-        let LimitNumPlaylist = 13;
-        let pagePlaylist = 1
-        let offsetPlaylist = (pagePlaylist - 1) * LimitNumPlaylist
-        await channelPlaylists.findAll(channel.channel_id, req, res, LimitNumPlaylist, offsetPlaylist).then(result => {
+        await channelVideos.findAll(channel.channel_id, req, res, LimitNum, offset).then(result => {
             let pagging = false
             if (result) {
                 pagging = false
-                if (result.length > LimitNumPlaylist - 1) {
-                    result = result.splice(0, LimitNumPlaylist - 1);
+                if (result.length > LimitNum - 1) {
+                    result = result.splice(0, LimitNum - 1);
                     pagging = true
                 }
-                channel.playlists = {
+                channel.videos = {
                     'pagging': pagging,
                     results: result
                 }
             }
         })
-    }
 
-    channel.posts = {
-        pagging: false,
-        result: []
-    }
-    //channel posts
-    let LimitNumCommunity = 11;
-    let pageCommunity = 1
-    let offsetCommunity = (pageCommunity - 1) * LimitNumCommunity
-    await channelModel.findAllCommunity(channel.channel_id, req, res, LimitNumCommunity, offsetCommunity).then(result => {
-        let pagging = false
-        if (result) {
-            pagging = false
-            if (result.length > LimitNumCommunity - 1) {
-                result = result.splice(0, LimitNumCommunity - 1);
-                pagging = true
+        if (req.appSettings["enable_playlist"] == 1) {
+            channel.playlists = {
+                pagging: false,
+                result: [] 
             }
-            channel.posts = {
-                'pagging': pagging,
-                results: result
-            }
+            //channel playlists
+            let LimitNumPlaylist = 13;
+            let pagePlaylist = 1
+            let offsetPlaylist = (pagePlaylist - 1) * LimitNumPlaylist
+            await channelPlaylists.findAll(channel.channel_id, req, res, LimitNumPlaylist, offsetPlaylist).then(result => {
+                let pagging = false
+                if (result) {
+                    pagging = false
+                    if (result.length > LimitNumPlaylist - 1) {
+                        result = result.splice(0, LimitNumPlaylist - 1);
+                        pagging = true
+                    }
+                    channel.playlists = {
+                        'pagging': pagging,
+                        results: result
+                    }
+                }
+            })
         }
-    })
 
-    //fetch artists
-    let LimitNumArtist = 17;
-    let pageArtist = 1
-    let offsetArtist = (pageArtist - 1) * LimitNumArtist
-    if (channel.artists && channel.artist != "" && req.appSettings['channel_artists'] == "1") {
-        await artistModel.findByIds(channel.artists, req, res, LimitNumArtist, offsetArtist).then(result => {
+        channel.posts = {
+            pagging: false,
+            result: []
+        }
+        //channel posts
+        let LimitNumCommunity = 11;
+        let pageCommunity = 1
+        let offsetCommunity = (pageCommunity - 1) * LimitNumCommunity
+        await channelModel.findAllCommunity(channel.channel_id, req, res, LimitNumCommunity, offsetCommunity).then(result => {
             let pagging = false
             if (result) {
                 pagging = false
-                if (result.length > LimitNumArtist - 1) {
-                    result = result.splice(0, LimitNumArtist - 1);
+                if (result.length > LimitNumCommunity - 1) {
+                    result = result.splice(0, LimitNumCommunity - 1);
                     pagging = true
                 }
-                channel.artists = {
+                channel.posts = {
                     'pagging': pagging,
                     results: result
                 }
             }
-        }).catch(error => {
-            console.log(error)
         })
-    } else {
-        channel.artists = {
-            'pagging': false,
-            results: []
+
+        //fetch artists
+        let LimitNumArtist = 17;
+        let pageArtist = 1
+        let offsetArtist = (pageArtist - 1) * LimitNumArtist
+        if (channel.artists && channel.artist != "" && req.appSettings['channel_artists'] == "1") {
+            await artistModel.findByIds(channel.artists, req, res, LimitNumArtist, offsetArtist).then(result => {
+                let pagging = false
+                if (result) {
+                    pagging = false
+                    if (result.length > LimitNumArtist - 1) {
+                        result = result.splice(0, LimitNumArtist - 1);
+                        pagging = true
+                    }
+                    channel.artists = {
+                        'pagging': pagging,
+                        results: result
+                    }
+                }
+            }).catch(error => {
+                console.log(error)
+            })
+        } else {
+            channel.artists = {
+                'pagging': false,
+                results: []
+            }
+        }
+
+        //check support button enable
+        if(req.user && parseInt(req.appSettings['channel_support'])  == 1 && parseFloat(channel.channel_subscription_amount) > 0 ) {
+            const condition = []
+            let sql = 'SELECT expiration_date FROM subscriptions where 1 = 1'
+            condition.push(parseInt(req.user.user_id))
+            sql += " and owner_id = ?"
+            condition.push("channel_subscription")
+            sql += " and type = ?"
+            condition.push(channel.channel_id)
+            sql += " and id = ?"
+            var dt = dateTime.create();
+            var formatted = dt.format('Y-m-d H:M:S');
+            condition.push(formatted)
+            sql += " and (expiration_date IS NULL || expiration_date >= ?)"
+            sql += " and (status = 'completed' || status = 'approved' || status = 'active') "
+            condition.push(1)
+            sql += " LIMIT ?"
+            await globalModel.custom(req,sql,condition).then(result => {
+                if(result && result.length > 0){
+                    req.query.userSupportChannel = true
+                }
+            })
+
+            //get channel supports
+            let LimitNum = 13;
+            let page = 1
+            let offsetArtist = (page - 1) * LimitNum
+            await channelModel.getChannelSupporters(req,{channel_id:channel.channel_id, limit: LimitNum, offset:offsetArtist}).then(result => {
+                let pagging = false
+                if (result) {
+                    pagging = false
+                    if (result.length > LimitNum - 1) {
+                        result = result.splice(0, LimitNum - 1);
+                        pagging = true
+                    }
+                    channel.supporters = {
+                        'pagging': pagging,
+                        results: result
+                    }
+                }
+            }).catch(error => {
+                console.log(error)
+            })
+
         }
     }
-
     if (req.user) {
         await likeModel.isLiked(channel.channel_id, 'channels', req, res).then(result => {
             if (result) {
@@ -536,12 +641,7 @@ exports.view = async (req, res) => {
         })
     }
 
-    //channel user details
-    await userModel.findById(channel.owner_id, req, res).then(result => {
-        channel.owner = result
-    }).catch(error => {
-
-    })
+    
     //category details
     if (channel.category_id) {
         await categoryModel.findById(channel.category_id, req, res).then(result => {
@@ -579,52 +679,7 @@ exports.view = async (req, res) => {
         }
     })
    
-    //check support button enable
-
-    if(req.user && parseInt(req.appSettings['channel_support'])  == 1 && parseFloat(channel.channel_subscription_amount) > 0 ) {
-        const condition = []
-        let sql = 'SELECT expiration_date FROM subscriptions where 1 = 1'
-        condition.push(parseInt(req.user.user_id))
-        sql += " and owner_id = ?"
-        condition.push("channel_subscription")
-        sql += " and type = ?"
-        condition.push(channel.channel_id)
-        sql += " and id = ?"
-        var dt = dateTime.create();
-        var formatted = dt.format('Y-m-d H:M:S');
-        condition.push(formatted)
-        sql += " and (expiration_date IS NULL || expiration_date >= ?)"
-        sql += " and (status = 'completed' || status = 'approved' || status = 'active') "
-        condition.push(1)
-        sql += " LIMIT ?"
-        await globalModel.custom(req,sql,condition).then(result => {
-            if(result && result.length > 0){
-                req.query.userSupportChannel = true
-            }
-        })
-
-        //get channel supports
-        let LimitNum = 13;
-        let page = 1
-        let offsetArtist = (page - 1) * LimitNum
-        await channelModel.getChannelSupporters(req,{channel_id:channel.channel_id, limit: LimitNum, offset:offsetArtist}).then(result => {
-            let pagging = false
-            if (result) {
-                pagging = false
-                if (result.length > LimitNum - 1) {
-                    result = result.splice(0, LimitNum - 1);
-                    pagging = true
-                }
-                channel.supporters = {
-                    'pagging': pagging,
-                    results: result
-                }
-            }
-        }).catch(error => {
-            console.log(error)
-        })
-
-    }
+    
     if (req.session.channelPaymentStatus) {
         req.query.channelPaymentStatus = req.session.channelPaymentStatus
         req.session.channelPaymentStatus = null
@@ -665,6 +720,19 @@ exports.create = async (req, res) => {
         return
     }
     
+    //owner plans
+    await privacyLevelModel.findBykey(req,"member",'allow_create_subscriptionplans',req.user.level_id).then(result => {
+        req.query.planCreate = result  == 1 ? 1 : 0
+    })
+    if(req.query.planCreate == 1){
+        //get user plans
+        await userModel.getPlans(req, { owner_id: req.user.user_id }).then(result => {
+            if (result) {
+                req.query.plans = result
+            }
+        })
+    }
+
     //get categories
     const categories = []
     await categoryModel.findAll(req, { type: "channel" }).then(result => {
@@ -698,7 +766,6 @@ exports.create = async (req, res) => {
         req.query.channelCategories = categories
     //get artists
     if (settingModel.getSetting(req, "channel_artists", 1) != 0) {
-        let artists = []
         await artistModel.findAll(req, { type: "channel" }).then(artist => {
             if (artist)
                 req.query.channelArtists = artist;

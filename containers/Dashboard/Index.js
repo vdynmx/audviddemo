@@ -255,7 +255,7 @@ class Index extends React.Component {
         return (
             <React.Fragment>
                 <Cover {...this.props} profile={true}  settings={true} {...this.state.member} member={this.state.member} type="member" id={this.state.member.user_id} />
-                    <div className="container-fluid">
+                    <div className="container-fluid mt-5">
                         <div className="row">
                             <div className="col-lg-2">
                                 <div className="sdBarSettBox">
@@ -391,7 +391,7 @@ class Index extends React.Component {
                                     : 
                                     <div className="formFields">
                                         <div className="form-group">
-                                            <select className="form-control" value={this.state.type} onChange={this.changeFilter}>
+                                            <select className="form-control form-select" value={this.state.type} onChange={this.changeFilter}>
                                                 {
                                                     Object.keys(options).map(function(key) {
                                                         return (

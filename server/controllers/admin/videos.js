@@ -1019,7 +1019,7 @@ exports.levels = async (req, res) => {
             }),
             storage: fields.string({
                 label: "Video Storage Limit",
-                choices: { "1048576": "1 MB", "5242880": "5 MB", "26214400": "25 MB", "52428800": "50 MB", "104857600": "100 MB", "524288000": "50 MB", "1073741824": "1 GB", "2147483648": "2 GB", "5368709120": "5 GB", "10737418240": "10 GB", "0": "Unlimited" },
+                choices: { "1048576": "1 MB", "5242880": "5 MB", "26214400": "25 MB", "52428800": "50 MB", "104857600": "100 MB", "524288000": "500 MB", "1073741824": "1 GB", "2147483648": "2 GB", "5368709120": "5 GB", "10737418240": "10 GB", "0": "Unlimited" },
                 required: true,
                 widget: widgets.select({ "classes": ["select"] }),
                 cssClasses: { "field": ["form-group"] },

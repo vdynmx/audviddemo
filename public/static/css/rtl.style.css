@@ -1,3 +1,6 @@
+.snglFullWdth .slick-slider{
+    position: inherit;
+}
 .rightTopList ul.custmenuRight li {
     margin-right: 15px;
 }
@@ -236,7 +239,24 @@
     flex-direction: column;
     align-items: self-end;
 }
-
+.custom-control.image-checkbox .form-check-input{
+    right: 30px;
+    left: 0;
+}
+.custom-control.image-checkbox{
+    padding-right: 0px !important;
+}
+.gateway-options button img{
+    margin-left: 10px;
+    margin-right: 0px;
+}
+.miniplay .playbtn{
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.userInfo-block-content .user_followed{
+    margin-left: 20px;
+}
 /* Py new design */
 .top-header .head-search .search-box input{
     border-radius: 0 10px 10px 0;
@@ -325,7 +345,7 @@ div[id*='remote_video_'] div[id*='player_'] video{
 .lsForm{
     text-align: right;
 }
-.lsForm .custom-switch{
+.lsForm .form-switch{
     display: flex;
 }
 .lsVideoTop .participentNo i, .lsVideoTop .likebtn i {
@@ -540,9 +560,9 @@ div[id*='remote_video_'] div[id*='player_'] video{
 }
 
 
-[class*="col-lg"],[class*="col-md"],[class*="col-sm"],[class*="col-xs"]{
+/* [class*="col-lg"],[class*="col-md"],[class*="col-sm"],[class*="col-xs"]{
 padding-right: 15px;
-}
+} */
 
 .btn-slide .carousel-slider button.control-next, .carousel-slider button.control-next{
     left: 35px;

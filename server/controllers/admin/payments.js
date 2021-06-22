@@ -602,14 +602,14 @@ exports.approveBank = async(req,res) => {
 
                 //if (packageObj.is_recurring == 1) {
                      //cancel subscription from gateway
-                     let memberSubscription = require("../functions/ipnsFunctions/memberSubscriptions");
+                     let memberSubscription = require("../../functions/ipnsFunctions/memberSubscriptions");
                      let user = {}
                      user.user_id = bank_details.owner_id
                      await memberSubscription.cancelAll(user, "User changed subscription plan.",null,req);
                     //cancel other active subscription
-                    globalModel.update(req,{status:"cancelled"},"subscriptions","owner_id",bank_details.owner_id)
+                    await globalModel.update(req,{status:"cancelled"},"subscriptions","owner_id",bank_details.owner_id)
                     //cancel other active orders
-                    globalModel.update(req,{state:"cancelled"},"orders","owner_id",bank_details.owner_id)
+                    await globalModel.update(req,{state:"cancelled"},"orders","owner_id",bank_details.owner_id)
                     
                     let changed_expiration_date = await recurringPaypal.getExpirationDate(packageObj)
                     await globalModel.create(req, {gateway_id:3,type:"member_subscription",id:bank_details.owner_id, expiration_date: changed_expiration_date, owner_id: bank_details.owner_id, package_id: package_id, status: "completed",creation_date: currentDate, modified_date: currentDate, gateway_profile_id: "Bank Transfer",order_id:req.session.orderId }, "subscriptions").then(async result => {
@@ -618,6 +618,76 @@ exports.approveBank = async(req,res) => {
                 // }else{
                     
                 // }
+            }else if(bank_details && bank_details.type == "user_subscribe"){
+                
+                //create order
+                await globalModel.create(req, { owner_id: bank_details.owner_id, gateway_id: 3, state: "initial", creation_date: currentDate, source_type: "user_subscribe", source_id: id }, "orders").then(result => {
+                    if (result) {
+                        req.session.orderId = result.insertId
+                    } else {
+    
+                    }
+                })
+                let itemObject = {}
+                let orders = {}
+                await globalModel.custom(req, "SELECT * FROM orders where order_id =?",req.session.orderId).then(result => {
+                    let item = JSON.parse(JSON.stringify(result));
+                    if(item && item.length > 0){
+                        orders = item[0] 
+                    } else {
+                        
+                    }
+                }).catch(_err => {
+                    
+                })
+                await globalModel.custom(req, "SELECT member_plans.*, userdetails.username from member_plans LEFT JOIN userdetails ON userdetails.user_id = member_plans.owner_id where member_plan_id = ?",bank_details.package_id).then(result => {
+                    let item = JSON.parse(JSON.stringify(result));
+                    if(item && item.length > 0){
+                        itemObject = item[0] 
+                    } 
+                }).catch(_err => {
+                    
+                })
+
+                orders.type = "month"
+                orders.duration_type = "year"
+                orders.duration = 100
+                orders.interval = 1
+            type = "bankdetails_usersubscribe_approved";
+            let changed_expiration_date = await recurringPaypal.getExpirationDate(orders)
+            //cancel subscription from gateway
+            let memberSubscription = require("../../functions/ipnsFunctions/channelSupportSubscriptions");
+            req.memberUSERID = itemObject.owner_id
+            let user = {}
+            user.user_id = bank_details.owner_id
+            await memberSubscription.cancelAll({user_id:bank_details.owner_id,subscription_type:"user_subscribe"}, "User changed subscription plan.", null,req);
+            req.memberUSERID = null
+            //cancel other active subscription
+            await globalModel.custom(req,"UPDATE subscriptions SET status = ? WHERE owner_id = ? AND id = ?",["cancelled",bank_details.owner_id,itemObject.owner_id]);
+            //cancel other active orders
+            // await globalModel.update(req,{state:"cancelled"},"orders","owner_id",bank_details.owner_id)
+            //subscribe user
+            await globalModel.create(req,{type:"members",id:itemObject.owner_id,owner_id:bank_details.owner_id,creation_date:currentDate},'followers')
+            let data = {}
+            const followModel = require("../../models/followers")
+            var dt = dateTime.create();
+            var formatted = dt.format('Y-m-d H:M:S');
+            data['type'] = "members"
+            data['id'] = itemObject.owner_id
+            data['owner_id'] = bank_details.owner_id
+            data['creation_date'] = formatted
+            await followModel.isFollowed(req,data.type,req.user.user_id,data.id).then(result => {
+                if(result){
+                    data['followId'] = result.follower_id   
+                }
+            })
+            if(!data['followId']){
+                await followModel.insert(data,req,res).then(result => {});
+            }
+            await globalModel.create(req, {gateway_id: 3, type:"user_subscribe",id:itemObject.owner_id, expiration_date: changed_expiration_date, owner_id: bank_details.owner_id, package_id: bank_details.package_id, status: "completed",creation_date: currentDate, modified_date: currentDate, gateway_profile_id: "",order_id:req.session.orderId }, "subscriptions").then(async _result => {
+                globalModel.update(req,{gateway_id:2,gateway_transaction_id:"",state:"completed".toLowerCase()},"orders","order_id",req.session.orderId)
+            })
+
             }else if(bank_details && bank_details.type == "channel_subscription"){
                 type = "bankdetails_channelsubscription_approved";
                 let itemObject = {}
@@ -655,7 +725,7 @@ exports.approveBank = async(req,res) => {
 
                 let changed_expiration_date = await recurringPaypal.getExpirationDate(orders)
                 await globalModel.create(req, {gateway_id:3, type:"channel_subscription",id:bank_details.owner_id, expiration_date: changed_expiration_date, owner_id: bank_details.owner_id, id: itemObject.channel_id, status: "completed",creation_date: currentDate, modified_date: currentDate, gateway_profile_id: "Bank Transfer",order_id:req.session.orderId }, "subscriptions").then(async result => {
-                    globalModel.update(req,{gateway_id:3,gateway_transaction_id:"Bank Transfer",state:"completed",'source_id':result.insertId},"orders","order_id",req.session.orderId)
+                    globalModel.update(req,{gateway_id:3,gateway_transaction_id:"Bank Transfer",state:"completed"},"orders","order_id",req.session.orderId)
                     
                 })
 

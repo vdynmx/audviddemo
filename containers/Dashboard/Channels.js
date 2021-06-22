@@ -74,7 +74,7 @@ class Channels extends React.Component {
                         <div className="sortby formFields">
                             <div className="form-group sortbys">
                                 <span className="lble" style={{ width: "105px" }}>{Translate(this.props,"Criteria")}:</span>
-                                <select className="form-control" value={this.state.type} onChange={this.changeType.bind(this)}>
+                                <select className="form-control form-select" value={this.state.type} onChange={this.changeType.bind(this)}>
                                     {
                                         Object.keys(criterials).map(function(keyName, keyIndex) {
                                            return <option key={keyName} value={keyName}>{Translate(this.props,criterials[keyName])}</option>

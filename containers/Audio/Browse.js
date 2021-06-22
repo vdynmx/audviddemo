@@ -18,6 +18,7 @@ import EndContent from "../LoadMore/EndContent"
 import Release from "../LoadMore/Release"
 import Search from "../Search/Index"
 import axios from "../../axios-orders"
+import Router  from "next/router";
 
 class Browse extends React.Component {
     constructor(props) {
@@ -31,7 +32,7 @@ class Browse extends React.Component {
         }
         this.pauseSong = this.pauseSong.bind(this)
         this.playSong = this.playSong.bind(this)
-        this.playPauseSong = this.playPauseSong.bind(this)
+        //this.playPauseSong = this.playPauseSong.bind(this)
         this.loadMoreContent = this.loadMoreContent.bind(this)
         this.refreshContent = this.refreshContent.bind(this)
     }
@@ -56,11 +57,7 @@ class Browse extends React.Component {
                 pagging: nextProps.pageInfoData.pagging ? nextProps.pageInfoData.pagging : nextProps.pagging,
                 search:nextProps.pageInfoData.search
             }
-        }else if (nextProps.pageInfoData.song_id != prevState.song_id || nextProps.pageInfoData.pausesong_id != prevState.playsong_id) {
-            return {
-                ...prevState
-            }
-        } else{
+        }else{
             return null
         }
     }
@@ -74,30 +71,60 @@ class Browse extends React.Component {
         const itemIndex = items.findIndex(p => p["audio_id"] == item_id);
         return itemIndex;
     }
-    playSong = (song_id,e) =>{
+    playSong = (song_id,audio,e) =>{
+        if(!audio.audio_file){
+            Router.push(`/audio?audioId=${audio.custom_url}`, `/audio/${audio.custom_url}`)
+            return;
+        }
+        let audios = [...this.state.audios]
+        audios.forEach( (audio, itemIndex) => {
+            if(!audio.audio_file){
+                audios.splice(itemIndex, 1);
+            }
+        });
         this.setState({
             song_id:song_id,
             playsong_id:0,
             localUpdate:true
         },() => {
-            this.props.updateAudioData(this.state.audios, song_id,0,this.props.t("Submit"),this.props.t("Enter Password"))
+            this.props.updateAudioData(audios, song_id,0,this.props.t("Submit"),this.props.t("Enter Password"))
         })
         
     }
-    pauseSong = (song_id,e) => {
+    pauseSong = (song_id,audio,e) => {
+        if(!audio.audio_file){
+            Router.push(`/audio?audioId=${audio.custom_url}`, `/audio/${audio.custom_url}`)
+            return;
+        }
+        let audios = [...this.state.audios]
+        audios.forEach( (audio, itemIndex) => {
+            if(!audio.audio_file){
+                audios.splice(itemIndex, 1);
+            }
+        });
         this.setState({
             song_id:song_id,
             playsong_id:song_id,
             localUpdate:true
         },() => {
-            this.props.updateAudioData(this.state.audios, song_id,song_id,this.props.t("Submit"),this.props.t("Enter Password"))
+            this.props.updateAudioData(audios, song_id,song_id,this.props.t("Submit"),this.props.t("Enter Password"))
         })
     }
-    playPauseSong = (song_id,e) => {
+    playPauseSong = (song_id,audio,e) => {
+        if(!audio.audio_file){
+            Router.push(`/audio?audioId=${audio.custom_url}`, `/audio/${audio.custom_url}`)
+            return;
+        }
+        let audios = [...this.state.audios]
+        audios.forEach( (audio, itemIndex) => {
+            if(!audio.audio_file){
+                audios.splice(itemIndex, 1);
+            }
+        });
         if(this.props.song_id == 0 || song_id == this.props.pausesong_id || song_id != this.props.song_id){
-            this.props.updateAudioData(this.state.audios, song_id,0,this.props.t("Submit"),this.props.t("Enter Password"))
+            this.props.updateAudioData(audios, song_id,0,this.props.t("Submit"),this.props.t("Enter Password"))
         }else{
-            this.props.updateAudioData(this.state.audios,song_id, song_id,this.props.t("Submit"),this.props.t("Enter Password"))
+            this.props.updateAudioData(audios,song_id, song_id,this.props.t("Submit"),this.props.t("Enter Password"))
         }
     }
     
@@ -113,6 +140,8 @@ class Browse extends React.Component {
                 const changedItem = {...items[itemIndex]}
                 changedItem.rating = rating
                 items[itemIndex] = changedItem
+                if(this.props.updateParentItems)
+                    this.props.updateParentItems("audio",null,items);
                 this.setState({localUpdate:true, audios: items })
             }
         });
@@ -122,6 +151,8 @@ class Browse extends React.Component {
             if (this.state.audios && itemIndex > -1) {
                 const items = [...this.state.audios]
                 items.splice(itemIndex, 1);
+                if(this.props.updateParentItems)
+                    this.props.updateParentItems("audio",null,items);
                 this.setState({localUpdate:true, audios: items })
             }
         });
@@ -140,6 +171,8 @@ class Browse extends React.Component {
                         changedItem.favourite_id = null
                     }
                     items[itemIndex] = changedItem
+                    if(this.props.updateParentItems)
+                    this.props.updateParentItems("audio",null,items);
                     this.setState({localUpdate:true, audios: items })
                 }
             }
@@ -158,6 +191,8 @@ class Browse extends React.Component {
                         changedItem.favourite_id = 1
                     }
                     items[itemIndex] = changedItem
+                    if(this.props.updateParentItems)
+                    this.props.updateParentItems("audio",null,items);
                     this.setState({localUpdate:true, audios: items })
                 }
             }
@@ -202,6 +237,8 @@ class Browse extends React.Component {
                         changedItem['dislike_count'] = parseInt(changedItem['dislike_count']) + 1
                     }
                     items[itemIndex] = changedItem
+                    if(this.props.updateParentItems)
+                    this.props.updateParentItems("audio",null,items);
                     this.setState({localUpdate:true, audios: items })
                 }
             }
@@ -263,7 +300,7 @@ class Browse extends React.Component {
     render() {
         return (
             <React.Fragment>
-                <div className="user-area">
+                <div className={`${this.props.from_user_profile ? 'audio-cnt' : "user-area"}`}>
                         {
                             !this.props.search ? 
                         <div className="container">
@@ -285,12 +322,12 @@ class Browse extends React.Component {
                                     refreshFunction={this.refreshContent}
                                 >
                                     <div className="container">
-                                        <div className="row mob2col">
+                                        <div className="row mob2 col gx-2">
                                             {
                                                 this.state.audios.map(item => {
                                                     
                                                     return (
-                                                        <div key={item.audio_id} className="col-lg-6 col-sm-12">
+                                                        <div key={item.audio_id} className={`${this.props.from_user_profile ? 'col-xl-4 col-lg-4 col-md-4 col-sm-6' : "col-lg-6 col-sm-12"}`}>
                                                             <div className="tracksList">
                                                                 <div className="stream-track">
                                                                     <div className="stream-track-img">
@@ -305,11 +342,11 @@ class Browse extends React.Component {
                                                                             <div className="miniplay">
                                                                             {
                                                                                 this.props.song_id != item.audio_id || this.props.pausesong_id == item.audio_id ?
-                                                                                <div className="playbtn"  onClick={this.playSong.bind(this,item.audio_id)}>
+                                                                                <div className="playbtn"  onClick={this.playSong.bind(this,item.audio_id,item)}>
                                                                                     <i className="fas fa-play"></i>
                                                                                 </div>
                                                                                 :
-                                                                                <div className="playbtn"  onClick={this.pauseSong.bind(this,item.audio_id)}>
+                                                                                <div className="playbtn"  onClick={this.pauseSong.bind(this,item.audio_id,item)}>
                                                                                     <i className="fas fa-pause" ></i>
                                                                                 </div>
                                                                             }
@@ -334,15 +371,13 @@ class Browse extends React.Component {
                                                                                         <Favourite icon={true} {...this.props} favourite_count={item.favourite_count} item={item} type="audio" id={item.audio_id} />{"  "}
                                                                                     </li>
                                                                                     
-                                                                                    <SocialShare {...this.props} hideTitle={true} buttonHeightWidth="30" url={`/audio/${item.custom_url}`} title={item.title} imageSuffix={this.props.pageInfoData.imageSuffix} media={item.image} />
-                                                                                    
                                                                                     <li>
                                                                                         <span title="play">
                                                                                             <i className="fas fa-play"></i>{" "}
                                                                                             {`${ShortNumber(item.play_count ? item.play_count : 0)}`}{" "}{this.props.t("play_count", { count: item.play_count ? item.play_count : 0 })}
                                                                                         </span>
                                                                                     </li>
-                                                                                    
+                                                                                    <SocialShare {...this.props} hideTitle={true} buttonHeightWidth="30" url={`/audio/${item.custom_url}`} title={item.title} imageSuffix={this.props.pageInfoData.imageSuffix} media={item.image} />
                                                                                 </ul>
                                                                             </div>
                                                                         </div>

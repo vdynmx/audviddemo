@@ -290,7 +290,7 @@ class Chat extends React.Component{
                         <React.Fragment>
                             <div className="title">{Translate(this.props,'Live Chat')}</div>
                             <div className="dropdown TitleRightDropdown">
-                                <a className="lsdot" href="#" data-toggle="dropdown"><i className="fas fa-ellipsis-v"></i></a>
+                                <a className="lsdot" href="#" data-bs-toggle="dropdown"><i className="fas fa-ellipsis-v"></i></a>
                                 <ul className="dropdown-menu dropdown-menu-right edit-options">
                                     <li>
                                         <a href="#" onClick={this.changeTab}>{Translate(this.props,'Participants')}</a>
@@ -308,12 +308,12 @@ class Chat extends React.Component{
                     : 
                     this.state.showTab == "banusers" ?
                     <div className="chat_participants_cnt">
-                        <a href="#" onClick={(e) => {e.preventDefault();this.setState({showTab:"chat"})}}><span className="material-icons">arrow_back</span></a>
+                        <a href="#" onClick={(e) => {e.preventDefault();this.setState({showTab:"chat"})}}><span className="material-icons" data-icon="arrow_back"></span></a>
                         <span>{Translate(this.props,'Ban Users')}</span>
                     </div>
                     :
                     <div className="chat_participants_cnt">
-                        <a href="#" onClick={(e) => {e.preventDefault();this.setState({showTab:"chat"})}}><span className="material-icons">arrow_back</span></a>
+                        <a href="#" onClick={(e) => {e.preventDefault();this.setState({showTab:"chat"})}}><span className="material-icons" data-icon="arrow_back"></span></a>
                         <span>{Translate(this.props,'Participants')}</span>
                     </div>
                 }

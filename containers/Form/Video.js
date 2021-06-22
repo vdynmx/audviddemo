@@ -1,15 +1,9 @@
 import React, { Component } from "react"
-
 import Breadcrum from "../../components/Breadcrumb/Form"
-
 import Form from '../../components/DynamicForm/Index'
-
 import { connect } from 'react-redux';
-
 import Validator from '../../validators';
-
 import axios from "../../axios-orders"
-
 import Router from "next/router"
 import Translate from "../../components/Translate/Index";
 import ReactDOMServer from "react-dom/server"
@@ -27,6 +21,7 @@ class Video extends Component {
         }
         this.state = {
             processing:false,
+            percentCompleted:0,
             enableUploadVideo: enableVideo,
             chooseType: enableVideo ? "upload" : "import",
             editItem: props.pageInfoData.editItem,
@@ -44,7 +39,8 @@ class Video extends Component {
             error: null,
             sell_videos:props.pageInfoData.sell_videos ? true : false,
             openAddTip:false,
-            channel_id:props.channel_id ? props.channel_id : null
+            channel_id:props.channel_id ? props.channel_id : null,
+            plans:props.pageInfoData.plans ? props.pageInfoData.plans : [],
         }
         this.myRef = React.createRef();
         this.setAmount = this.setAmount.bind(this)
@@ -66,6 +62,8 @@ class Video extends Component {
                 enableVideo = true
             }
             return {
+                processing:false,
+                percentCompleted:0,
                 channel_id:nextProps.channel_id ? nextProps.channel_id : null,
                 openAddTip:false,
                 tips:nextProps.pageInfoData.editItem && nextProps.pageInfoData.editItem.tips ? [...nextProps.pageInfoData.editItem.tips] : [{amount:0}],
@@ -82,7 +80,8 @@ class Video extends Component {
                 privacy: nextProps.pageInfoData.editItem ? nextProps.pageInfoData.editItem.view_privacy : "everyone",
                 success: nextProps.pageInfoData.editItem ? true : false,
                 error: null,
-                sell_videos:nextProps.pageInfoData.sell_videos ? true : false
+                sell_videos:nextProps.pageInfoData.sell_videos ? true : false,
+                plans:nextProps.pageInfoData.plans ? nextProps.pageInfoData.plans : [],
             }
         }
     }
@@ -439,9 +438,7 @@ class Video extends Component {
 
         }
 
-
         formFields.push({ key: "image", label: "Upload Video Image", type: "file", value: imageUrl })
-
         if(this.state.chooseType == "embed" || (this.state.editItem && this.state.editItem.type == 22)){
             formFields.push({ key: "duration", label: "Video Duration (eg - HH:MM:SS)", value: this.state.editItem ? this.state.editItem.duration : null })
         }
@@ -634,7 +631,15 @@ class Video extends Component {
                 value: "follow", label: "Only people I follow", key: "follow"
             })
         }
-
+        if(this.state.plans.length > 0){
+            this.state.plans.forEach(item => {
+                let perprice = {}
+                perprice['package'] = { price: item.price }
+                privacyOptions.push({
+                    value:"package_"+item.member_plan_id,label:this.props.t("Limited to {{plan_title}} ({{plan_price}}) and above",{plan_title:item.title,plan_price:ReactDOMServer.renderToStaticMarkup(<Currency { ...this.props } {...perprice} />)}),key:"package_"+item.member_plan_id
+                })
+            })
+        }
         formFields.push({
             key: "privacy",
             label: "Privacy",
@@ -805,14 +810,13 @@ class Video extends Component {
                 }
                 {
                     this.state.success ?
-                            
                             !this.state.channel_id ?
                                <React.Fragment>
                                     <Breadcrum {...this.props}  image={this.props.pageData['pageInfo']['banner'] ? this.props.pageData['pageInfo']['banner'] : "/static/images/breadcumb-bg.jpg"} title={`${this.state.editItem ? "Edit" : "Create"} Video`} />
                                     <div className="mainContentWrap">
                                         <div className="container">
                                             <div className="row">
-                                                <div className="col-md-12">
+                                                <div className="col-md-12 position-relative">
                                                     <div className="formBoxtop loginp content-form" ref={this.myRef}>
                                                         <Form
                                                             className="form"
@@ -851,14 +855,6 @@ class Video extends Component {
                                 </div>
                         :
                         <div className="videoBgWrap" ref={this.myRef}>
-                            {/* {
-                                this.props.pageInfoData.appSettings['video_createpage'] ? 
-                                    <video autoPlay muted loop id="videoBg">
-                                        <source src={this.props.pageInfoData.imageSuffix+this.props.pageInfoData.appSettings['video_createpage']} type="video/mp4" />
-                                        Your browser does not support HTML5 video.
-                                    </video>
-                            : null
-                            } */}
                             {
                                 this.state.enableUploadVideo || this.props.pageInfoData.levelPermissions['video.embedcode'] == 1 ?
                                     <div className="user-area">
